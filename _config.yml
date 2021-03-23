@@ -1,6 +1,1 @@
 theme: jekyll-theme-slate
-exclude:
-  - app
-  - app-preview
-  - sdl
-  - sdl-preview
