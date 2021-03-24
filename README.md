@@ -1,4 +1,3 @@
-[Start the Emulator](/app)
 # About
 
 Cloudpilot is a web-based emulator for PalmOS. It emulates dragonball based devices
