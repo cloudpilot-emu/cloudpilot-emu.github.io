@@ -15,7 +15,7 @@ a web page or as a mobile app on phones and tables. The list of features include
  * Audio emulation
  * Keyboard input
 
-### [Launch Cloudpilot!](/app)
+[Launch Cloudpilot!](/app)
 
 ## Other links
 
@@ -30,3 +30,4 @@ a web page or as a mobile app on phones and tables. The list of features include
  * [SDL app, preview](/sdl-preview)
 
    The next version of the SDL build.
+ * [Source code](https://github.com/cloudpilot-emu/cloudpilot)
