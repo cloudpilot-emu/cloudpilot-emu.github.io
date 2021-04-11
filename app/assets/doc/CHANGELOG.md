@@ -1,3 +1,10 @@
+# Version 1.1.0
+
+-   Add statistics display.
+-   Palm IIIc support.
+-   Improved event injection -> no more timing glitches when injecting
+    touch events on PalmOS 3.x
+
 # Version 1.0.2
 
 -   Increase IndexedDB timeout in order to avoid IDB timeouts when
