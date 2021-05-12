@@ -2,11 +2,16 @@
 
 Cloudpilot is a web-based emulator for PalmOS. It emulates dragonball based devices
 and supports PalmOS up to version 4.x. Cloudpilot is based on the original POSE
-emulator.
+emulator. Currrently, the following devices are supported:
 
-Currently, Palm V, Palm m515, Palm IIIc and Palm m130 devices are supported.
-Cloudpilot can be run as
-a web page or as a mobile app on phones and tables. The list of features includes
+-   Palm IIIcc
+-   Palm V
+-   Palm m515
+-   Palm m130
+-   Tungsten W (silkscreen version)
+
+Cloudpilot can be run as a web page or as a mobile app on phones and tables. The
+list of features includes
 
  * Realistic emulation of timers and device speed
  * Continuous state saves --- emulation resumes if the page or app is reloaded
@@ -15,6 +20,7 @@ a web page or as a mobile app on phones and tables. The list of features include
  * Switching between multiple emulation sessions
  * Audio emulation
  * Keyboard input
+ * Clipboard integration
 
 [Launch Cloudpilot!](/app)
 
