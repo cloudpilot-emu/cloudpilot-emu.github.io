@@ -1,3 +1,11 @@
+# Version 1.3.0
+
+-   Handle pqa files in installation and backup.
+-   Palm m130 support.
+-   Workaround for dying service worker on Safari desktop.
+-   Support for Tungsten W.
+-   Clipboard integration on browsers that support it.
+
 # Version 1.2.1
 
 -   Fix alignment error when restoring images with odd size.
