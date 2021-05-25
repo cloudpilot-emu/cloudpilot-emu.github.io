@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[51],{ISmu:function(o,t,c){"use strict";c.r(t),c.d(t,"ion_text",function(){return e});var s=c("wEJo"),n=c("E/Mt"),r=c("74mu");const e=class{constructor(o){Object(s.o)(this,o)}render(){const o=Object(n.b)(this);return Object(s.j)(s.c,{class:Object(r.a)(this.color,{[o]:!0})},Object(s.j)("slot",null))}};e.style=":host(.ion-color){color:var(--ion-color-base)}"}}]);
+//# sourceMappingURL=51-es2015.afc7fa9df9239ccdc2b5.js.map
