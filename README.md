@@ -8,9 +8,10 @@ emulator. Currrently, the following devices are supported:
 -   Palm III
 -   Palm IIIxe, Palm IIIx, Palm IIIe
 -   Palm Vx, Palm V
--   Palm VII
+-   Palm VII, Palm VII EZ, Palm VIIx
 -   Palm m500, Palm m505, Palm m515
 -   Palm m100, Palm m105, Palm m125, Palm m130
+-   Palm i705
 -   Tungsten W (silkscreen version)
 
 Cloudpilot can be run as a web page or as a mobile app on phones and tables. The
