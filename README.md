@@ -35,12 +35,5 @@ You can download supported ROMs on [PalmDB](https://palmdb.net/app/palm-roms-com
  * [Cloudpilot preview](/app-preview)
 
    This is the preview of the next Cloudpilot release.
- * [SDL app](/sdl)
 
-   The web version of the (native) SDL build of Cloudpilot. This is
-   mainly a development tool, exceedingly ugly and does not support all features that
-   are supported by the web app.
- * [SDL app, preview](/sdl-preview)
-
-   The next version of the SDL build.
  * [Source code](https://github.com/cloudpilot-emu/cloudpilot)
