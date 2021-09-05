@@ -1,3 +1,19 @@
+# Next version
+
+-   Work around worker update idosyncrasies on iOS.
+-   Networking support via websocket proxy. Check the
+    [online documentation](https://github.com/cloudpilot-emu/cloudpilot/blob/master/doc/networking.md)
+    for more details.
+-   Improve memory safety of the emulation core.
+-   Add an option to keep Cloudpilot running when the tab is hidden.
+-   Add "Hotsync" to emulation menu.
+-   Route `DbgMessage` calls to console.
+-   Set `cldp` feature on boot.
+-   Allow to choose boot mode after a forceful reset.
+-   Move audio toggle to the emulation menu
+-   Add "Lock UI" for hiding the navigation bar while the Pilot
+    is running.
+
 # Version 1.4.6
 
 -   Fix installation of DBs that shadow a ROM DB.
