@@ -25,6 +25,8 @@ list of features includes
  * Audio emulation
  * Keyboard input
  * Clipboard integration
+ * Network support (including network hotsync) using a websocket proxy
+  ([documentation](https://github.com/cloudpilot-emu/cloudpilot/blob/master/doc/networking.md))
 
 You can download supported ROMs on [PalmDB](https://palmdb.net/app/palm-roms-complete).
 
