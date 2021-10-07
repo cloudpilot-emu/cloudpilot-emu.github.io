@@ -1,2 +1,0 @@
-(self.webpackChunkcloudpilot_ionic=self.webpackChunkcloudpilot_ionic||[]).push([[6069],{6069:function(n,t,o){"use strict";o.r(t),o.d(t,{startStatusTap:function(){return i}});var e=o(3150),c=o(2377);const i=()=>{const n=window;n.addEventListener("statusTap",()=>{(0,e.f)(()=>{const t=document.elementFromPoint(n.innerWidth/2,n.innerHeight/2);if(!t)return;const o=t.closest("ion-content");o&&new Promise(n=>(0,c.c)(o,n)).then(()=>{(0,e.c)(()=>o.scrollToTop(300))})})})}}}]);
-//# sourceMappingURL=6069-es2015.5e8824a09579f6a01366.js.map

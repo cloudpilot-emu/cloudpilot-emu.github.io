@@ -1,8 +1,13 @@
+# 1.5.5
+
+-   Finalize networking support. This release requires an updated proxy server.
+
 # 1.5.4
 
 -   Fix a regression that prevented the overwriting existing RAM DBs during
     PRC installation.
 -   Support additional network APIs (NetlibSendPB, NetlibReceivePB).
+-   Minor UI fixes.
 
 # 1.5.3
 
