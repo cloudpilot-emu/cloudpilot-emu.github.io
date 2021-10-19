@@ -13,6 +13,7 @@ emulator. Currrently, the following devices are supported:
 -   Palm m100, Palm m105, Palm m125, Palm m130
 -   Palm i705
 -   Tungsten W (silkscreen version)
+-   Handera 330
 
 Cloudpilot can be run as a web page or as a mobile app on phones and tables. The
 list of features includes
