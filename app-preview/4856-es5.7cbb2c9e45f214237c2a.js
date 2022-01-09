@@ -1,2 +1,0 @@
-!function(){"use strict";(self.webpackChunkcloudpilot_ionic=self.webpackChunkcloudpilot_ionic||[]).push([[4856],{6128:function(n,t,i){i.r(t),i.d(t,{startStatusTap:function(){return c}});var o=i(6842),e=i(693),c=function(){var n=window;n.addEventListener("statusTap",function(){(0,o.f)(function(){var t=document.elementFromPoint(n.innerWidth/2,n.innerHeight/2);if(t){var i=t.closest("ion-content");i&&new Promise(function(n){return(0,e.c)(i,n)}).then(function(){(0,o.c)(function(){return i.scrollToTop(300)})})}})})}}}])}();
-//# sourceMappingURL=4856-es5.7cbb2c9e45f214237c2a.js.map
