@@ -1,4 +1,12 @@
-# Next version
+# 1.5.8
+
+-   Link API for importing ROMs or sessions and installing databases via
+    hyperlinks. Check the
+    [online documentation](https://github.com/cloudpilot-emu/cloudpilot/blob/master/doc/linking.md)
+    for more details
+-   UI dependecy updates
+
+# 1.5.7
 
 -   Catch a rare iOS bug that causes the database to ocassionally come up empty
     on launch.
