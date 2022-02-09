@@ -1,4 +1,4 @@
 theme: jekyll-theme-slate
-title: Cloudpilot
+title: CloudpilotEmu
 description: A PalmOS emulator for the web
 include: [".well-known"]
