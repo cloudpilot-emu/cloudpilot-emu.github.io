@@ -1,6 +1,6 @@
 # About
 
-CloudpilotEmu is a web-based emulator for PalmOS. It emulates dragonball based devices
+CloudpilotEmu (or just Cloudpilot) is a web-based emulator for PalmOS. It emulates dragonball based devices
 and supports PalmOS up to version 4.x. CloudpilotEmu is based on the original POSE
 emulator. Currrently, the following devices are supported:
 
