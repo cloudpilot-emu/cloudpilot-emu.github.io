@@ -1,7 +1,7 @@
 # About
 
-Cloudpilot is a web-based emulator for PalmOS. It emulates dragonball based devices
-and supports PalmOS up to version 4.x. Cloudpilot is based on the original POSE
+CloudpilotEmu is a web-based emulator for PalmOS. It emulates dragonball based devices
+and supports PalmOS up to version 4.x. CloudpilotEmu is based on the original POSE
 emulator. Currrently, the following devices are supported:
 
 -   Pilot, Palm Pilot
@@ -20,7 +20,7 @@ emulator. Currrently, the following devices are supported:
 -   Sony PEG-T600C series
 -   Sony PEG-N700C series
 
-Cloudpilot can be run as a web page or as a mobile app on phones and tables. The
+CloudpilotEmu can be run as a web page or as a mobile app on phones and tables. The
 list of features includes
 
  * Realistic emulation of timers and device speed
@@ -32,16 +32,16 @@ list of features includes
  * Keyboard input
  * Clipboard integration
  * Network support (including network hotsync) using a websocket proxy
-  ([documentation](https://github.com/cloudpilot-emu/cloudpilot/blob/master/doc/networking.md))
+  ([documentation](https://github.com/cloudpilot-emu/cloudpilot-emu/blob/master/doc/networking.md))
 
 You can download supported ROMs on [PalmDB](https://palmdb.net/app/palm-roms-complete).
 
-[Launch Cloudpilot!](/app)
+[Launch CloudpilotEmu!](/app)
 
 ## Other links
 
- * [Cloudpilot preview](/app-preview)
+ * [CloudpilotEmu preview](/app-preview)
 
-   This is the preview of the next Cloudpilot release.
+   This is the preview of the next CloudpilotEmu release.
 
- * [Source code](https://github.com/cloudpilot-emu/cloudpilot)
+ * [Source code](https://github.com/cloudpilot-emu/cloudpilot-emu)
