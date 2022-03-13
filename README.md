@@ -22,6 +22,7 @@ emulator. Currrently, the following devices are supported:
 -   Sony PEG-N700C series
 -   Sony PEG-T650C series
 -   Sony PEG-NR70 series
+
 CloudpilotEmu can be run as a web page or as a mobile app on phones and tables. The
 list of features includes
 
