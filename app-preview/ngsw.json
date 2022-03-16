@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1647385789875,
+  "timestamp": 1647458699665,
   "index": "/app-preview/index.html",
   "assetGroups": [
     {
@@ -68,7 +68,7 @@
         "/app-preview/cloudpilot_web.wasm",
         "/app-preview/common.f166109cbc1a0005.js",
         "/app-preview/index.html",
-        "/app-preview/main.48affcfca053cc8b.js",
+        "/app-preview/main.2cf71fc2c6a6abbe.js",
         "/app-preview/manifest.webmanifest",
         "/app-preview/polyfills-core-js.0320ef7737fa2d14.js",
         "/app-preview/polyfills-dom.94ed87917029971d.js",
@@ -182,8 +182,8 @@
     "/app-preview/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
     "/app-preview/cloudpilot_web.wasm": "9c86dee66b4aa7628486d353c5ca3eda9964eba5",
     "/app-preview/common.f166109cbc1a0005.js": "ac27123bc786bc6bfa8fa1ca9c0c18a7664b8267",
-    "/app-preview/index.html": "6dcef5373ba45a45be177c60e44b9d1b34085dee",
-    "/app-preview/main.48affcfca053cc8b.js": "57ee6b88b7dfd5ebc7883debddaed8c5dcb26ae6",
+    "/app-preview/index.html": "e9bf692f7cfc85a397d8207a472d921afa92cdce",
+    "/app-preview/main.2cf71fc2c6a6abbe.js": "0f938f7c40a7443b1a2800b27fa3ebd2c9d11bb0",
     "/app-preview/manifest.webmanifest": "2d4f13c1eb5cb35e40fe33be4521fcb1ac51cfaf",
     "/app-preview/polyfills-core-js.0320ef7737fa2d14.js": "2da48e1cddfd95438bc00bf6d0abf59a1744a8d1",
     "/app-preview/polyfills-dom.94ed87917029971d.js": "3910317c0ae8a29ea49140b06f70c944f3b6d72d",
