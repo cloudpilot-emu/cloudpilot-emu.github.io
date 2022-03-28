@@ -1,3 +1,9 @@
+# Next version
+
+-   Add "Enable audio on start" option.
+-   Save and restore speed and orientation with session images.
+-   Compress session images.
+
 # Version 1.6.8
 
 -   Allow to change device orientation (portrait, landscape 90°/270°, upside down).
