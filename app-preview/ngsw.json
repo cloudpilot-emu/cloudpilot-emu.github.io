@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1648503312110,
+  "timestamp": 1648580981401,
   "index": "/app-preview/index.html",
   "assetGroups": [
     {
@@ -68,7 +68,7 @@
         "/app-preview/cloudpilot_web.wasm",
         "/app-preview/common.f166109cbc1a0005.js",
         "/app-preview/index.html",
-        "/app-preview/main.58ff76f3f9847839.js",
+        "/app-preview/main.5a15971c240ad4ee.js",
         "/app-preview/manifest.webmanifest",
         "/app-preview/polyfills-core-js.0320ef7737fa2d14.js",
         "/app-preview/polyfills-dom.94ed87917029971d.js",
@@ -173,7 +173,7 @@
     "/app-preview/942.4901d411b16a83e9.js": "8467994c6df3827aa0fcd53348c68e9d9b7bdb13",
     "/app-preview/953.81c6e4df0311b2be.js": "a072601632e2afbc7114f6d46d6fcf5cfb925662",
     "/app-preview/9781.9123a04898404996.js": "e5ba223efe48359d00c910a5f2e8a2b7f0f4eafd",
-    "/app-preview/assets/doc/CHANGELOG.md": "df94fd38c36922487e64a8d45b3c9fbfa9ac6db0",
+    "/app-preview/assets/doc/CHANGELOG.md": "501cdee0139f8c59eabdbe24827af34f30ab4535",
     "/app-preview/assets/doc/about.md": "10a2cb48faf93d50f6eddf24c057e6e08dd11056",
     "/app-preview/assets/doc/emulation.md": "b2752204d66a2d503a8c0c585a8eccb342d85a9f",
     "/app-preview/assets/doc/sessions.md": "0a46e11dd753eea9160ea7dd7a7a80db7b161e02",
@@ -182,8 +182,8 @@
     "/app-preview/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
     "/app-preview/cloudpilot_web.wasm": "9ab8fad6f4546330b8690cf7a1d6280977775123",
     "/app-preview/common.f166109cbc1a0005.js": "ac27123bc786bc6bfa8fa1ca9c0c18a7664b8267",
-    "/app-preview/index.html": "0ce8831ca5fd64dcc8e4fe0cc803cf09b01f5dfb",
-    "/app-preview/main.58ff76f3f9847839.js": "7ddfcbec681eada96a901cdbfec6cc44d2621e4c",
+    "/app-preview/index.html": "23b7457a448c3f6f48eff91b7cd490a30fe9319f",
+    "/app-preview/main.5a15971c240ad4ee.js": "42f64d557efb725a39063cfd4ebf5f15c326d0e0",
     "/app-preview/manifest.webmanifest": "2d4f13c1eb5cb35e40fe33be4521fcb1ac51cfaf",
     "/app-preview/polyfills-core-js.0320ef7737fa2d14.js": "2da48e1cddfd95438bc00bf6d0abf59a1744a8d1",
     "/app-preview/polyfills-dom.94ed87917029971d.js": "3910317c0ae8a29ea49140b06f70c944f3b6d72d",
