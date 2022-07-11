@@ -1,0 +1,265 @@
+<html>
+
+<head>
+    <script src="cloudpilot-emu.js"></script>
+
+    <style>
+        .container {
+            width: 100vw;
+            overflow: hidden;
+            height: calc(100vh - 8em);
+            margin-bottom: 1em;
+
+            display: flex;
+            flex-direction: row;
+        }
+
+        #canvas-wrapper {
+            flex-grow: 1;
+            max-width: 60em;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        canvas:focus {
+            border: none;
+            outline: none;
+        }
+
+        #control-container {
+            flex-grow: 0;
+            flex-shrink: 0;
+            flex-basis: 30em;
+            text-align: left;
+            margin-left: 0.5em;
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        body {
+            text-align: center;
+        }
+
+        button {
+            min-width: 10em;
+            margin: 0.5em;
+            margin-left: 0;
+        }
+
+        input {
+            width: 15em;
+            margin-right: 0.5em;
+        }
+
+        #ui-status {
+            display: inline-block;
+            margin-left: 1em;
+        }
+
+        #statistics {
+            margin-top: 0.5em;
+        }
+
+    </style>
+</head>
+
+<body>
+    <h1>Emulator controls</h1>
+    <div class="container">
+        <div id="canvas-wrapper"><canvas tabindex="1"></canvas></div>
+        <div id="control-container" class="hidden">
+            <div><button type="button" id="power-button"></button><span id="ui-status"></span></div>
+            <div><button type="button" id="pause-resume-button"></button></div>
+            <div>
+                <button type="button" id="reset-button">Reset</button>
+                <button type="button" id="reset-noext-button">Reset noext</button>
+                <button type="button" id="reset-hard-button">Reset hard</button>
+            </div>
+            <div>
+                <button type="button" id="orientation-button"></button>
+            </div>
+            <div id="hotsync-name-container"></div>
+            <div id="hotsync-name-controls">
+                <label for="hotsync-name-input">New name:</label>
+                <input maxlength="40" type="text" id="hotsync-name-field"></input>
+                <button type="button" id="apply-hotsync-name-button">apply</button>
+            </div>
+            <div>
+                <button type="button" id="game-mode-button"></button>
+                <button type="button" id="game-mode-hotkey-button"></button>
+                <button type="button" id="game-mode-indicator-button"></button>
+            </div>
+            <div id="audio-controls">
+                <button type="button" id="enable-audio-button">Enable audio</button>
+                <div id="volume-input-container" style="display: none">
+                    <label for="volume-input">Volume:</label>
+                    <input type="range" min="0" max="100" step="5" id="volume-input">
+                </div>
+            </div>
+            <div id="statistics" style="display: none">
+                <div id="host-speed"></div>
+                <div id="emulation-speed"></div>
+                <div id="fps"></div>
+            </div>
+        </div>
+    </div>
+
+    <a href="index.html">...back to index</a>
+
+    <script>
+        (async function () {
+            function orientationToString(orientation) {
+                switch (orientation) {
+                    case cloudpilot.DeviceOrientation.portrait:
+                        return '0°';
+
+                    case cloudpilot.DeviceOrientation.landscape90:
+                        return '90°';
+
+                    case cloudpilot.DeviceOrientation.landscape270:
+                        return '270°';
+
+                    case cloudpilot.DeviceOrientation.portrait180:
+                        return '180°';
+                }
+            }
+
+            function nextOrientation(orientation) {
+                switch (orientation) {
+                    case cloudpilot.DeviceOrientation.portrait:
+                        return cloudpilot.DeviceOrientation.landscape90;
+
+                    case cloudpilot.DeviceOrientation.landscape90:
+                        return cloudpilot.DeviceOrientation.portrait180;
+
+                    case cloudpilot.DeviceOrientation.landscape270:
+                        return cloudpilot.DeviceOrientation.portrait;
+
+                    case cloudpilot.DeviceOrientation.portrait180:
+                        return cloudpilot.DeviceOrientation.landscape270;
+                }
+            }
+
+            const imageResponse = await fetch('session.img');
+            if (!imageResponse.ok) {
+                throw new Error('could not download session image');
+            }
+
+            const image = await imageResponse.arrayBuffer();
+            const emulator = await cloudpilot.createEmulator();
+            const canvas = document.getElementsByTagName('canvas')[0];
+
+            const pauseResumeButton = document.getElementById('pause-resume-button');
+            const powerButton = document.getElementById('power-button');
+            const resetButton = document.getElementById('reset-button');
+            const resetNoextButton = document.getElementById('reset-noext-button');
+            const resetHardButton = document.getElementById('reset-hard-button');
+            const controlContainer = document.getElementById('control-container');
+            const orientationButton = document.getElementById('orientation-button');
+            const uiStatusContainer = document.getElementById('ui-status');
+            const hotsyncNameContainer = document.getElementById('hotsync-name-container');
+            const applyHotsyncNameButton = document.getElementById('apply-hotsync-name-button');
+            const hotsyncNameInput = document.getElementById('hotsync-name-field');
+            const enableAudioButton = document.getElementById('enable-audio-button');
+            const volumeInput = document.getElementById('volume-input');
+            const volumeInputContainer = document.getElementById('volume-input-container');
+            const statisticsContainer = document.getElementById('statistics');
+            const hostSpeedContainer = document.getElementById('host-speed');
+            const emulationSpeedContainer = document.getElementById('emulation-speed');
+            const fpsContainer = document.getElementById('fps');
+            const gameModeButton = document.getElementById('game-mode-button');
+            const gameModeHotkeyButton = document.getElementById('game-mode-hotkey-button');
+            const gameModeIndicatorButton = document.getElementById('game-mode-indicator-button');
+
+            emulator.
+                loadSession(new Uint8Array(image))
+                .setCanvas(canvas)
+                .bindInput(canvas, canvas)
+                .resume();
+
+            function updateUi() {
+                pauseResumeButton.innerText = emulator.isRunning() ? 'Pause' : 'Resume';
+
+                powerButton.innerText = emulator.isPowerOff() ? 'Power on' : 'Power off';
+                uiStatusContainer.innerText = emulator.isUiInitialized() ? 'UI initialized' : 'UI not initialized';
+                orientationButton.innerText = 'Rotate to ' + orientationToString(nextOrientation(emulator.getOrientation()));
+
+                hotsyncNameContainer.innerText = `Hotsync name: ${emulator.getHotsyncName()}`;
+                applyHotsyncNameButton.disabled = emulator.isPowerOff() || !emulator.isUiInitialized();
+                enableAudioButton.style.display = emulator.isAudioInitialized() ? 'none' : undefined;
+                gameModeButton.innerText = emulator.isGameMode() ? 'Game mode off' : 'Game mode on';
+                gameModeHotkeyButton.innerText = emulator.isGameModeHotkeyEnabled() ? 'Game mode hotkey off' : 'Game mode hotkey on';
+                gameModeIndicatorButton.innerText = emulator.isGameModeIndicatorEnabled() ? 'Game mode indicator off' : 'Game mode hotkey on';
+                volumeInputContainer.style.display = emulator.isAudioInitialized() ? 'inline-block' : 'none';
+                volumeInput.value = (emulator.getVolume() * 100) + '';
+            }
+
+            function updateStatistics() {
+                const statistics = emulator.getStatistics();
+
+                statisticsContainer.style.display = 'block';
+                hostSpeedContainer.innerText = `host speed: ${statistics.hostSpeed.toFixed(2)} x`;
+                emulationSpeedContainer.innerText = `emulation speed: ${statistics.emulationSpeed.toFixed(2)} x`;
+                fpsContainer.innerText = `${statistics.averageFps.toFixed(2)} frames / second`;
+            }
+
+            emulator.powerOffChangeEvent.addHandler(updateUi);
+            emulator.isUiInitializedChangeEvent.addHandler(updateUi);
+            emulator.hotsyncNameChangeEvent.addHandler(updateUi);
+            emulator.gameModeChangeEvent.addHandler(updateUi);
+
+            updateUi();
+            controlContainer.className = '';
+
+            pauseResumeButton.addEventListener('click', () => {
+                if (emulator.isRunning()) emulator.pause();
+                else emulator.resume();
+
+                updateUi();
+            });
+
+            powerButton.addEventListener('mousedown', () => emulator.buttonDown(cloudpilot.Button.power));
+            powerButton.addEventListener('mouseup', () => emulator.buttonUp(cloudpilot.Button.power));
+
+            resetButton.addEventListener('click', () => emulator.reset());
+            resetNoextButton.addEventListener('click', () => emulator.resetNoExtensions());
+            resetHardButton.addEventListener('click', () => emulator.resetHard());
+
+            gameModeButton.addEventListener('click', () => emulator.setGameMode(!emulator.isGameMode()));
+            gameModeHotkeyButton.addEventListener('click', () => {
+                emulator.setGameModeHotkeyEnabled(!emulator.isGameModeHotkeyEnabled());
+                updateUi();
+            });
+            gameModeIndicatorButton.addEventListener('click', () => {
+                emulator.setGameModeIndicatorEnabled(!emulator.isGameModeIndicatorEnabled());
+                updateUi();
+            });
+
+            orientationButton.addEventListener('click', () => {
+                emulator.setOrientation(nextOrientation(emulator.getOrientation()));
+                updateUi();
+            });
+            applyHotsyncNameButton.addEventListener('click', () => emulator.setHotsyncName(hotsyncNameInput.value));
+            hotsyncNameInput.addEventListener('keydown', (e) => e.key === 'Enter' && emulator.setHotsyncName(hotsyncNameInput.value));
+
+            enableAudioButton.addEventListener('click', async () => {
+                await emulator.initializeAudio();
+                updateUi();
+            });
+
+            volumeInput.addEventListener('change', () => {
+                const volume = parseInt(volumeInput.value);
+                !isNaN(volume) && emulator.setVolume(volume / 100);
+            });
+
+            setInterval(updateStatistics, 1000);
+        })().catch(e => console.error(e));
+    </script>
+</body>
+
+</html>
