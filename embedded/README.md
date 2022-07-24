@@ -83,7 +83,7 @@ main();
 
 ### `createEmulator`
 
-[`cloudpilot.createEmulator()`](./reference/functions/createEmulator.html) loads
+[cloudpilot.createEmulator()](./reference/functions/createEmulator.html) loads
 the web assembly module, compiles it and returns a promise for a instance of the
 emulator. This process is async, hence the need to return a promise. On modern
 browsers you can use `async/await` to handle the promise. As an alternative (or
@@ -109,8 +109,8 @@ communicated via exceptions.
 ### `loadSession` and `loadRom`
 
 Session and rom files need to be provided as `Uint8Array` typed arrays.
-[`loadSession`](./reference/interfaces/Emulator.html#loadSession) loads a
-session image, [`loadRom`](./reference/interfaces/Emulator.html#loadRom) loads a
+[loadSession](./reference/interfaces/Emulator.html#loadSession) loads a
+session image, [loadRom](./reference/interfaces/Emulator.html#loadRom) loads a
 rom file. On success, the emulator is initialized but stopped.
 
 `loadRom` will try to autodetect the device type from the ROM. If you want to
@@ -120,17 +120,17 @@ force a specific choice, you can do so with a second argument.
 emulator.loadRom(romFile, cloudpilot.DeviceId.m515)
 ```
 
-Please see the [reference on `DeviceId`](./reference/enums/DeviceId.html) for
+Please see the [reference on `DeviceId](./reference/enums/DeviceId.html) for
 all supported enum values.
 
 ### `setCanvas`
 
-[`setCanvas`](./reference/interfaces/Emulator.html#setCanvas) sets the canvas
+[setCanvas](./reference/interfaces/Emulator.html#setCanvas) sets the canvas
 element used for displaying the emulator.
 
 ### `bindInput`
 
-[`bindInput`](./reference/interfaces/Emulator.html#bindInput) tells the emulator
+[bindInput](./reference/interfaces/Emulator.html#bindInput) tells the emulator
 to start listening for input events. You can pass the target for keyboard events
 as an argument; the default is `window`. You'll usually want to use the canvas
 element here, but in order to do so you *must* set the `tabindex` attribute on
@@ -140,18 +140,18 @@ the canvas element.
 want to process keyboard events from it.
 
 You can stop listening for events by calling
-[`releaseInput()`](./reference/interfaces/Emulator.html#releaseInput).
+[releaseInput()](./reference/interfaces/Emulator.html#releaseInput).
 
 #### `resume`
 
-Calling [`resume`](./reference/interfaces/Emulator.html#resume) will resume
-emulation. You can call [`pause`](./reference/interfaces/Emulator.html#resume)
+Calling [resume](./reference/interfaces/Emulator.html#resume) will resume
+emulation. You can call [pause](./reference/interfaces/Emulator.html#resume)
 in order to pause it again.
 
 The default for CloudpilotEmu is to use `requestAnimationFrame` for running the
 emulator, which will automatically stop it if the window with the emulator is
 not visible. You can call
-[`setRunHidden`](./reference/interfaces/Emulator.html#setRunHidden) in order to
+[setRunHidden](./reference/interfaces/Emulator.html#setRunHidden) in order to
 run the emulator even if the window is not currently visible.
 
 ## ROM or session file?
@@ -169,22 +169,22 @@ You can install and launch applications programatically, either individual
 `.prc` / `.pdb` databases or zipfiles that contain databases. All files are
 passed to the emulator as `Uint8Array` typed arrays.
 
-* [`installDatabase`](./reference/interfaces/Emulator.html#installDatabase)
+* [installDatabase](./reference/interfaces/Emulator.html#installDatabase)
   installs a database
-* [`installAndLaunchDatabase`](./reference/interfaces/Emulator.html#installAndLaunchDatabase)
+* [installAndLaunchDatabase](./reference/interfaces/Emulator.html#installAndLaunchDatabase)
   installs a database and attempts to launch it
-* [`installFromZipfile`](./reference/interfaces/Emulator.html#installFromZipfile)
+* [installFromZipfile](./reference/interfaces/Emulator.html#installFromZipfile)
   searches a `.zip` archive for databases and installs them
-* [`installFromZipfileAndLaunch`](./reference/interfaces/Emulator.html#installFromZipfileAndLaunch)
+* [installFromZipfileAndLaunch](./reference/interfaces/Emulator.html#installFromZipfileAndLaunch)
   installs databases from a `.zip` archive and then attempts to launch a
   particular database
-* [`installDatabase`](./reference/interfaces/Emulator.html#installDatabase)
+* [installDatabase](./reference/interfaces/Emulator.html#installDatabase)
   installs a database
-* [`launchDatabase`](./reference/interfaces/Emulator.html#launchDatabase)
+* [launchDatabase](./reference/interfaces/Emulator.html#launchDatabase)
   extracts the name from a database and attempts to locate it on the device and
   launch it. Technically, only the first 32 bytes of the file are required for
   this.
-* [`launchByName`](./reference/interfaces/Emulator.html#launchByName) searches
+* [launchByName](./reference/interfaces/Emulator.html#launchByName) searches
   for a database with a particular name on the device and attempts to launch it.
 
 Installing and launching applications is only possible if the device is powered
@@ -202,7 +202,7 @@ the call always finds the emulator in the same state.
 The hotsync user name was commonly used by software for its registration
 process. On real devices the hotsync name is set during the first hotsync.
 CloudpilotEmu allows you to change the user name by calling
-[`setHotsyncName`](./reference/interfaces/Emulator.html#setHotsyncName).
+[setHotsyncName](./reference/interfaces/Emulator.html#setHotsyncName).
 
 **WARNING:** CloudpilotEMu calls into PalmOS in order to change the hotsync
 name. This has the potential of crashing the device under rare circumstances.
@@ -214,7 +214,7 @@ this way the call always finds the emulator in the same state.
 ## Audio
 
 Audio needs to be enabled by calling
-[`initializeAudio`](./reference/interfaces/Emulator.html#initializeAudio). The
+[initializeAudio](./reference/interfaces/Emulator.html#initializeAudio). The
 result is a promise that resolves to a boolean that tells you whether audio was
 successfully initialized.
 
