@@ -1,5 +1,5 @@
 This is the documentation for the embedded version of CloudpilotEmu
-which allows you to embed emulated PalmOS devices into your own webpages.
+which allows you to embed emulated PalmOS devices into your own web pages.
 
 # Installation
 
@@ -82,8 +82,8 @@ main();
 
 ### `createEmulator`
 
-[cloudpilot.createEmulator()](./reference/functions/createEmulator.html) loads
-the web assembly module, compiles it and returns a promise for a instance of the
+[cloudpilot.createEmulator](./reference/functions/createEmulator.html) loads
+the web assembly module, compiles it and returns a promise for an instance of the
 emulator. This process is async, hence the need to return a promise. On modern
 browsers you can use `async/await` to handle the promise. As an alternative (or
 to support legacy browsers) you can use the usual promise API
@@ -97,8 +97,6 @@ cloudpilot.createEmulator().then(emulator => {
 
 Without any arguments, `createEmulator` assumes that the web assembly binary is
 hosted next to your HTML file. You can supply a different URL as an argument.
-
-### General API
 
 All interactions with the emulator go through methods on the [emulator
 instance](./reference/interfaces/Emulator.html). Most of those methods return
@@ -119,7 +117,7 @@ force a specific choice, you can do so with a second argument.
 emulator.loadRom(romFile, cloudpilot.DeviceId.m515)
 ```
 
-Please see the [reference on `DeviceId](./reference/enums/DeviceId.html) for
+Please see the [reference on DeviceId](./reference/enums/DeviceId.html) for
 all supported enum values.
 
 ### `setCanvas`
