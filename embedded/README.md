@@ -103,7 +103,7 @@ instance](./reference/interfaces/Emulator.html). Most of those methods return
 the same instance of the emulator, so calls can be chained. Errors are
 communicated via exceptions.
 
-### `loadSession` and `loadRom`
+### `loadSession`, `loadRom`
 
 Session and rom files need to be provided as `Uint8Array` typed arrays.
 [loadSession](./reference/interfaces/Emulator.html#loadSession) loads a
@@ -130,14 +130,13 @@ element used for displaying the emulator.
 [bindInput](./reference/interfaces/Emulator.html#bindInput) tells the emulator
 to start listening for input events. You can pass the target for keyboard events
 as an argument; the default is `window`. You'll usually want to use the canvas
-element here, but in order to do so you *must* set the `tabindex` attribute on
-the canvas element.
+element here, but:
 
 **WARNING:** You **must** set the `tabindex` attribute on the canvas node if you
 want to process keyboard events from it.
 
 You can stop listening for events by calling
-[releaseInput()](./reference/interfaces/Emulator.html#releaseInput).
+[releaseInput](./reference/interfaces/Emulator.html#releaseInput).
 
 #### `resume`
 
@@ -158,7 +157,9 @@ initial setup process (digitizer calibration, locale, etc.).
 
 If your goal in embedding the emulatur is running a particular application, then
 you are better off preparing a pre-booted session in CloudpilotEmu and using
-that in the embedded emulator.
+that with the embedded emulator. Note that you don't have to include all
+possible application that you might want to run in the session --- you can
+install the relevant applications after initializing the emulator (see below.)
 
 ## Installing and launching applications
 
@@ -179,8 +180,7 @@ passed to the emulator as `Uint8Array` typed arrays.
   installs a database
 * [launchDatabase](./reference/interfaces/Emulator.html#launchDatabase)
   extracts the name from a database and attempts to locate it on the device and
-  launch it. Technically, only the first 32 bytes of the file are required for
-  this.
+  launch it.
 * [launchByName](./reference/interfaces/Emulator.html#launchByName) searches
   for a database with a particular name on the device and attempts to launch it.
 
@@ -201,7 +201,7 @@ process. On real devices the hotsync name is set during the first hotsync.
 CloudpilotEmu allows you to change the user name by calling
 [setHotsyncName](./reference/interfaces/Emulator.html#setHotsyncName).
 
-**WARNING:** CloudpilotEMu calls into PalmOS in order to change the hotsync
+**WARNING:** CloudpilotEmu calls into PalmOS in order to change the hotsync
 name. This has the potential of crashing the device under rare circumstances.
 Doing so while the launcher is running should be fine. In order to be 100% safe
 from bad surprises, set up the hotsync name before the emulator is resumed ---
@@ -221,9 +221,9 @@ the initialization will fail.
 
 ## Game input mode
 
-Just like in the usual web app keyboard input is usually converted into keyboard
-events for PalmOS. By pressing shift-ctrl the user can enter "game mode". In
-game mode, various buttons are mapped to the hardware buttons instead:
+Just like with the CloudpilotEmu web app, keyboard input is usually converted
+into keyboard events for PalmOS. By pressing shift-ctrl the user can enter "game
+mode". In game mode, various buttons are mapped to the hardware buttons instead:
 
 * **wasd/qe:** The w/a/s/d buttons control up/cal/down/notes and the q/e buttons
   control contacs/todo.
@@ -234,4 +234,4 @@ game mode, various buttons are mapped to the hardware buttons instead:
 While game mode is active, a small overlay is shown in the bottom right corner
 of the emulator. Game mode and the overlay can be controlled (and permanently
 disabled) by various methods on the emulator object; check the [reference
-documentation](./reference) for more details.
+documentation](./reference/interfaces/Emulator.html#setGameMode) for more details.
