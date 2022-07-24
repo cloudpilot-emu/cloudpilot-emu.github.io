@@ -1,6 +1,5 @@
 This is the documentation for the embedded version of CloudpilotEmu
-CloudpilotEmu embedded allows you to embed emulated PalmOS devices into your own
-webpages.
+which allows you to embed emulated PalmOS devices into your own webpages.
 
 # Installation
 
