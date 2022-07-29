@@ -1,3 +1,10 @@
+# Version 1.7.0
+
+-   Introduce Cloudpilot embedded. You can now embed cloudpilot into your own web pages.
+    Check out the [online documentation](https://cloudpilot-emu.github.io/embedded/)
+    for more details.
+-   Minor bug fixes
+
 # Version 1.6.11
 
 -   Use storage manager API to request persistent storage on browsers that

@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkapp=self.webpackChunkapp||[]).push([[6116],{6116:(h,l,s)=>{s.r(l),s.d(l,{ion_text:()=>n});var o=s(2307),c=s(3407),a=s(6792);let n=class{constructor(t){(0,o.r)(this,t)}render(){const t=(0,c.b)(this);return(0,o.h)(o.H,{class:(0,a.c)(this.color,{[t]:!0})},(0,o.h)("slot",null))}};n.style=":host(.ion-color){color:var(--ion-color-base)}"}}]);
-//# sourceMappingURL=6116.dcdfe8099795a1d6.js.map
