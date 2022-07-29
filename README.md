@@ -41,10 +41,21 @@ You can download supported ROMs on [PalmDB](https://palmdb.net/app/palm-roms-com
 
 [Launch CloudpilotEmu!](/app)
 
+## CloudpilotEmu embedded
+
+There is an embedded version of CloudpilotEmu that allows you to embed the
+emulator into your own web pages. Check out the
+[documentation](/embedded)
+for more details.
+
 ## Other links
 
  * [CloudpilotEmu preview](/app-preview)
 
    This is the preview of the next CloudpilotEmu release.
+   
+ * [CloudpilotEmu embedded preview](/embedded-preview)
+ 
+   This is the preview of the next release of CloudpilotEmu embedded.
 
  * [Source code](https://github.com/cloudpilot-emu/cloudpilot-emu)
