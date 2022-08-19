@@ -1,3 +1,11 @@
+# Version 1.7.1
+
+-   Swiping left and right of the emulated device on iOS does not "drag" the
+    screen anymore
+-   CP embedded: only cancel touch interactions that are actually handled
+    by Cloudpilot. This enables scrolling by swiping over empty parts of
+    the canvas on touch devices
+
 # Version 1.7.0
 
 -   Introduce Cloudpilot embedded. You can now embed cloudpilot into your own web pages.
