@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1662070254577,
+  "timestamp": 1668110771419,
   "index": "/app/index.html",
   "assetGroups": [
     {
@@ -66,7 +66,7 @@
         "/app/cloudpilot_web.wasm",
         "/app/common.eec36924704791f9.js",
         "/app/index.html",
-        "/app/main.6297af79f0599ea8.js",
+        "/app/main.43ac8f4e9263e5ff.js",
         "/app/manifest.webmanifest",
         "/app/polyfills-core-js.2f0b0c65e36db8e9.js",
         "/app/polyfills-dom.2b3659c7d6a270aa.js",
@@ -169,7 +169,7 @@
     "/app/9667.b1add625034603b2.js": "a10ae97f846dc00aed8553aecf762405b949eea7",
     "/app/9689.648e41a3266bd25e.js": "3d22a79005578f0662c26717185da0020e1059b0",
     "/app/9989.d830a3a1e67d04e8.js": "4d3f0676f19f2b4d865744ff6a12753546f40ef6",
-    "/app/assets/doc/CHANGELOG.md": "4fd11146828b2c59c6b78327b6b3e81046ad4471",
+    "/app/assets/doc/CHANGELOG.md": "620424db21bcb2bb67c7690db17f2f42e9bd68b6",
     "/app/assets/doc/about.md": "dc59c2667c6bfc60cfd3b0a3c265989747056b89",
     "/app/assets/doc/emulation.md": "991044252ccd75efea642a3d551071f8fa55d0da",
     "/app/assets/doc/sessions.md": "bb233080e110ea02ec6e41357daf52b0f7a282bc",
@@ -178,8 +178,8 @@
     "/app/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
     "/app/cloudpilot_web.wasm": "80aebd6d34dcca4e0e2037571a6a74d417c1de4c",
     "/app/common.eec36924704791f9.js": "6a4db7b34effce01d33f770cb6fc53186caaf914",
-    "/app/index.html": "27945ce7665eb1c4ef7c8019c76cc519d549c233",
-    "/app/main.6297af79f0599ea8.js": "39b8209b6882b480d4f547b0f8f86961f62171f4",
+    "/app/index.html": "9bb141c9fc0826bfecd719c37588dfa7682175e3",
+    "/app/main.43ac8f4e9263e5ff.js": "e3792ee54da6307b7ecc6f8bbb72f071d1d99f16",
     "/app/manifest.webmanifest": "b2442a51ff22d3d4265734296a1ea37ba3443ea7",
     "/app/polyfills-core-js.2f0b0c65e36db8e9.js": "c473999eb59072ef192e14d626aef381f534273f",
     "/app/polyfills-dom.2b3659c7d6a270aa.js": "76eb439963fd23764cbd013c38a62f9853eec1c4",
