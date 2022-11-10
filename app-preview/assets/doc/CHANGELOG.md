@@ -2,6 +2,10 @@
 
 -   Support for SD card and memory stick (not yet available in app).
 
+# Version 1.7.4
+
+-   More safe area workarounds for iPhone X and later.
+
 # Version 1.7.3
 
 -   UI fixes for iPhones with rounded corners.
