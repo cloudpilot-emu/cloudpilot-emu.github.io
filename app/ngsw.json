@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1668110771419,
+  "timestamp": 1668120335323,
   "index": "/app/index.html",
   "assetGroups": [
     {
@@ -66,13 +66,13 @@
         "/app/cloudpilot_web.wasm",
         "/app/common.eec36924704791f9.js",
         "/app/index.html",
-        "/app/main.43ac8f4e9263e5ff.js",
+        "/app/main.2d11b9477df790d5.js",
         "/app/manifest.webmanifest",
         "/app/polyfills-core-js.2f0b0c65e36db8e9.js",
         "/app/polyfills-dom.2b3659c7d6a270aa.js",
         "/app/polyfills.82cb691d4719f973.js",
         "/app/runtime.05ff2da8d44b86e0.js",
-        "/app/styles.1ce5d50b161f5db0.css"
+        "/app/styles.126a21d95ec37616.css"
       ],
       "patterns": []
     },
@@ -169,7 +169,7 @@
     "/app/9667.b1add625034603b2.js": "a10ae97f846dc00aed8553aecf762405b949eea7",
     "/app/9689.648e41a3266bd25e.js": "3d22a79005578f0662c26717185da0020e1059b0",
     "/app/9989.d830a3a1e67d04e8.js": "4d3f0676f19f2b4d865744ff6a12753546f40ef6",
-    "/app/assets/doc/CHANGELOG.md": "620424db21bcb2bb67c7690db17f2f42e9bd68b6",
+    "/app/assets/doc/CHANGELOG.md": "6a4d1edd2aca0c5cbdf69f81ee94b9662f9fc864",
     "/app/assets/doc/about.md": "dc59c2667c6bfc60cfd3b0a3c265989747056b89",
     "/app/assets/doc/emulation.md": "991044252ccd75efea642a3d551071f8fa55d0da",
     "/app/assets/doc/sessions.md": "bb233080e110ea02ec6e41357daf52b0f7a282bc",
@@ -178,14 +178,14 @@
     "/app/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
     "/app/cloudpilot_web.wasm": "80aebd6d34dcca4e0e2037571a6a74d417c1de4c",
     "/app/common.eec36924704791f9.js": "6a4db7b34effce01d33f770cb6fc53186caaf914",
-    "/app/index.html": "9bb141c9fc0826bfecd719c37588dfa7682175e3",
-    "/app/main.43ac8f4e9263e5ff.js": "e3792ee54da6307b7ecc6f8bbb72f071d1d99f16",
+    "/app/index.html": "0c1cd74d573763b98d7b3e810a8d75d43a5f55ef",
+    "/app/main.2d11b9477df790d5.js": "8d5ba54acfdccb39c8a3b6a3497f12ff2c6cdecd",
     "/app/manifest.webmanifest": "b2442a51ff22d3d4265734296a1ea37ba3443ea7",
     "/app/polyfills-core-js.2f0b0c65e36db8e9.js": "c473999eb59072ef192e14d626aef381f534273f",
     "/app/polyfills-dom.2b3659c7d6a270aa.js": "76eb439963fd23764cbd013c38a62f9853eec1c4",
     "/app/polyfills.82cb691d4719f973.js": "f1f6c5525d807eae834006d40ee09f40c30bd8fe",
     "/app/runtime.05ff2da8d44b86e0.js": "3a9fcea617527a5dbdc88de6485647e2577af3b8",
-    "/app/styles.1ce5d50b161f5db0.css": "16ca335347b0f88b6b89424e3af0a6857df4d7e1",
+    "/app/styles.126a21d95ec37616.css": "03eaf6e705899ce47222e62728db838394793c33",
     "/app/svg/add-outline.svg": "eb541d22f6af3413b0e23ead0b37ff1a70b1de6a",
     "/app/svg/albums-outline.svg": "b8e184c0d37c51050c4e92b9b579da2ff9296d8e",
     "/app/svg/chevron-back.svg": "54ae550970c8807bd5600f7cebb60060d75f2600",
