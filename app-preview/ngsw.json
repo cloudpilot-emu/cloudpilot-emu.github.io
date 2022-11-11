@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1668123000423,
+  "timestamp": 1668153591744,
   "index": "/app-preview/index.html",
   "assetGroups": [
     {
@@ -66,13 +66,13 @@
         "/app-preview/cloudpilot_web.wasm",
         "/app-preview/common.eec36924704791f9.js",
         "/app-preview/index.html",
-        "/app-preview/main.aa2298eeaf59557c.js",
+        "/app-preview/main.d6e8571b6128312f.js",
         "/app-preview/manifest.webmanifest",
         "/app-preview/polyfills-core-js.2f0b0c65e36db8e9.js",
         "/app-preview/polyfills-dom.2b3659c7d6a270aa.js",
         "/app-preview/polyfills.82cb691d4719f973.js",
         "/app-preview/runtime.05ff2da8d44b86e0.js",
-        "/app-preview/styles.fb3f2d40793a654a.css"
+        "/app-preview/styles.018da28ecc33bfcb.css"
       ],
       "patterns": []
     },
@@ -178,14 +178,14 @@
     "/app-preview/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
     "/app-preview/cloudpilot_web.wasm": "8ced2968197d2fbd405176f13fe88d35bc7fa0f5",
     "/app-preview/common.eec36924704791f9.js": "6a4db7b34effce01d33f770cb6fc53186caaf914",
-    "/app-preview/index.html": "7025c877e644a654934f6961007223abb98d3808",
-    "/app-preview/main.aa2298eeaf59557c.js": "f58d6186316dc29d1154d774847f85b5773a1192",
+    "/app-preview/index.html": "f3793c343931d5cd433d754f29c6e14d8863604e",
+    "/app-preview/main.d6e8571b6128312f.js": "c3a6253cc514d722544a57e442ec8b44cb3c7f3c",
     "/app-preview/manifest.webmanifest": "b2442a51ff22d3d4265734296a1ea37ba3443ea7",
     "/app-preview/polyfills-core-js.2f0b0c65e36db8e9.js": "c473999eb59072ef192e14d626aef381f534273f",
     "/app-preview/polyfills-dom.2b3659c7d6a270aa.js": "76eb439963fd23764cbd013c38a62f9853eec1c4",
     "/app-preview/polyfills.82cb691d4719f973.js": "f1f6c5525d807eae834006d40ee09f40c30bd8fe",
     "/app-preview/runtime.05ff2da8d44b86e0.js": "3a9fcea617527a5dbdc88de6485647e2577af3b8",
-    "/app-preview/styles.fb3f2d40793a654a.css": "213e21bd9fa4a2b03c3521531a0be03845a78c03",
+    "/app-preview/styles.018da28ecc33bfcb.css": "4de557c8a93d1186854f615316aae709c03c2633",
     "/app-preview/svg/add-outline.svg": "eb541d22f6af3413b0e23ead0b37ff1a70b1de6a",
     "/app-preview/svg/albums-outline.svg": "b8e184c0d37c51050c4e92b9b579da2ff9296d8e",
     "/app-preview/svg/chevron-back.svg": "54ae550970c8807bd5600f7cebb60060d75f2600",
