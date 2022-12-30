@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1672360650109,
+  "timestamp": 1672399226980,
   "index": "/app-preview/index.html",
   "assetGroups": [
     {
@@ -67,7 +67,7 @@
         "/app-preview/common.eec36924704791f9.js",
         "/app-preview/fstools_web.wasm",
         "/app-preview/index.html",
-        "/app-preview/main.324005e0a026e080.js",
+        "/app-preview/main.809879eacf36022e.js",
         "/app-preview/manifest.webmanifest",
         "/app-preview/polyfills-core-js.2f0b0c65e36db8e9.js",
         "/app-preview/polyfills-dom.2b3659c7d6a270aa.js",
@@ -182,11 +182,11 @@
     "/app-preview/assets/doc/settings.md": "29aa82af47ce148d0aae00b9b8651496ffabc7d8",
     "/app-preview/assets/logo.svg": "38bfff7521bda8001074d63bbbf4697561d2e151",
     "/app-preview/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
-    "/app-preview/cloudpilot_web.wasm": "d6e4a9ff4b2722254dbbb8b7540dbd69e58cb0ab",
+    "/app-preview/cloudpilot_web.wasm": "7afd628fce59a44db5a236a0b706ff4ea955e075",
     "/app-preview/common.eec36924704791f9.js": "6a4db7b34effce01d33f770cb6fc53186caaf914",
-    "/app-preview/fstools_web.wasm": "67e72421d053b3bf5bcc20a0174a129eeb1c5467",
-    "/app-preview/index.html": "382686c6f7d1fe07beaf3ff5e202178a4880a6fa",
-    "/app-preview/main.324005e0a026e080.js": "abb9f6f687aedcd476242142e99a2ac3ed95e0c9",
+    "/app-preview/fstools_web.wasm": "22b7aa4b73bca9f0ce00a4d4850ab40f1a11dc67",
+    "/app-preview/index.html": "d76c958d59af9b4f9b42711baf5c7405db045b50",
+    "/app-preview/main.809879eacf36022e.js": "8e779a5919b1568bf0cf2f15d1cc15931f50c979",
     "/app-preview/manifest.webmanifest": "3c376a8df17bfad3aa5c0dc2d9c392f31ed1b26e",
     "/app-preview/polyfills-core-js.2f0b0c65e36db8e9.js": "c473999eb59072ef192e14d626aef381f534273f",
     "/app-preview/polyfills-dom.2b3659c7d6a270aa.js": "76eb439963fd23764cbd013c38a62f9853eec1c4",
@@ -217,7 +217,7 @@
     "/app-preview/svg/trash-outline.svg": "8f617bd5577f01effa55c62be8c78972a7d22f4f",
     "/app-preview/svg/volume-high-outline.svg": "0c35a53d16410fdd3c288f9adaca265cb456bede",
     "/app-preview/svg/volume-mute-outline.svg": "08e5b8d451544a404c645ec35af77824a0ea6276",
-    "/app-preview/vfs_web.wasm": "26909a476de81ed93caeac52bb87cbed24a8d251"
+    "/app-preview/vfs_web.wasm": "a711468b40147b06a754cd0978967d2d701ba0c7"
   },
   "navigationUrls": [
     {
