@@ -36,7 +36,8 @@ export declare enum DeviceId {
 	pegT600c = "PEG-T600",
 	pegN700c = "PEG-N700C/N710C",
 	pegT650c = "YSX1230",
-	pegNR70 = "NR70"
+	pegNR70 = "NR70",
+	acerS11 = "Acer-S11"
 }
 /**
  * The four different orientation settings.
