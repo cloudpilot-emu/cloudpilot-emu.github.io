@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1675720812282,
+  "timestamp": 1676071027153,
   "index": "/app-preview/index.html",
   "assetGroups": [
     {
@@ -69,7 +69,7 @@
         "/app-preview/common.e7e9dd9acd0def0f.js",
         "/app-preview/fstools_web.wasm",
         "/app-preview/index.html",
-        "/app-preview/main.e22db01ea6288995.js",
+        "/app-preview/main.037dec39aa6553eb.js",
         "/app-preview/manifest.webmanifest",
         "/app-preview/polyfills-core-js.2f0b0c65e36db8e9.js",
         "/app-preview/polyfills-dom.2b3659c7d6a270aa.js",
@@ -195,11 +195,11 @@
     "/app-preview/assets/doc/settings.md": "29aa82af47ce148d0aae00b9b8651496ffabc7d8",
     "/app-preview/assets/logo.svg": "38bfff7521bda8001074d63bbbf4697561d2e151",
     "/app-preview/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
-    "/app-preview/cloudpilot_web.wasm": "ccae355c59974c860a02b9abe814c90be1dc4796",
+    "/app-preview/cloudpilot_web.wasm": "228cdaaeb946caa3529176d539c32c46d435563d",
     "/app-preview/common.e7e9dd9acd0def0f.js": "d3a234e1c3336c6f448e100bbf72cdb9c62d5fd5",
     "/app-preview/fstools_web.wasm": "1f2a140b8dcf73dd610ba216b134e418733a4579",
-    "/app-preview/index.html": "d2e141a74ab5da5b7c6059a6aaadebd503dbcae1",
-    "/app-preview/main.e22db01ea6288995.js": "e9728ff740fa98a276ef55f7e49f281e95d9743b",
+    "/app-preview/index.html": "fe966924f2f2e054a79a13ad1bb1abffc2fa3237",
+    "/app-preview/main.037dec39aa6553eb.js": "504dba3fb3e37aed759efbed92074ae338bb92da",
     "/app-preview/manifest.webmanifest": "3c376a8df17bfad3aa5c0dc2d9c392f31ed1b26e",
     "/app-preview/polyfills-core-js.2f0b0c65e36db8e9.js": "c473999eb59072ef192e14d626aef381f534273f",
     "/app-preview/polyfills-dom.2b3659c7d6a270aa.js": "76eb439963fd23764cbd013c38a62f9853eec1c4",
@@ -239,7 +239,7 @@
     "/app-preview/svg/trash-outline.svg": "65fa4fb7c04f344d8f4e4b3a75f5892c2fe60443",
     "/app-preview/svg/volume-high-outline.svg": "7b29f7698338646be04750bbe93c539aeb823700",
     "/app-preview/svg/volume-mute-outline.svg": "cac417ae6b6a0dcdac8712614ffc071af16e3025",
-    "/app-preview/vfs_web.wasm": "015d81cc1a9311d01b2543157861fa4895722b5a"
+    "/app-preview/vfs_web.wasm": "2d8b0766824297aa36d53b82f135fbacb3190b4e"
   },
   "navigationUrls": [
     {
