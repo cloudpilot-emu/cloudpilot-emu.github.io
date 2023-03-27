@@ -9,10 +9,12 @@ emulated:
 -   Palm Vx, Palm V
 -   Palm VII, Palm VII EZ, Palm VIIx
 -   Palm m500, Palm m505, Palm m515
+-   Palm m520 (an unreleased prototype of a highres 5xx)
 -   Palm m100, Palm m105, Palm m125, Palm m130
 -   Palm i705
 -   Tungsten W (silkscreen version)
 -   Handera 330
+-   Handera 330c (the lost color version of the 330c)
 -   Sony PEG-S300, PEG-S320
 -   Sony PEG-S500C series
 -   Sony PEG-T400 series
@@ -21,6 +23,7 @@ emulated:
 -   Sony PEG-N700C series
 -   Sony PEG-T650C series
 -   Sony PEG-NR70 series
+-   Acer S1x
 
 The correct device type is automatically determined from the ROM you load. If
 there are multiple possible devices CloudpilotEmu will let you choose when you
@@ -41,6 +44,11 @@ previously saved session snapshot.
 ### Emulation tab
 
 The emulation tab hosts the emulated device.
+
+### Storage cards tab
+
+The cards tab allows you to create and manage virtual storage cards that can be
+attached to many PalmOS devices as either SD cards or memory sticks.
 
 ### Settings tab
 
@@ -63,6 +71,14 @@ CloudpilotEmu can connect the virtual PalmOS device to the network via
 a proxy server. This configuration supports network hotsync. Please check the
 [online documentation](https://github.com/cloudpilot-emu/cloudpilot-emu/blob/master/doc/networking.md)
 for detailed instructions.
+
+# SD cards and memory sticks
+
+Many PalmOS devices support removable storage in the for of either SD
+cards or memory sticks. CloudpilotEmu allows you to create virtual
+memory cards that can be attached as eihter SD cards or memory sticks
+to devices that had the corresponding slots. Please see the help on the
+"Cards" tab for more details.
 
 # Backing up your virtual devices
 
@@ -147,9 +163,10 @@ In order to force check for an update terminate and restart the app.
 -   Tungsten W, i705, PEG-T650C and PEG-NR70 cannot enter and exit sleep correctly,
     and the corresponding functionality has been disabled.
 -   On Clié devices, audio is not emulated beyond the usual beeps.
--   External memory (CF card, SD card, memory stick) is not supported.
 -   The MQ-1168 video chip in PEG-NR70 series devices is not emulated beyond
     framebuffer support, 2D acceleration is not available.
+-   Formatting an unformatted memory stick in Clié devices that run PalmOS 3.x
+    locks up PalmOS.
 
 # CloudpilotEmu on the web
 

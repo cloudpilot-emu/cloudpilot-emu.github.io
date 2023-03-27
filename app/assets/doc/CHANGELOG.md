@@ -1,3 +1,19 @@
+# Version 1.8.0
+
+This is a major update that adds support for SD card and memory sticks.
+Existing devices with a memory stick slot may require a reboot to start
+using the emulated memory stick hardware.
+
+-   Support for SD cards and memory sticks on all devices that were
+    produced with the corresponding slots.
+-   File manager for memory cards.
+-   Support dropping files for importing sessions, installing files,
+    and managing memory cards.
+-   Support for HandEra 330c (sic!).
+-   Support for Palm m520 prototype.
+-   Support for Acer S11.
+-   Bug fixes and UI rework.
+
 # Version 1.7.13
 
 This release changes the way `cloudpilot-server` generates its certificates. The
@@ -5,13 +21,13 @@ new setup generates both a root and a leaf certificate and has much better
 compatibility with various browser / OS combinations. In particular, Firefox
 and recent versions of Chrome reject the self-signed certificate that was
 previously generated, but work fine with the new setup. You can continue to use your
-current certificates as long as the work, but check out the online
+current certificates as long as they work, but check out the online
 [networking documentation](https://github.com/cloudpilot-emu/cloudpilot-emu/blob/master/doc/networking.md)
 in order to generate new certificates.
 
 -   Change proxy server to generate a full certificate chain with a root and a leaf
     certificate.
--   At a proper index page to the proxy server.
+-   Add a proper index page to the proxy server.
 -   Configurable certificate lifetime.
 
 # Version 1.7.12
@@ -55,7 +71,6 @@ in order to generate new certificates.
 # Version 1.7.4
 
 -   More safe area workarounds for iPhone X and later.
-
 
 # Version 1.7.3
 

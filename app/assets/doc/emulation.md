@@ -32,6 +32,9 @@ Select the "Install file" button on the top right in order to install `.prc` and
 once. `.zip` archives can be selected as well, and CloudpilotEmu will install
 all installable files it finds in the archive.
 
+You can also drag and drop the files that you want to install to the opened
+emulation tab.
+
 Please note that the launcher needs to be restarted by switching to another
 program and back to the launcher in order for newly installed programs to become
 visible. On Palm OS 3.5 and above it is sufficient to switch the launcher
@@ -117,6 +120,14 @@ to zero.
 On iOS, muting the phone also mutes audio from the emulator. Occasionally the audio
 may glitch and stay off after resuming CloudpilotEmu from the background due to browser
 bugs. You can reenable audio by turning it off and on again.
+
+# Memory cards
+
+Virtual storage cards can be attached to devices that have a SD card or a memory stick
+slot by choosing the corresponding option from the menu. Ejecting works the same way.
+
+**Important**: Ejecting a card while PalmOS is accessing it may result in file system
+corruption. The best place to eject a card is the launcher.
 
 # Session settings
 
