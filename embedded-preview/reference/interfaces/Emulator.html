@@ -20,7 +20,7 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">Emulator</span></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L27">embedded/src/Emulator.ts:27</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L29">embedded/src/Emulator.ts:29</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -39,6 +39,10 @@
 <h3 class="tsd-index-heading">Methods</h3>
 <div class="tsd-index-list"><a href="Emulator.html#loadRom" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF4DB8" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-2048-path"></rect><path d="M9.162 16V7.24H10.578L11.514 10.072C11.602 10.328 11.674 10.584 11.73 10.84C11.794 11.088 11.842 11.28 11.874 11.416C11.906 11.28 11.954 11.088 12.018 10.84C12.082 10.584 12.154 10.324 12.234 10.06L13.122 7.24H14.538V16H13.482V12.82C13.482 12.468 13.49 12.068 13.506 11.62C13.53 11.172 13.558 10.716 13.59 10.252C13.622 9.78 13.654 9.332 13.686 8.908C13.726 8.476 13.762 8.1 13.794 7.78L12.366 12.16H11.334L9.894 7.78C9.934 8.092 9.97 8.456 10.002 8.872C10.042 9.28 10.078 9.716 10.11 10.18C10.142 10.636 10.166 11.092 10.182 11.548C10.206 12.004 10.218 12.428 10.218 12.82V16H9.162Z" fill="var(--color-text)" id="icon-2048-text"></path></svg><span>load<wbr/>Rom</span></a>
 <a href="Emulator.html#loadSession" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>load<wbr/>Session</span></a>
+<a href="Emulator.html#insertCompressedCardImage" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>insert<wbr/>Compressed<wbr/>Card<wbr/>Image</span></a>
+<a href="Emulator.html#insertCardImage" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>insert<wbr/>Card<wbr/>Image</span></a>
+<a href="Emulator.html#ejectCard" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>eject<wbr/>Card</span></a>
+<a href="Emulator.html#isCardMounted" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>is<wbr/>Card<wbr/>Mounted</span></a>
 <a href="Emulator.html#setCanvas" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>set<wbr/>Canvas</span></a>
 <a href="Emulator.html#bindInput" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>bind<wbr/>Input</span></a>
 <a href="Emulator.html#releaseInput" class="tsd-index-link tsd-kind-method tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>release<wbr/>Input</span></a>
@@ -86,28 +90,28 @@
 <div class="tsd-comment tsd-typography"><p>Fires when the device turns on or off.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L281">embedded/src/Emulator.ts:281</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L307">embedded/src/Emulator.ts:307</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="isUiInitializedChangeEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>is<wbr/>Ui<wbr/>Initialized<wbr/>Change<wbr/>Event</span><a href="#isUiInitializedChangeEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">is<wbr/>Ui<wbr/>Initialized<wbr/>Change<wbr/>Event<span class="tsd-signature-symbol">:</span> <a href="Event.html" class="tsd-signature-type" data-tsd-kind="Interface">Event</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Fires when PalmOS resets or passed UI initialization during boot.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L286">embedded/src/Emulator.ts:286</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L312">embedded/src/Emulator.ts:312</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="audioInitializedEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>audio<wbr/>Initialized<wbr/>Event</span><a href="#audioInitializedEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">audio<wbr/>Initialized<wbr/>Event<span class="tsd-signature-symbol">:</span> <a href="Event.html" class="tsd-signature-type" data-tsd-kind="Interface">Event</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Fires when audio is initializd successfully.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L291">embedded/src/Emulator.ts:291</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L317">embedded/src/Emulator.ts:317</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="timesliceEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>timeslice<wbr/>Event</span><a href="#timesliceEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">timeslice<wbr/>Event<span class="tsd-signature-symbol">:</span> <a href="Event.html" class="tsd-signature-type" data-tsd-kind="Interface">Event</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Fires after each emulated timeslice (typicall 60 times per second)</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L296">embedded/src/Emulator.ts:296</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L322">embedded/src/Emulator.ts:322</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="hotsyncNameChangeEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>hotsync<wbr/>Name<wbr/>Change<wbr/>Event</span><a href="#hotsyncNameChangeEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">hotsync<wbr/>Name<wbr/>Change<wbr/>Event<span class="tsd-signature-symbol">:</span> <a href="Event.html" class="tsd-signature-type" data-tsd-kind="Interface">Event</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -115,14 +119,14 @@
 <code>setHotsyncName</code> is called, but only when the OS is notified of the new name.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L302">embedded/src/Emulator.ts:302</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L328">embedded/src/Emulator.ts:328</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="gameModeChangeEvent" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>game<wbr/>Mode<wbr/>Change<wbr/>Event</span><a href="#gameModeChangeEvent" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">game<wbr/>Mode<wbr/>Change<wbr/>Event<span class="tsd-signature-symbol">:</span> <a href="Event.html" class="tsd-signature-type" data-tsd-kind="Interface">Event</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Fires if game mode is enabled or disabled.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L307">embedded/src/Emulator.ts:307</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L333">embedded/src/Emulator.ts:333</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="loadRom" class="tsd-anchor"></a>
@@ -145,7 +149,7 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L34">embedded/src/Emulator.ts:34</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L36">embedded/src/Emulator.ts:36</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="loadSession" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>load<wbr/>Session</span><a href="#loadSession" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -162,7 +166,61 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L41">embedded/src/Emulator.ts:41</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L43">embedded/src/Emulator.ts:43</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="insertCompressedCardImage" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>insert<wbr/>Compressed<wbr/>Card<wbr/>Image</span><a href="#insertCompressedCardImage" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+<li class="tsd-signature tsd-anchor-link" id="insertCompressedCardImage.insertCompressedCardImage-1">insert<wbr/>Compressed<wbr/>Card<wbr/>Image<span class="tsd-signature-symbol">(</span>cardImage<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a><a href="#insertCompressedCardImage.insertCompressedCardImage-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Attach and mount a gzip compressed card image.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>cardImage: <span class="tsd-signature-type">Uint8Array</span></h5>
+<div class="tsd-comment tsd-typography"><p>Gzip compressed image data</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L50">embedded/src/Emulator.ts:50</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="insertCardImage" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>insert<wbr/>Card<wbr/>Image</span><a href="#insertCardImage" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+<li class="tsd-signature tsd-anchor-link" id="insertCardImage.insertCardImage-1">insert<wbr/>Card<wbr/>Image<span class="tsd-signature-symbol">(</span>cardImage<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a><a href="#insertCardImage.insertCardImage-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Attach and mount a plain card image.</p>
+</div>
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li>
+<h5>cardImage: <span class="tsd-signature-type">Uint8Array</span></h5>
+<div class="tsd-comment tsd-typography"><p>Image data</p>
+</div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L57">embedded/src/Emulator.ts:57</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="ejectCard" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>eject<wbr/>Card</span><a href="#ejectCard" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+<li class="tsd-signature tsd-anchor-link" id="ejectCard.ejectCard-1">eject<wbr/>Card<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a><a href="#ejectCard.ejectCard-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Eject a previously inserted card image:</p>
+</div>
+<h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L62">embedded/src/Emulator.ts:62</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isCardMounted" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>is<wbr/>Card<wbr/>Mounted</span><a href="#isCardMounted" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+<li class="tsd-signature tsd-anchor-link" id="isCardMounted.isCardMounted-1">is<wbr/>Card<wbr/>Mounted<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span><a href="#isCardMounted.isCardMounted-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Check whether a card is currently mounted.</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L67">embedded/src/Emulator.ts:67</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setCanvas" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Canvas</span><a href="#setCanvas" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -179,7 +237,7 @@
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L48">embedded/src/Emulator.ts:48</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L74">embedded/src/Emulator.ts:74</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="bindInput" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>bind<wbr/>Input</span><a href="#bindInput" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -197,7 +255,7 @@ multiple times the previous sources will be unbound.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L56">embedded/src/Emulator.ts:56</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L82">embedded/src/Emulator.ts:82</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="releaseInput" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>release<wbr/>Input</span><a href="#releaseInput" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -207,7 +265,7 @@ multiple times the previous sources will be unbound.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L61">embedded/src/Emulator.ts:61</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L87">embedded/src/Emulator.ts:87</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="installDatabase" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>install<wbr/>Database</span><a href="#installDatabase" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -224,7 +282,7 @@ multiple times the previous sources will be unbound.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L68">embedded/src/Emulator.ts:68</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L94">embedded/src/Emulator.ts:94</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="installAndLaunchDatabase" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>install<wbr/>And<wbr/>Launch<wbr/>Database</span><a href="#installAndLaunchDatabase" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -241,7 +299,7 @@ multiple times the previous sources will be unbound.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L75">embedded/src/Emulator.ts:75</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L101">embedded/src/Emulator.ts:101</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="installFromZipfile" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>install<wbr/>From<wbr/>Zipfile</span><a href="#installFromZipfile" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -258,7 +316,7 @@ multiple times the previous sources will be unbound.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L82">embedded/src/Emulator.ts:82</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L108">embedded/src/Emulator.ts:108</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="installFromZipfileAndLaunch" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>install<wbr/>From<wbr/>Zipfile<wbr/>And<wbr/>Launch</span><a href="#installFromZipfileAndLaunch" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -280,7 +338,7 @@ launch the specified file.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L91">embedded/src/Emulator.ts:91</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L117">embedded/src/Emulator.ts:117</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="launchByName" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>launch<wbr/>By<wbr/>Name</span><a href="#launchByName" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -297,7 +355,7 @@ launch the specified file.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L98">embedded/src/Emulator.ts:98</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L124">embedded/src/Emulator.ts:124</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="launchDatabase" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>launch<wbr/>Database</span><a href="#launchDatabase" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -314,7 +372,7 @@ launch the specified file.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L105">embedded/src/Emulator.ts:105</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L131">embedded/src/Emulator.ts:131</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="reset" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>reset</span><a href="#reset" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -324,7 +382,7 @@ launch the specified file.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L110">embedded/src/Emulator.ts:110</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L136">embedded/src/Emulator.ts:136</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="resetNoExtensions" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>reset<wbr/>No<wbr/>Extensions</span><a href="#resetNoExtensions" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -335,7 +393,7 @@ reset button).</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L116">embedded/src/Emulator.ts:116</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L142">embedded/src/Emulator.ts:142</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="resetHard" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>reset<wbr/>Hard</span><a href="#resetHard" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -346,7 +404,7 @@ reset button).</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L122">embedded/src/Emulator.ts:122</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L148">embedded/src/Emulator.ts:148</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isRunning" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Running</span><a href="#isRunning" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -356,7 +414,7 @@ reset button).</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L127">embedded/src/Emulator.ts:127</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L153">embedded/src/Emulator.ts:153</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isPowerOff" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Power<wbr/>Off</span><a href="#isPowerOff" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -366,7 +424,7 @@ reset button).</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L132">embedded/src/Emulator.ts:132</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L158">embedded/src/Emulator.ts:158</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isUiInitialized" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Ui<wbr/>Initialized</span><a href="#isUiInitialized" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -377,7 +435,7 @@ is required before software can be installed.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L138">embedded/src/Emulator.ts:138</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L164">embedded/src/Emulator.ts:164</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="resume" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>resume</span><a href="#resume" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -387,7 +445,7 @@ is required before software can be installed.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L143">embedded/src/Emulator.ts:143</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L169">embedded/src/Emulator.ts:169</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="pause" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>pause</span><a href="#pause" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -397,7 +455,7 @@ is required before software can be installed.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L148">embedded/src/Emulator.ts:148</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L174">embedded/src/Emulator.ts:174</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="buttonDown" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>button<wbr/>Down</span><a href="#buttonDown" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -414,7 +472,7 @@ is required before software can be installed.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L155">embedded/src/Emulator.ts:155</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L181">embedded/src/Emulator.ts:181</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="buttonUp" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>button<wbr/>Up</span><a href="#buttonUp" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -431,7 +489,7 @@ is required before software can be installed.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L163">embedded/src/Emulator.ts:163</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L189">embedded/src/Emulator.ts:189</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setSpeed" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Speed</span><a href="#setSpeed" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -448,7 +506,7 @@ is required before software can be installed.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L170">embedded/src/Emulator.ts:170</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L196">embedded/src/Emulator.ts:196</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="getSpeed" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Speed</span><a href="#getSpeed" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -458,7 +516,7 @@ is required before software can be installed.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L175">embedded/src/Emulator.ts:175</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L201">embedded/src/Emulator.ts:201</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setVolume" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Volume</span><a href="#setVolume" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -475,7 +533,7 @@ is required before software can be installed.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L182">embedded/src/Emulator.ts:182</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L208">embedded/src/Emulator.ts:208</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="getVolume" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Volume</span><a href="#getVolume" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -485,7 +543,7 @@ is required before software can be installed.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L187">embedded/src/Emulator.ts:187</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L213">embedded/src/Emulator.ts:213</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="initializeAudio" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>initialize<wbr/>Audio</span><a href="#initializeAudio" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -496,7 +554,7 @@ by a user interaction, i.e. a click or a key press.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L193">embedded/src/Emulator.ts:193</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L219">embedded/src/Emulator.ts:219</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isAudioInitialized" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Audio<wbr/>Initialized</span><a href="#isAudioInitialized" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -506,7 +564,7 @@ by a user interaction, i.e. a click or a key press.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L198">embedded/src/Emulator.ts:198</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L224">embedded/src/Emulator.ts:224</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setGameMode" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Game<wbr/>Mode</span><a href="#setGameMode" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -523,7 +581,7 @@ by a user interaction, i.e. a click or a key press.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L205">embedded/src/Emulator.ts:205</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L231">embedded/src/Emulator.ts:231</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isGameMode" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Game<wbr/>Mode</span><a href="#isGameMode" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -533,7 +591,7 @@ by a user interaction, i.e. a click or a key press.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L210">embedded/src/Emulator.ts:210</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L236">embedded/src/Emulator.ts:236</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setGameModeHotkeyEnabled" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Game<wbr/>Mode<wbr/>Hotkey<wbr/>Enabled</span><a href="#setGameModeHotkeyEnabled" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -550,7 +608,7 @@ by a user interaction, i.e. a click or a key press.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L217">embedded/src/Emulator.ts:217</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L243">embedded/src/Emulator.ts:243</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isGameModeHotkeyEnabled" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Game<wbr/>Mode<wbr/>Hotkey<wbr/>Enabled</span><a href="#isGameModeHotkeyEnabled" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -560,7 +618,7 @@ by a user interaction, i.e. a click or a key press.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L222">embedded/src/Emulator.ts:222</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L248">embedded/src/Emulator.ts:248</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setGameModeIndicatorEnabled" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Game<wbr/>Mode<wbr/>Indicator<wbr/>Enabled</span><a href="#setGameModeIndicatorEnabled" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -578,7 +636,7 @@ by default.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L230">embedded/src/Emulator.ts:230</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L256">embedded/src/Emulator.ts:256</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="isGameModeIndicatorEnabled" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>is<wbr/>Game<wbr/>Mode<wbr/>Indicator<wbr/>Enabled</span><a href="#isGameModeIndicatorEnabled" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -588,7 +646,7 @@ by default.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L235">embedded/src/Emulator.ts:235</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L261">embedded/src/Emulator.ts:261</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setOrientation" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Orientation</span><a href="#setOrientation" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -605,7 +663,7 @@ by default.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L242">embedded/src/Emulator.ts:242</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L268">embedded/src/Emulator.ts:268</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="getOrientation" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Orientation</span><a href="#getOrientation" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -615,7 +673,7 @@ by default.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="../enums/DeviceOrientation.html" class="tsd-signature-type" data-tsd-kind="Enumeration">DeviceOrientation</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L247">embedded/src/Emulator.ts:247</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L273">embedded/src/Emulator.ts:273</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setHotsyncName" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Hotsync<wbr/>Name</span><a href="#setHotsyncName" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -632,7 +690,7 @@ by default.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L254">embedded/src/Emulator.ts:254</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L280">embedded/src/Emulator.ts:280</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="getHotsyncName" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Hotsync<wbr/>Name</span><a href="#getHotsyncName" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -642,7 +700,7 @@ by default.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L259">embedded/src/Emulator.ts:259</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L285">embedded/src/Emulator.ts:285</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="setRunHidden" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>set<wbr/>Run<wbr/>Hidden</span><a href="#setRunHidden" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -659,7 +717,7 @@ by default.</p>
 </div></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Emulator.html" class="tsd-signature-type" data-tsd-kind="Interface">Emulator</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L266">embedded/src/Emulator.ts:266</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L292">embedded/src/Emulator.ts:292</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="getRunHidden" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Run<wbr/>Hidden</span><a href="#getRunHidden" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -669,7 +727,7 @@ by default.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L271">embedded/src/Emulator.ts:271</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L297">embedded/src/Emulator.ts:297</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface"><a id="getStatistics" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Statistics</span><a href="#getStatistics" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -679,7 +737,7 @@ by default.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <a href="EmulationStatistics.html" class="tsd-signature-type" data-tsd-kind="Interface">EmulationStatistics</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/6a54955/web/embedded/src/Emulator.ts#L276">embedded/src/Emulator.ts:276</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/bd81174/web/embedded/src/Emulator.ts#L302">embedded/src/Emulator.ts:302</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -713,6 +771,10 @@ by default.</p>
 <li class="tsd-kind-property tsd-parent-kind-interface"><a href="Emulator.html#gameModeChangeEvent" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>game<wbr/>Mode<wbr/>Change<wbr/>Event</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#loadRom" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>load<wbr/>Rom</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#loadSession" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>load<wbr/>Session</a></li>
+<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#insertCompressedCardImage" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>insert<wbr/>Compressed<wbr/>Card<wbr/>Image</a></li>
+<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#insertCardImage" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>insert<wbr/>Card<wbr/>Image</a></li>
+<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#ejectCard" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>eject<wbr/>Card</a></li>
+<li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#isCardMounted" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>is<wbr/>Card<wbr/>Mounted</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#setCanvas" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>set<wbr/>Canvas</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#bindInput" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>bind<wbr/>Input</a></li>
 <li class="tsd-kind-method tsd-parent-kind-interface"><a href="Emulator.html#releaseInput" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>release<wbr/>Input</a></li>

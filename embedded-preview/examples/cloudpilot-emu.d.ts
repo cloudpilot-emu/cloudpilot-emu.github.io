@@ -126,6 +126,26 @@ export interface Emulator {
 	 */
 	loadSession(session: Uint8Array): this;
 	/**
+	 * Attach and mount a gzip compressed card image.
+	 *
+	 * @param cardImage Gzip compressed image data
+	 */
+	insertCompressedCardImage(cardImage: Uint8Array): this;
+	/**
+	 * Attach and mount a plain card image.
+	 *
+	 * @param cardImage Image data
+	 */
+	insertCardImage(cardImage: Uint8Array): this;
+	/**
+	 * Eject a previously inserted card image:
+	 */
+	ejectCard(): this;
+	/**
+	 * Check whether a card is currently mounted.
+	 */
+	isCardMounted(): boolean;
+	/**
 	 * Configure the canvas element used for displaying the emulator.
 	 *
 	 * @param canvas Canvas for displaying the emulator
