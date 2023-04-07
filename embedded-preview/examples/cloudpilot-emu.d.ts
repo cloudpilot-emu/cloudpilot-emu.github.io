@@ -389,6 +389,14 @@ export declare const VERSION: string | undefined;
  * @returns Emulator instance
  */
 export declare function createEmulator(wasmModuleUrl?: string): Promise<Emulator>;
+/**
+ * Create a factory function that creates new Emulator instances without redownloading
+ * and recompiling the WASM module.
+ *
+ * @param wasmModuleUrl Optional: URL for loading the web assembly module
+ * @returns
+ */
+export declare function createEmulatorFactory(wasmModuleUrl?: string): () => Promise<Emulator>;
 
 export as namespace cloudpilot;
 
