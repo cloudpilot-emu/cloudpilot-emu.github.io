@@ -126,6 +126,26 @@ export interface Emulator {
 	 */
 	loadSession(session: Uint8Array): this;
 	/**
+	 * Attach and mount a gzip compressed card image.
+	 *
+	 * @param cardImage Gzip compressed image data
+	 */
+	insertCompressedCardImage(cardImage: Uint8Array): this;
+	/**
+	 * Attach and mount a plain card image.
+	 *
+	 * @param cardImage Image data
+	 */
+	insertCardImage(cardImage: Uint8Array): this;
+	/**
+	 * Eject a previously inserted card image:
+	 */
+	ejectCard(): this;
+	/**
+	 * Check whether a card is currently mounted.
+	 */
+	isCardMounted(): boolean;
+	/**
 	 * Configure the canvas element used for displaying the emulator.
 	 *
 	 * @param canvas Canvas for displaying the emulator
@@ -369,6 +389,14 @@ export declare const VERSION: string | undefined;
  * @returns Emulator instance
  */
 export declare function createEmulator(wasmModuleUrl?: string): Promise<Emulator>;
+/**
+ * Create a factory function that creates new Emulator instances without redownloading
+ * and recompiling the WASM module.
+ *
+ * @param wasmModuleUrl Optional: URL for loading the web assembly module
+ * @returns
+ */
+export declare function createEmulatorFactory(wasmModuleUrl?: string): () => Promise<Emulator>;
 
 export as namespace cloudpilot;
 

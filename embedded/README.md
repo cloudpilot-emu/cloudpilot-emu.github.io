@@ -98,6 +98,12 @@ cloudpilot.createEmulator().then(emulator => {
 Without any arguments, `createEmulator` assumes that the web assembly binary is
 hosted next to your HTML file. You can supply a different URL as an argument.
 
+If you want to create multiple instances of the emulator, you can use
+`createEmulatorFactory` (again with an optional URL) to create a factory function.
+Each time you call the factory function you'll get a promise for a new emulator
+instance. but the web assembly binary will only be downloaded and compiled
+once.
+
 All interactions with the emulator go through methods on the [emulator
 instance](./reference/interfaces/Emulator.html). Most of those methods return
 the same instance of the emulator, so calls can be chained. Errors are
@@ -242,6 +248,26 @@ Session files can be created in CloudpilotEmu on the sessions tab. Either right
 click on a session and select "save" or swipe the session to the right and
 select the second icon. A dialog will open that allows you save a session
 snapshot.
+
+## Using SD cards and memory sticks
+
+The emulator supports attaching SD card and memory stick images into devices
+that support them. Both plain ang gzipped images are supported. SD card images
+can be of pretty much any size (as long as it is a multiple of 512 bytes),
+but memory stick images can only come in very specific sizes.
+
+Images can be created and exported in CloudpilotEmu and exported from there,
+but you can also use images taken from from actual, physical media. The relevant
+API is:
+
+ * [insertCompressedCardImage](./reference/interfaces/Emulator.html#insertCompressedCardImage)
+   insert and mount a gzipped memory card image
+ * [insertCardImage](./reference/interfaces/Emulator.html#insertCardImage)
+   insert and mount a plain memory card image
+ * [ejectCard](./reference/interfaces/Emulator.html#ejectCard)
+   eject a previously mounted card
+*  [isCardMounted](./reference/interfaces/Emulator.html#isCardMounted)
+   check whether a card is currently mounted
 
 ## Sizing and styling the canvas
 

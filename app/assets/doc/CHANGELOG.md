@@ -1,3 +1,10 @@
+# Version 1.8.1
+
+-   Support memory cards in CP embedded.
+-   Better 4bit to 8bit color space transform for SED1375 based devices
+    (brighter colors for Palm IIIc and Clié PEG-S500C).
+-   Support gzip compression for importing and exporting memory cards.
+
 # Version 1.8.0
 
 This is a major update that adds support for SD card and memory sticks.
@@ -39,7 +46,6 @@ in order to generate new certificates.
 
 -   Fix display issues in some skins in Safari and on iOS.
 
-
 # Version 1.7.10
 
 -   Fix a heap overflow.
@@ -57,7 +63,6 @@ in order to generate new certificates.
 
 -   Fix a bug that might have caused data corruption if a second instance
     of CP is opened in another window.
-
 
 # Version 1.7.6
 
