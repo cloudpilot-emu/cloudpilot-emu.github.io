@@ -1,3 +1,10 @@
+# Version 1.8.2
+
+-   Preliminary support for Legend P168 (no SD card support yet).
+-   Better assignment of file endings (.prc and .pdb) to databases in
+    backups.
+-   GDB stub for debugging PalmOS and apps (native version only).
+
 # Version 1.8.1
 
 -   Support memory cards in CP embedded.
