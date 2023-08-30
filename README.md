@@ -25,6 +25,7 @@ emulator. Currrently, the following devices are supported:
 -   Sony PEG-T650C series
 -   Sony PEG-NR70 series
 -   Acer S1x
+-   Legend P168
 
 CloudpilotEmu can be run as a web page or as a mobile app on phones and tables. The
 list of features includes
