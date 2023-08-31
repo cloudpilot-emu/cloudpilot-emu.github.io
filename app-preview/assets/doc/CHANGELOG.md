@@ -1,6 +1,10 @@
-# Next version
+# Version 1.8.3
 
--   Preliminary support for Legend P168
+-   Card browser: disable context menu during file selectio.
+
+# Version 1.8.2
+
+-   Preliminary support for Legend P168 (no SD card support yet).
 -   Better assignment of file endings (.prc and .pdb) to databases in
     backups.
 -   GDB stub for debugging PalmOS and apps (native version only).
