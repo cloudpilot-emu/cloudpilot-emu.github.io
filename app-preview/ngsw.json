@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1693737808477,
+  "timestamp": 1693738218092,
   "index": "/app-preview/index.html",
   "assetGroups": [
     {
@@ -191,7 +191,7 @@
     "/app-preview/assets/doc/settings.md": "72d2e074901c2b965b38e05ac89e8b3c3ff558ee",
     "/app-preview/assets/logo.svg": "38bfff7521bda8001074d63bbbf4697561d2e151",
     "/app-preview/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
-    "/app-preview/cloudpilot_web.wasm": "d8ae35abb3db67f529cb8e9c4649b10e4e93e8bb",
+    "/app-preview/cloudpilot_web.wasm": "1f1f9ca3bba1358772bc69f4c18b8f1822130cf4",
     "/app-preview/common.965a4cd2c18a0b8d.js": "1451105ade5004d3f1f7a294be4b36cb14728853",
     "/app-preview/fstools_web.wasm": "fb5526135b27aadc5349f3afac30d8c7c2249128",
     "/app-preview/index.html": "c89eb245be318b48b58ff12fdf31ff14c7f6d5a8",
