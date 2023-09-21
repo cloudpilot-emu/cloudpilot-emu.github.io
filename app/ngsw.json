@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1694172401466,
+  "timestamp": 1695277502741,
   "index": "/app/index.html",
   "assetGroups": [
     {
@@ -65,7 +65,7 @@
         "/app/common.965a4cd2c18a0b8d.js",
         "/app/fstools_web.wasm",
         "/app/index.html",
-        "/app/main.88bb7a1c4d0cd0b3.js",
+        "/app/main.2ef502dc23c8dcbf.js",
         "/app/manifest.webmanifest",
         "/app/polyfills-core-js.99140767f061b450.js",
         "/app/polyfills-dom.bb39a04f35b16623.js",
@@ -86,6 +86,7 @@
       "urls": [
         "/app/assets/doc/CHANGELOG.md",
         "/app/assets/doc/about.md",
+        "/app/assets/doc/bug-ios17.md",
         "/app/assets/doc/card-browser.md",
         "/app/assets/doc/cards.md",
         "/app/assets/doc/emulation.md",
@@ -182,8 +183,9 @@
     "/app/9772.7f2f1f1104b2acac.js": "9672092859149634f48af968ef05dc04ba228fc3",
     "/app/9805.6814c8399fe4609b.js": "acd8789f9071497148556142ae0e233fdcdd42f3",
     "/app/9870.0f68ddfea3cd38ea.js": "76fe51795f656784cf110c4a1bca1e41c7bade07",
-    "/app/assets/doc/CHANGELOG.md": "886fd78dae89be03bce7d8824d874b58bce429cd",
+    "/app/assets/doc/CHANGELOG.md": "c2c8c433c5f02b178506c2e057f320e89b443926",
     "/app/assets/doc/about.md": "760ca240a753f4ad64291c7577b93277f06f13a9",
+    "/app/assets/doc/bug-ios17.md": "91930fd6b813174420412fa0a1c8b8b8f19710ce",
     "/app/assets/doc/card-browser.md": "fcba55b3c026ec9ba76cd5da1d1c591c1349ed24",
     "/app/assets/doc/cards.md": "f1dc874fbaa914cf997d63862742ea60fae37a08",
     "/app/assets/doc/emulation.md": "85d13732692d31e404a72340d910c61f4cc34153",
@@ -191,11 +193,11 @@
     "/app/assets/doc/settings.md": "72d2e074901c2b965b38e05ac89e8b3c3ff558ee",
     "/app/assets/logo.svg": "38bfff7521bda8001074d63bbbf4697561d2e151",
     "/app/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
-    "/app/cloudpilot_web.wasm": "375845293bb8316017c3a8ff2565689d9dd17541",
+    "/app/cloudpilot_web.wasm": "6a6bcb6375f9fe91b32eeac8b3ad389e5e2d078e",
     "/app/common.965a4cd2c18a0b8d.js": "1451105ade5004d3f1f7a294be4b36cb14728853",
-    "/app/fstools_web.wasm": "fb5526135b27aadc5349f3afac30d8c7c2249128",
-    "/app/index.html": "20c38312431d5816c8b087f80771c038a3ff4291",
-    "/app/main.88bb7a1c4d0cd0b3.js": "567b1153bc7a15f6448c5dc44e68b2192e70a28d",
+    "/app/fstools_web.wasm": "0deb527280f9ad1a4501816a1e4eb384699c98f2",
+    "/app/index.html": "5ad0bcc3f9b3ef7753ec31d740c10630cb4dc6a1",
+    "/app/main.2ef502dc23c8dcbf.js": "1f424d4cf396934c5c505739dfb04c5be560e9de",
     "/app/manifest.webmanifest": "3c376a8df17bfad3aa5c0dc2d9c392f31ed1b26e",
     "/app/polyfills-core-js.99140767f061b450.js": "19bb82ac979a144523292235e6588d4b98d2a489",
     "/app/polyfills-dom.bb39a04f35b16623.js": "39cbda8bab8507ab3e4e61f1eeacc22af8aadfa4",
@@ -235,7 +237,7 @@
     "/app/svg/trash-outline.svg": "65fa4fb7c04f344d8f4e4b3a75f5892c2fe60443",
     "/app/svg/volume-high-outline.svg": "7b29f7698338646be04750bbe93c539aeb823700",
     "/app/svg/volume-mute-outline.svg": "cac417ae6b6a0dcdac8712614ffc071af16e3025",
-    "/app/vfs_web.wasm": "ceed0f48c3848a2a3b10a20ebd5c2d7847f5ed59"
+    "/app/vfs_web.wasm": "8598984489f5431aee8a438c2eb06c7fc6609043"
   },
   "navigationUrls": [
     {
