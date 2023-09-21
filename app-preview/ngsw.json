@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1694168122597,
+  "timestamp": 1695276537345,
   "index": "/app-preview/index.html",
   "assetGroups": [
     {
@@ -65,7 +65,7 @@
         "/app-preview/common.965a4cd2c18a0b8d.js",
         "/app-preview/fstools_web.wasm",
         "/app-preview/index.html",
-        "/app-preview/main.15f764f97ce412c6.js",
+        "/app-preview/main.24c8042b4af6ccc9.js",
         "/app-preview/manifest.webmanifest",
         "/app-preview/polyfills-core-js.99140767f061b450.js",
         "/app-preview/polyfills-dom.bb39a04f35b16623.js",
@@ -86,6 +86,7 @@
       "urls": [
         "/app-preview/assets/doc/CHANGELOG.md",
         "/app-preview/assets/doc/about.md",
+        "/app-preview/assets/doc/bug-ios17.md",
         "/app-preview/assets/doc/card-browser.md",
         "/app-preview/assets/doc/cards.md",
         "/app-preview/assets/doc/emulation.md",
@@ -182,8 +183,9 @@
     "/app-preview/9772.7f2f1f1104b2acac.js": "9672092859149634f48af968ef05dc04ba228fc3",
     "/app-preview/9805.6814c8399fe4609b.js": "acd8789f9071497148556142ae0e233fdcdd42f3",
     "/app-preview/9870.0f68ddfea3cd38ea.js": "76fe51795f656784cf110c4a1bca1e41c7bade07",
-    "/app-preview/assets/doc/CHANGELOG.md": "886fd78dae89be03bce7d8824d874b58bce429cd",
+    "/app-preview/assets/doc/CHANGELOG.md": "c2c8c433c5f02b178506c2e057f320e89b443926",
     "/app-preview/assets/doc/about.md": "760ca240a753f4ad64291c7577b93277f06f13a9",
+    "/app-preview/assets/doc/bug-ios17.md": "c2dac206dcfdbb8627d02965d8daccf3df8aea51",
     "/app-preview/assets/doc/card-browser.md": "fcba55b3c026ec9ba76cd5da1d1c591c1349ed24",
     "/app-preview/assets/doc/cards.md": "f1dc874fbaa914cf997d63862742ea60fae37a08",
     "/app-preview/assets/doc/emulation.md": "85d13732692d31e404a72340d910c61f4cc34153",
@@ -191,11 +193,11 @@
     "/app-preview/assets/doc/settings.md": "72d2e074901c2b965b38e05ac89e8b3c3ff558ee",
     "/app-preview/assets/logo.svg": "38bfff7521bda8001074d63bbbf4697561d2e151",
     "/app-preview/assets/shapes.svg": "5413e95adabcb2cb639970051f55e0ddb64ace53",
-    "/app-preview/cloudpilot_web.wasm": "8313fd040c75bdb88c8a278e826ad24be03a2c34",
+    "/app-preview/cloudpilot_web.wasm": "38451a0bc5c882221f50ad0fbe0140522480de6a",
     "/app-preview/common.965a4cd2c18a0b8d.js": "1451105ade5004d3f1f7a294be4b36cb14728853",
-    "/app-preview/fstools_web.wasm": "fb5526135b27aadc5349f3afac30d8c7c2249128",
-    "/app-preview/index.html": "38ceddc2473303ddd584456807f2b35271187fb8",
-    "/app-preview/main.15f764f97ce412c6.js": "4204bfaf8c8ff797ecfdd2a929db9baf58d5bebf",
+    "/app-preview/fstools_web.wasm": "0deb527280f9ad1a4501816a1e4eb384699c98f2",
+    "/app-preview/index.html": "d47f892e62b91d871166e66d67178957ceb00af2",
+    "/app-preview/main.24c8042b4af6ccc9.js": "9d3b8514cbd8667244a1c5e2158d769d9a7863a3",
     "/app-preview/manifest.webmanifest": "3c376a8df17bfad3aa5c0dc2d9c392f31ed1b26e",
     "/app-preview/polyfills-core-js.99140767f061b450.js": "19bb82ac979a144523292235e6588d4b98d2a489",
     "/app-preview/polyfills-dom.bb39a04f35b16623.js": "39cbda8bab8507ab3e4e61f1eeacc22af8aadfa4",
@@ -235,7 +237,7 @@
     "/app-preview/svg/trash-outline.svg": "65fa4fb7c04f344d8f4e4b3a75f5892c2fe60443",
     "/app-preview/svg/volume-high-outline.svg": "7b29f7698338646be04750bbe93c539aeb823700",
     "/app-preview/svg/volume-mute-outline.svg": "cac417ae6b6a0dcdac8712614ffc071af16e3025",
-    "/app-preview/vfs_web.wasm": "ceed0f48c3848a2a3b10a20ebd5c2d7847f5ed59"
+    "/app-preview/vfs_web.wasm": "8598984489f5431aee8a438c2eb06c7fc6609043"
   },
   "navigationUrls": [
     {
