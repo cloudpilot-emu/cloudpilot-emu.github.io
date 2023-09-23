@@ -1,3 +1,8 @@
+# Version 1.8.15
+
+-   Switch to a new service worker imp,ementation that does not trigger
+    the iOS 17 bug.
+
 # Version 1.8.14
 
 -   Don't display loader over info message on startup.
