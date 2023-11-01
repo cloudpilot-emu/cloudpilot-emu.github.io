@@ -7,6 +7,7 @@ emulator. Currrently, the following devices are supported:
 -   Pilot, Palm Pilot
 -   Palm III
 -   Palm IIIxe, Palm IIIx, Palm IIIe
+-   Palm IIIc
 -   Palm Vx, Palm V
 -   Palm VII, Palm VII EZ, Palm VIIx
 -   Palm m500, Palm m505, Palm m515
@@ -63,5 +64,11 @@ for more details.
  * [CloudpilotEmu embedded preview](/embedded-preview)
 
    This is the preview of the next release of CloudpilotEmu embedded.
+
+ * [uARM preview](/uarm-preview)
+
+   This is a rough preview of what will eventually become OS5 support using Dmitry
+   Grinberg's [uARM](https://github.com/uARM-Palm/uARM). You can find the source
+   [here](https://github.com/cloudpilot-emu/cp-uarm).
 
  * [Source code](https://github.com/cloudpilot-emu/cloudpilot-emu)
