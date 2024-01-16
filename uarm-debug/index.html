@@ -1,0 +1,89 @@
+<html lang="en">
+    <head>
+        <title>uARM</title>
+
+        <meta name="viewport" content="width=670,user-scalable=no" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta charset="UTF-8" />
+
+        <style>
+            html {
+                background: #eee;
+            }
+            .container {
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            .controls {
+                margin-left: 1em;
+            }
+
+            @media screen and (max-width: 1200px) {
+                .container {
+                    flex-direction: column;
+                }
+
+                canvas {
+                    margin-bottom: 1em;
+                }
+
+                .controls {
+                    margin-left: 0;
+                }
+            }
+
+            .control:not(:first-child) {
+                margin-top: 2em;
+            }
+
+            .controls label {
+                min-width: 8em;
+                display: inline-block;
+            }
+
+            #log {
+                margin-top: 0.5em;
+                max-height: 30em;
+                overflow-y: scroll;
+                font-family: monospace;
+            }
+
+            #log div {
+                max-width: 60em;
+                overflow: hidden;
+            }
+
+            canvas {
+                max-height: calc(100vh - 15px);
+                object-fit: contain;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <canvas tabindex="-1" width="640" height="880"></canvas>
+            <div class="controls">
+                <div class="control"><label>Emulation speed:</label><span id="speed">-</span></div>
+
+                <div class="control"><label>NOR image:</label><span id="nor-image"></span></div>
+                <button id="upload-nor">Upload NOR</button>
+
+                <div class="control"><label>NAND image:</label><span id="nand-image"></span></div>
+                <button id="upload-nand">Upload NAND</button>
+
+                <div class="control"><label>SD image:</label><span id="sd-image"></span></div>
+                <button id="upload-sd">Upload SD</button>
+
+                <h2>Log:</h2>
+                <button id="clear-log">Clear</button>
+                <div id="log"></div>
+            </div>
+        </div>
+
+        <script src="src/uarm_web.js"></script>
+        <script src="web/index.js" type="module"></script>
+    </body>
+</html>
