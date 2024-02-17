@@ -103,6 +103,16 @@ export interface Event<Payload> {
  * Handler callback type.
  */
 export type Handler<Payload, Context> = (payload: Payload, context: Context) => void;
+export interface ReceivePayload {
+	data: Uint8Array | undefined;
+	isFrameComplete: boolean;
+}
+export interface SerialPort {
+	send(data: Uint8Array | undefined, isFrameComplete: boolean): void;
+	setModeSync(modeSync: boolean): void;
+	getModeSync(): boolean;
+	receiveEvent: EventInterface<ReceivePayload>;
+}
 /**
  * DOM event handler callback.
  */
@@ -113,18 +123,6 @@ export type EventHandler<K extends keyof HTMLElementEventMap> = (ev: HTMLElement
 export interface EventTarget {
 	addEventListener<K extends keyof HTMLElementEventMap>(type: K, handler: EventHandler<K>, options?: boolean | AddEventListenerOptions): void;
 	removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: EventHandler<K>, options?: boolean | EventListenerOptions): void;
-}
-export interface SerialTransport {
-	/**
-	 * Transfer a chunk of data over the serial port.
-	 *
-	 * @param data Serial data
-	 */
-	send(data: Uint8Array): void;
-	/**
-	 * Fires when data is transferred over the serial port.
-	 */
-	dataEvent: EventInterface<Uint8Array>;
 }
 export interface Emulator {
 	/**
@@ -359,11 +357,11 @@ export interface Emulator {
 	/**
 	 * Get serial transport for IR transceiver.
 	 */
-	getTransportIR(): SerialTransport;
+	getSerialPortIR(): SerialPort;
 	/**
 	 * Get serial transport for serial port.
 	 */
-	getTransportSerial(): SerialTransport;
+	getSerialPortSerial(): SerialPort;
 	/**
 	 * Fires when the device turns on or off.
 	 */
