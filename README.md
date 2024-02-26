@@ -72,3 +72,8 @@ for more details.
    [here](https://github.com/cloudpilot-emu/cp-uarm).
 
  * [Source code](https://github.com/cloudpilot-emu/cloudpilot-emu)
+
+# Privacy
+
+CloudpilotEmu is [a strictly client side](PRIVACY.md) application. It stores the data that
+you enter locally on your device and does not transmit any of it over the network.
