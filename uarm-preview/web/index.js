@@ -1,6 +1,7 @@
 import './setimmediate/setimmediate.js';
 import { Emulator } from './emulator.js';
 import { Database } from './database.js';
+import { AudioDriver } from './audiodriver.js';
 
 (function () {
     const isIOSSafari = !navigator.userAgent.match(/(crios)|(fxios)/i);
@@ -20,11 +21,14 @@ import { Database } from './database.js';
     const uploadSD = document.getElementById('upload-sd');
     const clearLog = document.getElementById('clear-log');
 
+    const audioButton = document.getElementById('audio-button');
+
     const canvas = document.getElementsByTagName('canvas')[0];
     const canvasCtx = canvas.getContext('2d');
 
     let fileNor, fileNand, fileSd;
     let emulator;
+    let audioDriver;
 
     function log(message) {
         const line = document.createElement('div');
@@ -39,6 +43,33 @@ import { Database } from './database.js';
         labelNor.innerText = fileNor?.name ?? '[none]';
         labelNand.innerText = fileNand?.name ?? '[none]';
         labelSD.innerText = fileSd?.name ?? '[none]';
+    }
+
+    async function onAudioButtonClick() {
+        if (!emulator) return;
+
+        audioButton.disabled = true;
+
+        try {
+            if (!audioDriver) {
+                audioDriver = new AudioDriver(
+                    log,
+                    () => (audioButton.innerText = audioDriver.isRunning() ? 'Stop audio' : 'Resume audio')
+                );
+
+                try {
+                    await audioDriver.initialize(emulator);
+                } catch (e) {
+                    console.error('failed to initialize audio driver', e);
+                    audioButton.disabled = false;
+                }
+            } else {
+                if (audioDriver.isRunning()) await audioDriver.pause();
+                else await audioDriver.resume();
+            }
+        } finally {
+            audioButton.disabled = false;
+        }
     }
 
     let fileInput;
@@ -103,6 +134,8 @@ import { Database } from './database.js';
             log,
         });
         emulator?.start();
+
+        if (emulator) audioButton.disabled = false;
     }
 
     async function main() {
@@ -143,6 +176,8 @@ import { Database } from './database.js';
                 fileSd = file;
             })
         );
+
+        audioButton.addEventListener('click', () => onAudioButtonClick());
 
         clearLog.addEventListener('click', () => (logContainer.innerHTML = ''));
 

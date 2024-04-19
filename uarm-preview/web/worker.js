@@ -1,12 +1,15 @@
 importScripts('../src/uarm_web.js', './setimmediate/setimmediate.js');
 
 (function () {
+    const PCM_BUFFER_SIZE = 44100 / 10;
+
     const messageQueue = [];
     let dispatchInProgress = false;
 
     let emulator;
 
     let framePool = [];
+    let pcmPool = [];
 
     class Emulator {
         constructor(module, { onSpeedDisplay, onFrame, log }) {
@@ -26,8 +29,14 @@ importScripts('../src/uarm_web.js', './setimmediate/setimmediate.js');
             this.penUp = module.cwrap('penUp', undefined, []);
             this.keyDown = module.cwrap('keyDown', undefined, ['number']);
             this.keyUp = module.cwrap('keyUp', undefined, ['number']);
+            this.pendingSamples = module.cwrap('pendingSamples', 'number', []);
+            this.popQueuedSamples = module.cwrap('popQueuedSamples', 'number', []);
+            this.setPcmOutputEnabled = module.cwrap('setPcmOutputEnabled', undefined, ['number']);
+            this.setPcmSuspended = module.cwrap('setPcmSuspended', undefined, ['number']);
 
             this.amIDead = false;
+            this.pcmEnabled = false;
+            this.pcmPort = undefined;
         }
 
         static async create(nor, nand, sd, env) {
@@ -95,12 +104,13 @@ importScripts('../src/uarm_web.js', './setimmediate/setimmediate.js');
                 }
 
                 this.render();
+                this.processAudio();
 
                 const timesliceRemainning =
                     (this.getTimesliceSizeUsec() - Number(this.getTimestampUsec()) + now) / 1000;
                 this.timeoutHandle = this.immediateHandle = undefined;
 
-                if (timesliceRemainning < 10) this.immediateHandle = setImmediate(schedule);
+                if (timesliceRemainning < 5) this.immediateHandle = setImmediate(schedule);
                 else this.timeoutHandle = setTimeout(schedule, timesliceRemainning);
 
                 if (now - this.lastSpeedUpdate > 1000000) {
@@ -133,6 +143,28 @@ importScripts('../src/uarm_web.js', './setimmediate/setimmediate.js');
             this.resetFrame();
         }
 
+        getPcmBuffer() {
+            if (pcmPool.length > 0) return new Uint32Array(pcmPool.pop());
+
+            return new Uint32Array(PCM_BUFFER_SIZE);
+        }
+
+        processAudio() {
+            if (!this.module || !this.pcmPort || !this.pcmEnabled) return;
+
+            const pendingSamples = this.pendingSamples();
+            if (pendingSamples === 0) return;
+
+            const samplesPtr = this.popQueuedSamples() >>> 2;
+            const samples = this.getPcmBuffer();
+
+            samples.set(this.module.HEAPU32.subarray(samplesPtr, samplesPtr + pendingSamples));
+
+            this.pcmPort.postMessage({ type: 'sample-data', count: pendingSamples, buffer: samples.buffer }, [
+                samples.buffer,
+            ]);
+        }
+
         updateSpeedDisplay() {
             const currentIps = this.currentIps();
             const currentIpsMax = Number(this.currentIpsMax());
@@ -143,6 +175,34 @@ importScripts('../src/uarm_web.js', './setimmediate/setimmediate.js');
                     100
                 ).toFixed(2)}%`
             );
+        }
+
+        setupPcm(port) {
+            this.pcmPort = port;
+            this.setPcmOutputEnabled(true);
+            this.pcmEnabled = true;
+
+            this.pcmPort.onmessage = (evt) => this.handlePcmMessage(evt.data);
+        }
+
+        handlePcmMessage(message) {
+            switch (message.type) {
+                case 'suspend-pcm':
+                    this.setPcmSuspended(true);
+                    break;
+
+                case 'resume-pcm':
+                    this.setPcmSuspended(false);
+                    break;
+
+                case 'return-buffer':
+                    pcmPool.push(message.buffer);
+                    break;
+
+                default:
+                    console.error(`worker: invalid PCM message ${message.type}`);
+                    break;
+            }
         }
     }
 
@@ -262,6 +322,18 @@ importScripts('../src/uarm_web.js', './setimmediate/setimmediate.js');
 
             case 'returnFrame':
                 framePool.push(message.frame);
+                break;
+
+            case 'setupPcm':
+                emulator.setupPcm(message.port);
+                break;
+
+            case 'disablePcm':
+                emulator.setPcmOutputEnabled(false);
+                break;
+
+            case 'enablePcm':
+                emulator.setPcmOutputEnabled(true);
                 break;
 
             default:
