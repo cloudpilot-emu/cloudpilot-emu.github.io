@@ -571,7 +571,7 @@ function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  50170: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  50186: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
@@ -1325,8 +1325,8 @@ var _webMain = Module['_webMain'] = (a0, a1, a2, a3, a4, a5) => (_webMain = Modu
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
-var ___start_em_js = Module['___start_em_js'] = 50120;
-var ___stop_em_js = Module['___stop_em_js'] = 50170;
+var ___start_em_js = Module['___start_em_js'] = 50136;
+var ___stop_em_js = Module['___stop_em_js'] = 50186;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
