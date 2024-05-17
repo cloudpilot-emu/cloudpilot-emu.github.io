@@ -1313,6 +1313,8 @@ var _penDown = Module['_penDown'] = (a0, a1) => (_penDown = Module['_penDown'] =
 var _penUp = Module['_penUp'] = () => (_penUp = Module['_penUp'] = wasmExports['penUp'])();
 var _currentIps = Module['_currentIps'] = () => (_currentIps = Module['_currentIps'] = wasmExports['currentIps'])();
 var _currentIpsMax = Module['_currentIpsMax'] = () => (_currentIpsMax = Module['_currentIpsMax'] = wasmExports['currentIpsMax'])();
+var _setMaxLoad = Module['_setMaxLoad'] = (a0) => (_setMaxLoad = Module['_setMaxLoad'] = wasmExports['setMaxLoad'])(a0);
+var _setCyclesPerSecondLimit = Module['_setCyclesPerSecondLimit'] = (a0) => (_setCyclesPerSecondLimit = Module['_setCyclesPerSecondLimit'] = wasmExports['setCyclesPerSecondLimit'])(a0);
 var _getTimestampUsec = Module['_getTimestampUsec'] = () => (_getTimestampUsec = Module['_getTimestampUsec'] = wasmExports['getTimestampUsec'])();
 var _keyDown = Module['_keyDown'] = (a0) => (_keyDown = Module['_keyDown'] = wasmExports['keyDown'])(a0);
 var _keyUp = Module['_keyUp'] = (a0) => (_keyUp = Module['_keyUp'] = wasmExports['keyUp'])(a0);
