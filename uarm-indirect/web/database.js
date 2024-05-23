@@ -1,4 +1,4 @@
-const DB_NAME = 'cp-uarm';
+const DB_NAME = 'cp-uarm-indirect';
 const DB_VERSION = 1;
 
 function compressCard(image) {
