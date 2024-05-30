@@ -1322,6 +1322,10 @@ var _pendingSamples = Module['_pendingSamples'] = () => (_pendingSamples = Modul
 var _popQueuedSamples = Module['_popQueuedSamples'] = () => (_popQueuedSamples = Module['_popQueuedSamples'] = wasmExports['popQueuedSamples'])();
 var _setPcmOutputEnabled = Module['_setPcmOutputEnabled'] = (a0) => (_setPcmOutputEnabled = Module['_setPcmOutputEnabled'] = wasmExports['setPcmOutputEnabled'])(a0);
 var _setPcmSuspended = Module['_setPcmSuspended'] = (a0) => (_setPcmSuspended = Module['_setPcmSuspended'] = wasmExports['setPcmSuspended'])(a0);
+var _getNandDataSize = Module['_getNandDataSize'] = () => (_getNandDataSize = Module['_getNandDataSize'] = wasmExports['getNandDataSize'])();
+var _getNandData = Module['_getNandData'] = () => (_getNandData = Module['_getNandData'] = wasmExports['getNandData'])();
+var _getNandDirtyPagesSize = Module['_getNandDirtyPagesSize'] = () => (_getNandDirtyPagesSize = Module['_getNandDirtyPagesSize'] = wasmExports['getNandDirtyPagesSize'])();
+var _getNandDirtyPages = Module['_getNandDirtyPages'] = () => (_getNandDirtyPages = Module['_getNandDirtyPages'] = wasmExports['getNandDirtyPages'])();
 var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['main'])(a0, a1);
 var _webMain = Module['_webMain'] = (a0, a1, a2, a3, a4, a5) => (_webMain = Module['_webMain'] = wasmExports['webMain'])(a0, a1, a2, a3, a4, a5);
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);

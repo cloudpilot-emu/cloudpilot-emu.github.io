@@ -22,9 +22,11 @@ import { AudioDriver } from './audiodriver.js';
     const mipsLimitLabel = document.getElementById('mips-limit');
     const maxLoadSlider = document.getElementById('max-load-slider');
     const mipsLimitSlider = document.getElementById('mips-limit-slider');
+    const snapshotStatus = document.getElementById('snapshot-status');
 
     const uploadNor = document.getElementById('upload-nor');
     const uploadNand = document.getElementById('upload-nand');
+    const downloadNand = document.getElementById('download-nand');
     const uploadSD = document.getElementById('upload-sd');
     const clearLog = document.getElementById('clear-log');
 
@@ -36,8 +38,10 @@ import { AudioDriver } from './audiodriver.js';
     let fileNor, fileNand, fileSd;
     let emulator;
     let audioDriver;
+    let database;
     let maxLoad = 100;
     let mipsLimit = 100;
+    let crcCheck = false;
 
     function updateMaxLoad() {
         maxLoad = parseFloat(maxLoadSlider.value);
@@ -131,6 +135,16 @@ import { AudioDriver } from './audiodriver.js';
             fileInput.click();
         });
 
+    function saveFile(name, content, type = 'application/octet-stream') {
+        const file = new Blob([content], { type });
+        const url = URL.createObjectURL(file);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.click();
+    }
+
     function clearCanvas() {
         canvasCtx.fillStyle = '#fff';
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
@@ -162,9 +176,12 @@ import { AudioDriver } from './audiodriver.js';
             mipsLimit * 1000000,
             {
                 canvas: canvasCtx.canvas,
+                database,
                 speedDisplay,
                 log,
                 binary,
+                crcCheck,
+                setSnapshotStatus,
             }
         );
         emulator?.start();
@@ -174,15 +191,43 @@ import { AudioDriver } from './audiodriver.js';
         if (emulator) audioButton.disabled = false;
     }
 
+    function setSnapshotStatus(status) {
+        switch (status) {
+            case 'ok':
+                snapshotStatus.innerText = 'no pending data';
+                snapshotStatus.className = 'snapshot-ok';
+                break;
+
+            case 'saving':
+                snapshotStatus.innerText = 'saving...';
+                snapshotStatus.className = 'snapshot-saving';
+                break;
+
+            default:
+                snapshotStatus.innerText = 'failed!';
+                snapshotStatus.className = 'snapshot-failed';
+                break;
+        }
+    }
+
     async function main() {
-        const database = await Database.create();
+        setSnapshotStatus('ok');
+
+        database = await Database.create();
         clearCanvas();
 
-        fileNor = await database.getNor();
-        fileNand = await database.getNand();
-        fileSd = await database.getSd();
-
         const query = new URLSearchParams(location.search);
+
+        if (query.has('verify_crc')) crcCheck = true;
+        if (crcCheck) {
+            log('snapshot CRC checks enabled');
+        } else {
+            log('snapshot CRC checks disabled, reload with ?verify_crc to enable them');
+        }
+
+        fileNor = await database.getNor();
+        fileNand = await database.getNand(crcCheck);
+        fileSd = await database.getSd();
 
         if (query.has('binary')) binary = query.get('binary');
 
@@ -190,7 +235,7 @@ import { AudioDriver } from './audiodriver.js';
             log('Reload with ?noload appended to the URL if the emulator hangs on load due to invalid NOR or NAND');
             log('---');
 
-            await restart(binary);
+            await restart();
         }
 
         updateLabels();
@@ -202,6 +247,7 @@ import { AudioDriver } from './audiodriver.js';
                 fileNor = file;
             })
         );
+
         uploadNand.addEventListener(
             'click',
             uploadHandler((file) => {
@@ -209,6 +255,7 @@ import { AudioDriver } from './audiodriver.js';
                 fileNand = file;
             })
         );
+
         uploadSD.addEventListener(
             'click',
             uploadHandler((file) => {
@@ -216,6 +263,10 @@ import { AudioDriver } from './audiodriver.js';
                 fileSd = file;
             })
         );
+
+        downloadNand.addEventListener('click', () => {
+            database.getNand(false).then((nand) => saveFile('nand.bin', nand.content));
+        });
 
         maxLoadSlider.value = maxLoad;
         mipsLimitSlider.value = mipsLimit;
