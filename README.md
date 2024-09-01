@@ -75,5 +75,6 @@ for more details.
 
 # Privacy
 
-CloudpilotEmu is [a strictly client side](PRIVACY.md) application. It stores the data that
+CloudpilotEmu is a strictly client side application. It stores the data that
 you enter locally on your device and does not transmit any of it over the network.
+Please check the [privacy statement](PRIVACY.md) for details.
