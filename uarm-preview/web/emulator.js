@@ -41,12 +41,7 @@ export class Emulator {
                     break;
 
                 case 'snapshot':
-                    this.handleSnapshot(
-                        message.nandScheduledPageCount,
-                        message.nandScheduledPages,
-                        message.nandPagePool,
-                        message.crc
-                    );
+                    this.handleSnapshot(message.snapshot);
 
                     break;
 
@@ -179,16 +174,7 @@ export class Emulator {
         this.worker.postMessage({ type: 'enablePcm' });
     }
 
-    async handleSnapshot(nandScheduledPageCount, nandScheduledPages, nandPagePool, crc) {
-        const nandScheduledPages32 = new Uint32Array(nandScheduledPages);
-        const nandPagePool32 = new Uint32Array(nandPagePool);
-
-        if (this.crcCheck) {
-            console.log(`snapshotting ${nandScheduledPageCount} pages, crc: ${crc ?? -1}`);
-        } else {
-            console.log(`snapshotting ${nandScheduledPageCount} pages`);
-        }
-
+    async handleSnapshot(snapshot) {
         if (this.snapshotStatus !== 'failed') {
             this.setSnapshotStatus((this.snapshotStatus = 'saving'));
         }
@@ -198,11 +184,11 @@ export class Emulator {
         let success = true;
 
         try {
-            const now = performance.now();
-            await this.database.storeSnapshot(nandScheduledPageCount, nandScheduledPages32, nandPagePool32, crc);
-            console.log(`save took ${Math.round(performance.now() - now)} msec`);
-
             this.setSnapshotStatus((this.snapshotStatus = 'saving'));
+
+            const now = performance.now();
+            await this.database.storeSnapshot(snapshot);
+            console.log(`save took ${Math.round(performance.now() - now)} msec`);
 
             this.clearSnapshotStatusHandle = setTimeout(
                 () => this.setSnapshotStatus((this.snapshotStatus = 'ok')),
@@ -214,15 +200,14 @@ export class Emulator {
             success = false;
         }
 
+        const transferables = (snapshot) => (snapshot ? [snapshot.scheduledPages, snapshot.pagePool] : []);
         this.worker.postMessage(
             {
                 type: 'snapshotDone',
                 success,
-                nandScheduledPageCount,
-                nandScheduledPages,
-                nandPagePool,
+                snapshot,
             },
-            [nandScheduledPages, nandPagePool]
+            [...transferables(snapshot.nand), ...transferables(snapshot.sd)]
         );
     }
 }
