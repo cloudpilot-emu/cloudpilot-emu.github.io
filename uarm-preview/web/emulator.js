@@ -3,6 +3,9 @@ import { EventHandler } from './eventhandler.js';
 
 export class Emulator {
     constructor(worker, displayService, crcCheck, { canvas, speedDisplay, log, database, setSnapshotStatus }) {
+        this.stopping = Promise.resolve();
+        this.onStopped = () => undefined;
+
         this.worker = worker;
         this.displayService = displayService;
         this.database = database;
@@ -42,7 +45,10 @@ export class Emulator {
 
                 case 'snapshot':
                     this.handleSnapshot(message.snapshot);
+                    break;
 
+                case 'stopped':
+                    this.onStopped();
                     break;
 
                 default:
@@ -55,7 +61,7 @@ export class Emulator {
         this.eventHandler = new EventHandler(this, this.displayService);
     }
 
-    static async create(nor, nand, sd, maxLoad, cyclesPerSecondLimit, env) {
+    static async create(nor, nand, sd, ram, maxLoad, cyclesPerSecondLimit, env) {
         const { log, binary, crcCheck } = env;
         const worker = new Worker('web/worker.js');
 
@@ -71,6 +77,7 @@ export class Emulator {
                             nor,
                             nand,
                             sd,
+                            ram,
                             maxLoad,
                             cyclesPerSecondLimit,
                             binary,
@@ -108,11 +115,19 @@ export class Emulator {
         this.worker.terminate();
     }
 
-    stop() {
+    async stop() {
+        await this.stopping;
+
         this.speedDisplay.innerText = '-';
         this.running = false;
         this.eventHandler.release();
-        this.worker.postMessage({ type: 'stop' });
+
+        this.stopping = new Promise((resolve) => {
+            this.onStopped = resolve;
+            this.worker.postMessage({ type: 'stop' });
+        });
+
+        await this.stopping;
     }
 
     start() {
@@ -175,8 +190,10 @@ export class Emulator {
     }
 
     async handleSnapshot(snapshot) {
+        const snapshotStatus = snapshot.nand || snapshot.sd ? 'saving' : 'ok';
+
         if (this.snapshotStatus !== 'failed') {
-            this.setSnapshotStatus((this.snapshotStatus = 'saving'));
+            this.setSnapshotStatus((this.snapshotStatus = snapshotStatus));
         }
 
         if (!this.clearSnapshotStatusHandle !== undefined) clearTimeout(this.clearSnapshotStatusHandle);
@@ -184,16 +201,18 @@ export class Emulator {
         let success = true;
 
         try {
-            this.setSnapshotStatus((this.snapshotStatus = 'saving'));
+            this.setSnapshotStatus((this.snapshotStatus = snapshotStatus));
 
             const now = performance.now();
             await this.database.storeSnapshot(snapshot);
             console.log(`save took ${Math.round(performance.now() - now)} msec`);
 
-            this.clearSnapshotStatusHandle = setTimeout(
-                () => this.setSnapshotStatus((this.snapshotStatus = 'ok')),
-                1500
-            );
+            if (snapshotStatus !== 'ok') {
+                this.clearSnapshotStatusHandle = setTimeout(
+                    () => this.setSnapshotStatus((this.snapshotStatus = 'ok')),
+                    1500
+                );
+            }
         } catch (e) {
             console.error(`snapshot failed: ${e}`);
             this.setSnapshotStatus((this.snapshotStatus = 'failed'));
@@ -207,7 +226,7 @@ export class Emulator {
                 success,
                 snapshot,
             },
-            [...transferables(snapshot.nand), ...transferables(snapshot.sd)]
+            [...transferables(snapshot.nand), ...transferables(snapshot.sd), ...transferables(snapshot.ram)]
         );
     }
 }

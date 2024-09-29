@@ -544,7 +544,7 @@ function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  50390: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  50358: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
@@ -1360,16 +1360,17 @@ var _setPcmOutputEnabled = Module['_setPcmOutputEnabled'] = (a0) => (_setPcmOutp
 var _setPcmSuspended = Module['_setPcmSuspended'] = (a0) => (_setPcmSuspended = Module['_setPcmSuspended'] = wasmExports['setPcmSuspended'])(a0);
 var _getNandDataSize = Module['_getNandDataSize'] = () => (_getNandDataSize = Module['_getNandDataSize'] = wasmExports['getNandDataSize'])();
 var _getNandData = Module['_getNandData'] = () => (_getNandData = Module['_getNandData'] = wasmExports['getNandData'])();
-var _getNandDirtyPagesSize = Module['_getNandDirtyPagesSize'] = () => (_getNandDirtyPagesSize = Module['_getNandDirtyPagesSize'] = wasmExports['getNandDirtyPagesSize'])();
 var _getNandDirtyPages = Module['_getNandDirtyPages'] = () => (_getNandDirtyPages = Module['_getNandDirtyPages'] = wasmExports['getNandDirtyPages'])();
 var _isNandDirty = Module['_isNandDirty'] = () => (_isNandDirty = Module['_isNandDirty'] = wasmExports['isNandDirty'])();
 var _setNandDirty = Module['_setNandDirty'] = (a0) => (_setNandDirty = Module['_setNandDirty'] = wasmExports['setNandDirty'])(a0);
 var _getSdCardDataSize = Module['_getSdCardDataSize'] = () => (_getSdCardDataSize = Module['_getSdCardDataSize'] = wasmExports['getSdCardDataSize'])();
 var _getSdCardData = Module['_getSdCardData'] = () => (_getSdCardData = Module['_getSdCardData'] = wasmExports['getSdCardData'])();
-var _getSdCardDirtyPagesSize = Module['_getSdCardDirtyPagesSize'] = () => (_getSdCardDirtyPagesSize = Module['_getSdCardDirtyPagesSize'] = wasmExports['getSdCardDirtyPagesSize'])();
 var _getSdCardDirtyPages = Module['_getSdCardDirtyPages'] = () => (_getSdCardDirtyPages = Module['_getSdCardDirtyPages'] = wasmExports['getSdCardDirtyPages'])();
 var _isSdCardDirty = Module['_isSdCardDirty'] = () => (_isSdCardDirty = Module['_isSdCardDirty'] = wasmExports['isSdCardDirty'])();
 var _setSdCardDirty = Module['_setSdCardDirty'] = (a0) => (_setSdCardDirty = Module['_setSdCardDirty'] = wasmExports['setSdCardDirty'])(a0);
+var _getRamDataSize = Module['_getRamDataSize'] = () => (_getRamDataSize = Module['_getRamDataSize'] = wasmExports['getRamDataSize'])();
+var _getRamData = Module['_getRamData'] = () => (_getRamData = Module['_getRamData'] = wasmExports['getRamData'])();
+var _getRamDirtyPages = Module['_getRamDirtyPages'] = () => (_getRamDirtyPages = Module['_getRamDirtyPages'] = wasmExports['getRamDirtyPages'])();
 var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['main'])(a0, a1);
 var _webMain = Module['_webMain'] = (a0, a1, a2, a3, a4, a5) => (_webMain = Module['_webMain'] = wasmExports['webMain'])(a0, a1, a2, a3, a4, a5);
 var __emscripten_timeout = (a0, a1) => (__emscripten_timeout = wasmExports['_emscripten_timeout'])(a0, a1);
