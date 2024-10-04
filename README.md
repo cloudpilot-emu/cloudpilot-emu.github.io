@@ -28,8 +28,10 @@ emulator. Currrently, the following devices are supported:
 -   Acer S1x
 -   Legend P168
 
-CloudpilotEmu can be run as a web page or as a mobile app on phones and tables. The
-list of features includes
+CloudpilotEmu can be run as a web page or as a mobile app on phones and tables,
+and on iOS it is also available on the 
+[App Store](https://apps.apple.com/us/app/cloudpilotemu/id6478502699).
+The list of features includes
 
  * Realistic emulation of timers and device speed
  * Continuous state saves --- emulation resumes if the page or app is reloaded
@@ -59,7 +61,9 @@ for more details.
 
  * [CloudpilotEmu preview](/app-preview)
 
-   This is the preview of the next CloudpilotEmu release.
+   This is the preview of the next CloudpilotEmu release. On the iOS native app you
+   you can switch between the preview and stable versions by opening the "Settings" app,
+   selecting "CloudpilotEmu" and toggling "Use preview version".
 
  * [CloudpilotEmu embedded preview](/embedded-preview)
 
