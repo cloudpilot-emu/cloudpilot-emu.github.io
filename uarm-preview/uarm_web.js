@@ -530,7 +530,7 @@ async function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  63630: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  63774: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
@@ -1497,6 +1497,7 @@ var _setSdCardDirty = Module['_setSdCardDirty'] = wasmExports['setSdCardDirty']
 var _getRamDataSize = Module['_getRamDataSize'] = wasmExports['getRamDataSize']
 var _getRamData = Module['_getRamData'] = wasmExports['getRamData']
 var _getRamDirtyPages = Module['_getRamDirtyPages'] = wasmExports['getRamDirtyPages']
+var _getDeviceType = Module['_getDeviceType'] = wasmExports['getDeviceType']
 var _main = Module['_main'] = wasmExports['main']
 var _webMain = Module['_webMain'] = wasmExports['webMain']
 var __emscripten_timeout = wasmExports['_emscripten_timeout']

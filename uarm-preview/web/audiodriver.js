@@ -43,7 +43,7 @@ export class AudioDriver {
         this.gainNode.gain.value = 0.8;
         this.gainNode.connect(this.context.destination);
 
-        await this.context.audioWorklet.addModule(`web/pcmaudioprocessor.js?cb=${Date.now()}}`);
+        await this.context.audioWorklet.addModule(`assets/pcmaudioprocessor.js?cb=${Date.now()}}`);
 
         this.workletNode = new AudioWorkletNode(this.context, 'pcm-processor', {
             channelCount: 2,
