@@ -77,7 +77,7 @@ for more details.
 
  * [320x480 screen image for uARM](/e2_dia.rom)
   
-   Modified E2 ROM with a dynamic input area and 320x480 screen resolution and no NVFS,
+   Modified E2 ROM with a dynamic input area, 320x480 screen resolution and no NVFS,
    courtesy of Dmitry Grinberg.
 
  * [Source code](https://github.com/cloudpilot-emu/cloudpilot-emu)
