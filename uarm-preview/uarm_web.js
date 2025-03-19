@@ -530,7 +530,7 @@ async function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  63774: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  68926: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
@@ -598,6 +598,80 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   var stackRestore = (val) => __emscripten_stack_restore(val);
 
   var stackSave = () => _emscripten_stack_get_current();
+
+  var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined;
+  
+    /**
+     * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
+     * array that contains uint8 values, returns a copy of that string as a
+     * Javascript String object.
+     * heapOrArray is either a regular array, or a JavaScript typed array view.
+     * @param {number=} idx
+     * @param {number=} maxBytesToRead
+     * @return {string}
+     */
+  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead = NaN) => {
+      var endIdx = idx + maxBytesToRead;
+      var endPtr = idx;
+      // TextDecoder needs to know the byte length in advance, it doesn't stop on
+      // null terminator by itself.  Also, use the length info to avoid running tiny
+      // strings through TextDecoder, since .subarray() allocates garbage.
+      // (As a tiny code save trick, compare endPtr against endIdx using a negation,
+      // so that undefined/NaN means Infinity)
+      while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
+  
+      if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
+        return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
+      }
+      var str = '';
+      // If building with TextDecoder, we have already computed the string length
+      // above, so test loop end condition against that
+      while (idx < endPtr) {
+        // For UTF8 byte structure, see:
+        // http://en.wikipedia.org/wiki/UTF-8#Description
+        // https://www.ietf.org/rfc/rfc2279.txt
+        // https://tools.ietf.org/html/rfc3629
+        var u0 = heapOrArray[idx++];
+        if (!(u0 & 0x80)) { str += String.fromCharCode(u0); continue; }
+        var u1 = heapOrArray[idx++] & 63;
+        if ((u0 & 0xE0) == 0xC0) { str += String.fromCharCode(((u0 & 31) << 6) | u1); continue; }
+        var u2 = heapOrArray[idx++] & 63;
+        if ((u0 & 0xF0) == 0xE0) {
+          u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
+        } else {
+          u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
+        }
+  
+        if (u0 < 0x10000) {
+          str += String.fromCharCode(u0);
+        } else {
+          var ch = u0 - 0x10000;
+          str += String.fromCharCode(0xD800 | (ch >> 10), 0xDC00 | (ch & 0x3FF));
+        }
+      }
+      return str;
+    };
+  
+    /**
+     * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
+     * emscripten HEAP, returns a copy of that string as a Javascript String object.
+     *
+     * @param {number} ptr
+     * @param {number=} maxBytesToRead - An optional length that specifies the
+     *   maximum number of bytes to read. You can omit this parameter to scan the
+     *   string until the first 0 byte. If maxBytesToRead is passed, and the string
+     *   at [ptr, ptr+maxBytesToReadr[ contains a null byte in the middle, then the
+     *   string will cut short at that byte index (i.e. maxBytesToRead will not
+     *   produce a string of exact length [ptr, ptr+maxBytesToRead[) N.B. mixing
+     *   frequent uses of UTF8ToString() with and without maxBytesToRead may throw
+     *   JS JIT optimizations off, so it is worth to consider consistently using one
+     * @return {string}
+     */
+  var UTF8ToString = (ptr, maxBytesToRead) => {
+      return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : '';
+    };
+  var ___assert_fail = (condition, filename, line, func) =>
+      abort(`Assertion failed: ${UTF8ToString(condition)}, at: ` + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
 
   var __abort_js = () =>
       abort('');
@@ -1002,58 +1076,6 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
 
   var printCharBuffers = [null,[],[]];
   
-  var UTF8Decoder = typeof TextDecoder != 'undefined' ? new TextDecoder() : undefined;
-  
-    /**
-     * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
-     * array that contains uint8 values, returns a copy of that string as a
-     * Javascript String object.
-     * heapOrArray is either a regular array, or a JavaScript typed array view.
-     * @param {number=} idx
-     * @param {number=} maxBytesToRead
-     * @return {string}
-     */
-  var UTF8ArrayToString = (heapOrArray, idx = 0, maxBytesToRead = NaN) => {
-      var endIdx = idx + maxBytesToRead;
-      var endPtr = idx;
-      // TextDecoder needs to know the byte length in advance, it doesn't stop on
-      // null terminator by itself.  Also, use the length info to avoid running tiny
-      // strings through TextDecoder, since .subarray() allocates garbage.
-      // (As a tiny code save trick, compare endPtr against endIdx using a negation,
-      // so that undefined/NaN means Infinity)
-      while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
-  
-      if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
-        return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
-      }
-      var str = '';
-      // If building with TextDecoder, we have already computed the string length
-      // above, so test loop end condition against that
-      while (idx < endPtr) {
-        // For UTF8 byte structure, see:
-        // http://en.wikipedia.org/wiki/UTF-8#Description
-        // https://www.ietf.org/rfc/rfc2279.txt
-        // https://tools.ietf.org/html/rfc3629
-        var u0 = heapOrArray[idx++];
-        if (!(u0 & 0x80)) { str += String.fromCharCode(u0); continue; }
-        var u1 = heapOrArray[idx++] & 63;
-        if ((u0 & 0xE0) == 0xC0) { str += String.fromCharCode(((u0 & 31) << 6) | u1); continue; }
-        var u2 = heapOrArray[idx++] & 63;
-        if ((u0 & 0xF0) == 0xE0) {
-          u0 = ((u0 & 15) << 12) | (u1 << 6) | u2;
-        } else {
-          u0 = ((u0 & 7) << 18) | (u1 << 12) | (u2 << 6) | (heapOrArray[idx++] & 63);
-        }
-  
-        if (u0 < 0x10000) {
-          str += String.fromCharCode(u0);
-        } else {
-          var ch = u0 - 0x10000;
-          str += String.fromCharCode(0xD800 | (ch >> 10), 0xDC00 | (ch & 0x3FF));
-        }
-      }
-      return str;
-    };
   var printChar = (stream, curr) => {
       var buffer = printCharBuffers[stream];
       if (curr === 0 || curr === 10) {
@@ -1071,25 +1093,6 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
     };
   
   
-  
-    /**
-     * Given a pointer 'ptr' to a null-terminated UTF8-encoded string in the
-     * emscripten HEAP, returns a copy of that string as a Javascript String object.
-     *
-     * @param {number} ptr
-     * @param {number=} maxBytesToRead - An optional length that specifies the
-     *   maximum number of bytes to read. You can omit this parameter to scan the
-     *   string until the first 0 byte. If maxBytesToRead is passed, and the string
-     *   at [ptr, ptr+maxBytesToReadr[ contains a null byte in the middle, then the
-     *   string will cut short at that byte index (i.e. maxBytesToRead will not
-     *   produce a string of exact length [ptr, ptr+maxBytesToRead[) N.B. mixing
-     *   frequent uses of UTF8ToString() with and without maxBytesToRead may throw
-     *   JS JIT optimizations off, so it is worth to consider consistently using one
-     * @return {string}
-     */
-  var UTF8ToString = (ptr, maxBytesToRead) => {
-      return ptr ? UTF8ArrayToString(HEAPU8, ptr, maxBytesToRead) : '';
-    };
   var SYSCALLS = {
   varargs:undefined,
   getStr(ptr) {
@@ -1116,16 +1119,6 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
 
 
 
-  var getCFunc = (ident) => {
-      var func = Module['_' + ident]; // closure exported function
-      return func;
-    };
-  
-  
-  var writeArrayToMemory = (array, buffer) => {
-      HEAP8.set(array, buffer);
-    };
-  
   var lengthBytesUTF8 = (str) => {
       var len = 0;
       for (var i = 0; i < str.length; ++i) {
@@ -1146,6 +1139,28 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       }
       return len;
     };
+  
+  /** @type {function(string, boolean=, number=)} */
+  function intArrayFromString(stringy, dontAddNull, length) {
+    var len = length > 0 ? length : lengthBytesUTF8(stringy)+1;
+    var u8array = new Array(len);
+    var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length);
+    if (dontAddNull) u8array.length = numBytesWritten;
+    return u8array;
+  }
+
+
+
+  var getCFunc = (ident) => {
+      var func = Module['_' + ident]; // closure exported function
+      return func;
+    };
+  
+  
+  var writeArrayToMemory = (array, buffer) => {
+      HEAP8.set(array, buffer);
+    };
+  
   
   
   var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
@@ -1432,6 +1447,8 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
     };
 var wasmImports = {
   /** @export */
+  __assert_fail: ___assert_fail,
+  /** @export */
   __emscripten_abort,
   /** @export */
   _abort_js: __abort_js,
@@ -1467,6 +1484,33 @@ var ___wasm_call_ctors = wasmExports['__wasm_call_ctors']
 var _free = Module['_free'] = wasmExports['free']
 var _mmuDump = Module['_mmuDump'] = wasmExports['mmuDump']
 var _malloc = Module['_malloc'] = wasmExports['malloc']
+var _webidl_free = Module['_webidl_free'] = wasmExports['webidl_free']
+var _webidl_malloc = Module['_webidl_malloc'] = wasmExports['webidl_malloc']
+var _emscripten_bind_VoidPtr___destroy___0 = Module['_emscripten_bind_VoidPtr___destroy___0'] = wasmExports['emscripten_bind_VoidPtr___destroy___0']
+var _emscripten_bind_SessionFile_SessionFile_0 = Module['_emscripten_bind_SessionFile_SessionFile_0'] = wasmExports['emscripten_bind_SessionFile_SessionFile_0']
+var _emscripten_bind_SessionFile_IsSessionFile_2 = Module['_emscripten_bind_SessionFile_IsSessionFile_2'] = wasmExports['emscripten_bind_SessionFile_IsSessionFile_2']
+var _emscripten_bind_SessionFile_GetDeviceId_0 = Module['_emscripten_bind_SessionFile_GetDeviceId_0'] = wasmExports['emscripten_bind_SessionFile_GetDeviceId_0']
+var _emscripten_bind_SessionFile_SetDeviceId_1 = Module['_emscripten_bind_SessionFile_SetDeviceId_1'] = wasmExports['emscripten_bind_SessionFile_SetDeviceId_1']
+var _emscripten_bind_SessionFile_GetMetadata_0 = Module['_emscripten_bind_SessionFile_GetMetadata_0'] = wasmExports['emscripten_bind_SessionFile_GetMetadata_0']
+var _emscripten_bind_SessionFile_GetMetadataSize_0 = Module['_emscripten_bind_SessionFile_GetMetadataSize_0'] = wasmExports['emscripten_bind_SessionFile_GetMetadataSize_0']
+var _emscripten_bind_SessionFile_SetMetadata_2 = Module['_emscripten_bind_SessionFile_SetMetadata_2'] = wasmExports['emscripten_bind_SessionFile_SetMetadata_2']
+var _emscripten_bind_SessionFile_GetNor_0 = Module['_emscripten_bind_SessionFile_GetNor_0'] = wasmExports['emscripten_bind_SessionFile_GetNor_0']
+var _emscripten_bind_SessionFile_GetNorSize_0 = Module['_emscripten_bind_SessionFile_GetNorSize_0'] = wasmExports['emscripten_bind_SessionFile_GetNorSize_0']
+var _emscripten_bind_SessionFile_SetNor_2 = Module['_emscripten_bind_SessionFile_SetNor_2'] = wasmExports['emscripten_bind_SessionFile_SetNor_2']
+var _emscripten_bind_SessionFile_GetNand_0 = Module['_emscripten_bind_SessionFile_GetNand_0'] = wasmExports['emscripten_bind_SessionFile_GetNand_0']
+var _emscripten_bind_SessionFile_GetNandSize_0 = Module['_emscripten_bind_SessionFile_GetNandSize_0'] = wasmExports['emscripten_bind_SessionFile_GetNandSize_0']
+var _emscripten_bind_SessionFile_SetNand_2 = Module['_emscripten_bind_SessionFile_SetNand_2'] = wasmExports['emscripten_bind_SessionFile_SetNand_2']
+var _emscripten_bind_SessionFile_GetRam_0 = Module['_emscripten_bind_SessionFile_GetRam_0'] = wasmExports['emscripten_bind_SessionFile_GetRam_0']
+var _emscripten_bind_SessionFile_GetRamSize_0 = Module['_emscripten_bind_SessionFile_GetRamSize_0'] = wasmExports['emscripten_bind_SessionFile_GetRamSize_0']
+var _emscripten_bind_SessionFile_SetRam_2 = Module['_emscripten_bind_SessionFile_SetRam_2'] = wasmExports['emscripten_bind_SessionFile_SetRam_2']
+var _emscripten_bind_SessionFile_GetSavestate_0 = Module['_emscripten_bind_SessionFile_GetSavestate_0'] = wasmExports['emscripten_bind_SessionFile_GetSavestate_0']
+var _emscripten_bind_SessionFile_GetSavestateSize_0 = Module['_emscripten_bind_SessionFile_GetSavestateSize_0'] = wasmExports['emscripten_bind_SessionFile_GetSavestateSize_0']
+var _emscripten_bind_SessionFile_SetSavestate_2 = Module['_emscripten_bind_SessionFile_SetSavestate_2'] = wasmExports['emscripten_bind_SessionFile_SetSavestate_2']
+var _emscripten_bind_SessionFile_Serialize_0 = Module['_emscripten_bind_SessionFile_Serialize_0'] = wasmExports['emscripten_bind_SessionFile_Serialize_0']
+var _emscripten_bind_SessionFile_GetSerializedSession_0 = Module['_emscripten_bind_SessionFile_GetSerializedSession_0'] = wasmExports['emscripten_bind_SessionFile_GetSerializedSession_0']
+var _emscripten_bind_SessionFile_GetSerializedSessionSize_0 = Module['_emscripten_bind_SessionFile_GetSerializedSessionSize_0'] = wasmExports['emscripten_bind_SessionFile_GetSerializedSessionSize_0']
+var _emscripten_bind_SessionFile_Deserialize_2 = Module['_emscripten_bind_SessionFile_Deserialize_2'] = wasmExports['emscripten_bind_SessionFile_Deserialize_2']
+var _emscripten_bind_SessionFile___destroy___0 = Module['_emscripten_bind_SessionFile___destroy___0'] = wasmExports['emscripten_bind_SessionFile___destroy___0']
 var _cycle = Module['_cycle'] = wasmExports['cycle']
 var _getFrame = Module['_getFrame'] = wasmExports['getFrame']
 var _resetFrame = Module['_resetFrame'] = wasmExports['resetFrame']
@@ -1484,6 +1528,8 @@ var _pendingSamples = Module['_pendingSamples'] = wasmExports['pendingSamples']
 var _popQueuedSamples = Module['_popQueuedSamples'] = wasmExports['popQueuedSamples']
 var _setPcmOutputEnabled = Module['_setPcmOutputEnabled'] = wasmExports['setPcmOutputEnabled']
 var _setPcmSuspended = Module['_setPcmSuspended'] = wasmExports['setPcmSuspended']
+var _getRomDataSize = Module['_getRomDataSize'] = wasmExports['getRomDataSize']
+var _getRomData = Module['_getRomData'] = wasmExports['getRomData']
 var _getNandDataSize = Module['_getNandDataSize'] = wasmExports['getNandDataSize']
 var _getNandData = Module['_getNandData'] = wasmExports['getNandData']
 var _getNandDirtyPages = Module['_getNandDirtyPages'] = wasmExports['getNandDirtyPages']
@@ -1592,6 +1638,376 @@ if (Module['preInit']) {
 run();
 
 // end include: postamble.js
+
+// include: /Users/pestix/git/cloudpilot/src/uarm/web/binding/binding.js
+
+// Bindings utilities
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function WrapperObject() {
+}
+WrapperObject.prototype = Object.create(WrapperObject.prototype);
+WrapperObject.prototype.constructor = WrapperObject;
+WrapperObject.prototype.__class__ = WrapperObject;
+WrapperObject.__cache__ = {};
+Module['WrapperObject'] = WrapperObject;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant)
+    @param {*=} __class__ */
+function getCache(__class__) {
+  return (__class__ || WrapperObject).__cache__;
+}
+Module['getCache'] = getCache;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant)
+    @param {*=} __class__ */
+function wrapPointer(ptr, __class__) {
+  var cache = getCache(__class__);
+  var ret = cache[ptr];
+  if (ret) return ret;
+  ret = Object.create((__class__ || WrapperObject).prototype);
+  ret.ptr = ptr;
+  return cache[ptr] = ret;
+}
+Module['wrapPointer'] = wrapPointer;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function castObject(obj, __class__) {
+  return wrapPointer(obj.ptr, __class__);
+}
+Module['castObject'] = castObject;
+
+Module['NULL'] = wrapPointer(0);
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function destroy(obj) {
+  if (!obj['__destroy__']) throw 'Error: Cannot destroy object. (Did you create it yourself?)';
+  obj['__destroy__']();
+  // Remove from cache, so the object can be GC'd and refs added onto it released
+  delete getCache(obj.__class__)[obj.ptr];
+}
+Module['destroy'] = destroy;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function compare(obj1, obj2) {
+  return obj1.ptr === obj2.ptr;
+}
+Module['compare'] = compare;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function getPointer(obj) {
+  return obj.ptr;
+}
+Module['getPointer'] = getPointer;
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function getClass(obj) {
+  return obj.__class__;
+}
+Module['getClass'] = getClass;
+
+// Converts big (string or array) values into a C-style storage, in temporary space
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+var ensureCache = {
+  buffer: 0,  // the main buffer of temporary storage
+  size: 0,   // the size of buffer
+  pos: 0,    // the next free offset in buffer
+  temps: [], // extra allocations
+  needed: 0, // the total size we need next time
+
+  prepare() {
+    if (ensureCache.needed) {
+      // clear the temps
+      for (var i = 0; i < ensureCache.temps.length; i++) {
+        Module['_webidl_free'](ensureCache.temps[i]);
+      }
+      ensureCache.temps.length = 0;
+      // prepare to allocate a bigger buffer
+      Module['_webidl_free'](ensureCache.buffer);
+      ensureCache.buffer = 0;
+      ensureCache.size += ensureCache.needed;
+      // clean up
+      ensureCache.needed = 0;
+    }
+    if (!ensureCache.buffer) { // happens first time, or when we need to grow
+      ensureCache.size += 128; // heuristic, avoid many small grow events
+      ensureCache.buffer = Module['_webidl_malloc'](ensureCache.size);
+      assert(ensureCache.buffer);
+    }
+    ensureCache.pos = 0;
+  },
+  alloc(array, view) {
+    assert(ensureCache.buffer);
+    var bytes = view.BYTES_PER_ELEMENT;
+    var len = array.length * bytes;
+    len = alignMemory(len, 8); // keep things aligned to 8 byte boundaries
+    var ret;
+    if (ensureCache.pos + len >= ensureCache.size) {
+      // we failed to allocate in the buffer, ensureCache time around :(
+      assert(len > 0); // null terminator, at least
+      ensureCache.needed += len;
+      ret = Module['_webidl_malloc'](len);
+      ensureCache.temps.push(ret);
+    } else {
+      // we can allocate in the buffer
+      ret = ensureCache.buffer + ensureCache.pos;
+      ensureCache.pos += len;
+    }
+    return ret;
+  },
+  copy(array, view, offset) {
+    offset /= view.BYTES_PER_ELEMENT;
+    for (var i = 0; i < array.length; i++) {
+      view[offset + i] = array[i];
+    }
+  },
+};
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureString(value) {
+  if (typeof value === 'string') {
+    var intArray = intArrayFromString(value);
+    var offset = ensureCache.alloc(intArray, HEAP8);
+    ensureCache.copy(intArray, HEAP8, offset);
+    return offset;
+  }
+  return value;
+}
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureInt8(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAP8);
+    ensureCache.copy(value, HEAP8, offset);
+    return offset;
+  }
+  return value;
+}
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureInt16(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAP16);
+    ensureCache.copy(value, HEAP16, offset);
+    return offset;
+  }
+  return value;
+}
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureInt32(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAP32);
+    ensureCache.copy(value, HEAP32, offset);
+    return offset;
+  }
+  return value;
+}
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureFloat32(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAPF32);
+    ensureCache.copy(value, HEAPF32, offset);
+    return offset;
+  }
+  return value;
+}
+
+/** @suppress {duplicate} (TODO: avoid emitting this multiple times, it is redundant) */
+function ensureFloat64(value) {
+  if (typeof value === 'object') {
+    var offset = ensureCache.alloc(value, HEAPF64);
+    ensureCache.copy(value, HEAPF64, offset);
+    return offset;
+  }
+  return value;
+}
+
+// Interface: VoidPtr
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+function VoidPtr() { throw "cannot construct a VoidPtr, no constructor in IDL" }
+VoidPtr.prototype = Object.create(WrapperObject.prototype);
+VoidPtr.prototype.constructor = VoidPtr;
+VoidPtr.prototype.__class__ = VoidPtr;
+VoidPtr.__cache__ = {};
+Module['VoidPtr'] = VoidPtr;
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+VoidPtr.prototype['__destroy__'] = VoidPtr.prototype.__destroy__ = function() {
+  var self = this.ptr;
+  _emscripten_bind_VoidPtr___destroy___0(self);
+};
+
+// Interface: SessionFile
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+function SessionFile() {
+  this.ptr = _emscripten_bind_SessionFile_SessionFile_0();
+  getCache(SessionFile)[this.ptr] = this;
+};
+
+SessionFile.prototype = Object.create(WrapperObject.prototype);
+SessionFile.prototype.constructor = SessionFile;
+SessionFile.prototype.__class__ = SessionFile;
+SessionFile.__cache__ = {};
+Module['SessionFile'] = SessionFile;
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['IsSessionFile'] = SessionFile.prototype.IsSessionFile = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return !!(_emscripten_bind_SessionFile_IsSessionFile_2(self, size, data));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetDeviceId'] = SessionFile.prototype.GetDeviceId = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetDeviceId_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['SetDeviceId'] = SessionFile.prototype.SetDeviceId = function(deviceId) {
+  var self = this.ptr;
+  if (deviceId && typeof deviceId === 'object') deviceId = deviceId.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_SetDeviceId_1(self, deviceId), SessionFile);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetMetadata'] = SessionFile.prototype.GetMetadata = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_GetMetadata_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetMetadataSize'] = SessionFile.prototype.GetMetadataSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetMetadataSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['SetMetadata'] = SessionFile.prototype.SetMetadata = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_SetMetadata_2(self, size, data), SessionFile);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetNor'] = SessionFile.prototype.GetNor = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_GetNor_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetNorSize'] = SessionFile.prototype.GetNorSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetNorSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['SetNor'] = SessionFile.prototype.SetNor = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_SetNor_2(self, size, data), SessionFile);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetNand'] = SessionFile.prototype.GetNand = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_GetNand_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetNandSize'] = SessionFile.prototype.GetNandSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetNandSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['SetNand'] = SessionFile.prototype.SetNand = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_SetNand_2(self, size, data), SessionFile);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetRam'] = SessionFile.prototype.GetRam = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_GetRam_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetRamSize'] = SessionFile.prototype.GetRamSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetRamSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['SetRam'] = SessionFile.prototype.SetRam = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_SetRam_2(self, size, data), SessionFile);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetSavestate'] = SessionFile.prototype.GetSavestate = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_GetSavestate_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetSavestateSize'] = SessionFile.prototype.GetSavestateSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetSavestateSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['SetSavestate'] = SessionFile.prototype.SetSavestate = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_SetSavestate_2(self, size, data), SessionFile);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['Serialize'] = SessionFile.prototype.Serialize = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_SessionFile_Serialize_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetSerializedSession'] = SessionFile.prototype.GetSerializedSession = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_GetSerializedSession_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetSerializedSessionSize'] = SessionFile.prototype.GetSerializedSessionSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetSerializedSessionSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['Deserialize'] = SessionFile.prototype.Deserialize = function(Size, data) {
+  var self = this.ptr;
+  if (Size && typeof Size === 'object') Size = Size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return !!(_emscripten_bind_SessionFile_Deserialize_2(self, Size, data));
+};
+
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['__destroy__'] = SessionFile.prototype.__destroy__ = function() {
+  var self = this.ptr;
+  _emscripten_bind_SessionFile___destroy___0(self);
+};
+// end include: /Users/pestix/git/cloudpilot/src/uarm/web/binding/binding.js
 
 // include: postamble_modularize.js
 // In MODULARIZE mode we wrap the generated code in a factory function
