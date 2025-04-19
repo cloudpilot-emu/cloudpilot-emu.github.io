@@ -2,12 +2,13 @@
 
 /**
  * @typedef {{name: string, content: Uint8Array}} Image
+ * @typedef {{name: string, id: string, mounted: boolean, content: Uint8Array}} CardImage
  * @typedef {{scheduledPageCount: number, scheduledPages: ArrayBuffer, pagePool: ArrayBuffer, crc?: number}} SnapshotPages
- * @typedef {{nand?: SnapshotPages, sd?: SnapshotPages, ram?: SnapshotPages}} Snapshot
+ * @typedef {{nand?: SnapshotPages, sd?: SnapshotPages, ram?: SnapshotPages, cardId? :string, savestate: ArrayBuffer}} Snapshot
  */
 
 const DB_NAME = 'cp-uarm';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 const SIZE_NAND = 528 * 2 * 1024 * 32;
 const PAGE_SIZE_NAND = 528 * 8;
@@ -16,7 +17,7 @@ const EMPTY_VALUE_NAND = 0xffffffff;
 const PAGE_SIZE_SD = 8 * 1024;
 const EMPTY_VALUE_SD = 0;
 
-const SIZE_RAM = 16 * 1024 * 1024;
+const SIZE_RAM = 16 * 1024 * 1024 + 32 * 1024;
 const PAGE_SIZE_RAM = 512;
 const EMPTY_VALUE_RAM = 0;
 
@@ -35,6 +36,24 @@ const KVS_SD_CRC = 'sdCrc';
 const KVS_NAND_NAME = 'nandName';
 const KVS_NAND_CRC = 'nandCrc';
 const KVS_RAM_CRC = 'ramCrc';
+const KVS_CARD_ID = 'cardId';
+const KVS_CARD_MOUNTED = 'cardMounted';
+const KVS_SAVESTATE = 'savestate';
+export const KVS_MIPS = 'mips';
+export const KVS_MAX_LOAD = 'maxLoad';
+
+/**
+ * @returns {string}
+ */
+function randomId() {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+
+    return Array.from(bytes)
+        .map((x) => x.toString(16))
+        .map((x) => x.padStart(2, '0'))
+        .join('');
+}
 
 /**
  *
@@ -83,24 +102,6 @@ export function compressPage(page) {
     }
 
     return fst;
-}
-
-/**
- *
- * @returns {string}
- */
-function generateUuid() {
-    const bytes = new Uint8Array(16);
-    crypto.getRandomValues(bytes);
-
-    const hex = Array.from(bytes)
-        .map((i) => i.toString(16).padStart(2, '0'))
-        .join('');
-
-    return `${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(
-        16,
-        20
-    )}-${hex.substring(20, 32)}`;
 }
 
 /**
@@ -248,6 +249,27 @@ async function migrateSd(request) {
 
 /**
  *
+ * @param {IDBOpenDBRequest} request
+ * @returns {Promise<void>}
+ */
+async function migrateCardIdAndMountFlag(request) {
+    const tx = request.transaction;
+
+    if (!tx) throw new Error('no version change transaction');
+
+    const storeKvs = tx.objectStore(OBJECT_STORE_KVS);
+    const name = /** @type string | undefined*/ (await complete(storeKvs.get(KVS_SD_NAME)));
+
+    if (name !== undefined) {
+        storeKvs.put(true, KVS_CARD_MOUNTED);
+        storeKvs.put(randomId(), KVS_CARD_ID);
+    } else {
+        storeKvs.put(false, KVS_CARD_MOUNTED);
+    }
+}
+
+/**
+ *
  * @returns {Promise<IDBDatabase>}
  */
 function initdDb() {
@@ -281,6 +303,10 @@ function initdDb() {
                 db.createObjectStore(OBJECT_STORE_RAM);
                 migrateSd(request);
             }
+
+            if (e.oldVersion < 6) {
+                migrateCardIdAndMountFlag(request);
+            }
         };
 
         request.onsuccess = () => resolve(request.result);
@@ -293,7 +319,7 @@ function initdDb() {
  * @returns {Promise<string>}
  */
 async function acquireLock(db) {
-    const lockToken = generateUuid();
+    const lockToken = randomId();
     const tx = db.transaction([OBJECT_STORE_LOCK], 'readwrite');
 
     await complete(tx.objectStore(OBJECT_STORE_LOCK).put(lockToken, 0));
@@ -343,6 +369,8 @@ export class Database {
                     () => alert('CloudpilotEmu has been opened in another tab. No more data will be persisted.'),
                     0
                 );
+
+                this.db.close();
             }
 
             this.lockLost = true;
@@ -371,6 +399,19 @@ export class Database {
         const tx = await this.tx(OBJECT_STORE_KVS);
 
         return complete(tx.objectStore(OBJECT_STORE_KVS).get(key));
+    }
+
+    /**
+     *
+     * @param {string} key
+     * @param {any} value
+     */
+    async kvsPut(key, value) {
+        const tx = await this.tx(OBJECT_STORE_KVS);
+
+        tx.objectStore(OBJECT_STORE_KVS).put(value, key);
+
+        await complete(tx);
     }
 
     /**
@@ -405,6 +446,7 @@ export class Database {
         kvsStore.delete(KVS_RAM_CRC);
 
         tx.objectStore(OBJECT_STORE_RAM).clear();
+        kvsStore.delete(KVS_SAVESTATE);
 
         await complete(tx);
     }
@@ -488,6 +530,7 @@ export class Database {
         putPagedData(nand.content, PAGE_SIZE_NAND, OBJECT_STORE_NAND, EMPTY_VALUE_NAND, tx);
 
         tx.objectStore(OBJECT_STORE_RAM).clear();
+        storeKvs.delete(KVS_SAVESTATE);
 
         await complete(tx);
     }
@@ -501,20 +544,24 @@ export class Database {
 
         tx.objectStore(OBJECT_STORE_NAND).clear();
         tx.objectStore(OBJECT_STORE_RAM).clear();
+        storeKvs.delete(KVS_SAVESTATE);
 
         await complete(tx);
     }
 
     /**
      * @param {boolean} crcCheck
-     * @returns {Promise <Image | undefined>}
+     * @returns {Promise <CardImage | undefined>}
      */
     async getSd(crcCheck) {
         const tx = await this.tx(OBJECT_STORE_SD, OBJECT_STORE_KVS);
         const storeKvs = tx.objectStore(OBJECT_STORE_KVS);
 
+        const id = /** @type string */ (await complete(storeKvs.get(KVS_CARD_ID)));
+        if (!id) return;
+
         const name = /** @type string */ (await complete(storeKvs.get(KVS_SD_NAME)));
-        if (!name) return;
+        const mounted = /** @type boolean */ (await complete(storeKvs.get(KVS_CARD_MOUNTED)));
 
         const size = /** @type number */ (await complete(storeKvs.get(KVS_SD_SIZE)));
         if (size === undefined) return;
@@ -532,24 +579,68 @@ export class Database {
             }
         }
 
-        return { name, content };
+        return { name, id, mounted, content };
     }
 
     /**
      *
      * @param {Image} sd
-     * @returns {Promise<void>}
+     * @param {boolean} mounted
+     * @returns {Promise<CardImage>}
      */
-    async putSd(sd) {
+    async putSd(sd, mounted) {
         const tx = await this.tx(OBJECT_STORE_SD, OBJECT_STORE_KVS);
         const storeKvs = tx.objectStore(OBJECT_STORE_KVS);
+        const id = randomId();
 
+        storeKvs.put(id, KVS_CARD_ID);
+        storeKvs.put(mounted, KVS_CARD_MOUNTED);
         storeKvs.put(sd.name, KVS_SD_NAME);
         storeKvs.put(sd.content.length, KVS_SD_SIZE);
         storeKvs.delete(KVS_SD_CRC);
         putPagedData(sd.content, PAGE_SIZE_SD, OBJECT_STORE_SD, EMPTY_VALUE_SD, tx);
 
         await complete(tx);
+
+        return { ...sd, id, mounted };
+    }
+
+    /**
+     *
+     * @param {boolean} mounted
+     * @returns {Promise<void>}
+     */
+    async setCardMounted(mounted) {
+        const tx = await this.tx(OBJECT_STORE_KVS);
+        const storeKvs = tx.objectStore(OBJECT_STORE_KVS);
+
+        storeKvs.put(mounted, KVS_CARD_MOUNTED);
+
+        await complete(tx);
+    }
+
+    /**
+     * @returns {Promise<Uint8Array | undefined>}
+     */
+    getSavestate() {
+        return this.kvsGet(KVS_SAVESTATE);
+    }
+
+    /**
+     *
+     * @param {Uint8Array} savestate
+     * @returns {Promise<void>}
+     */
+    async putSavestate(savestate) {
+        await this.kvsPut(KVS_SAVESTATE, savestate);
+    }
+
+    /**
+     *
+     * @returns {Promise<void>}
+     */
+    async removeSavestate() {
+        await this.kvsDelete(KVS_SAVESTATE);
     }
 
     /**
@@ -560,6 +651,13 @@ export class Database {
     async storeSnapshot(snapshot) {
         const tx = await this.tx(OBJECT_STORE_NAND, OBJECT_STORE_SD, OBJECT_STORE_RAM, OBJECT_STORE_KVS);
         const kvs = tx.objectStore(OBJECT_STORE_KVS);
+
+        const cardId = /** @type string */ (await complete(kvs.get(KVS_CARD_ID)));
+        if (snapshot.sd && cardId !== snapshot.cardId) {
+            throw new Error(`snapshot aborted: card ID mismatch ${cardId} vs. ${snapshot.cardId}`);
+        }
+
+        kvs.put(new Uint8Array(snapshot.savestate), KVS_SAVESTATE);
 
         if (snapshot.nand) {
             this.storeSnapshotPages(snapshot.nand, tx, PAGE_SIZE_NAND, this.pagePoolNand, OBJECT_STORE_NAND);

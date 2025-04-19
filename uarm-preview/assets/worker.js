@@ -1,14 +1,40 @@
 importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
 (function () {
+    class RpcClient {
+        constructor(worker) {
+            this.worker = worker;
+            this.registeredMethods = new Map();
+        }
+
+        async dispatch(message) {
+            const { id, method, args } = message;
+
+            if (!this.registeredMethods.has(method)) {
+                this.worker.postMessage({ type: 'rpcError', id, error: `method not registered: ${method}` });
+            }
+
+            try {
+                const result = await this.registeredMethods.get(method)(args);
+                this.worker.postMessage({ type: 'rpcSuccess', id, result });
+            } catch (e) {
+                this.worker.postMessage({ type: 'rpcError', id, error: `${e}` });
+            }
+        }
+
+        register(method, handler) {
+            this.registeredMethods.set(method, handler);
+
+            return this;
+        }
+    }
+
     const PCM_BUFFER_SIZE = (44100 / 60) * 10;
     const INITIAL_PAGE_POOL_PAGES = 256;
     const PAGE_POOL_GROWTH_FACTOR = 1.5;
-    const RAM_SIZE = 16 * 1024 * 1024;
+    const RAM_SIZE = 16 * 1024 * 1024 + 32 * 1024;
 
-    const messageQueue = [];
-    let dispatchInProgress = false;
-
+    let rpcClient;
     let emulator;
 
     let framePool = [];
@@ -167,15 +193,19 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             maxLoad,
             cyclesPerSecondLimit,
             crcCheck,
-            { onSpeedDisplay, onFrame, log, postSnapshot, onStop }
+            cardId,
+            { onSpeedDisplay, onFrame, log, postSnapshot }
         ) {
             this.module = module;
             this.onSpeedDisplay = onSpeedDisplay;
             this.onFrame = onFrame;
             this.log = log;
             this.postSnapshot = postSnapshot;
-            this.onStop = onStop;
+            this.cardId = cardId;
+            this.crcCheck = crcCheck;
 
+            this.malloc = module.cwrap('malloc', 'number', ['number']);
+            this.free = module.cwrap('free', undefined, ['number']);
             this.cycle = module.cwrap('cycle', undefined, ['number']);
             this.getFrame = module.cwrap('getFrame', 'number');
             this.resetFrame = module.cwrap('resetFrame');
@@ -202,13 +232,22 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             this.getRamDataSize = module.cwrap('getRamDataSize', 'number');
             this.clearRamDirtyPages = module.cwrap('clearRamDirtyPages');
             this.getDeviceType = module.cwrap('getDeviceType');
+            this.sdCardInsert = module.cwrap('sdCardInsert', 'number', ['number', 'number', 'string']);
+            this.sdCardEject = module.cwrap('sdCardEject');
+            this.isSdInserted = module.cwrap('isSdInserted');
+            this.reset = module.cwrap('reset');
+            this.save = module.cwrap('save');
+            this.getSavestateSize = module.cwrap('getSavestateSize', 'number');
+            this.getSavestateData = module.cwrap('getSavestateData', 'number');
 
             this.amIDead = false;
             this.pcmEnabled = false;
             this.pcmPort = undefined;
             this.snapshotPending = false;
-            this.stopPending = false;
+            this.snapshotPromise = Promise.resolve();
+            this.resolveSnapshot = () => undefined;
             this.deviceType = this.getDeviceType();
+            this.savestate = undefined;
 
             this.setMaxLoad(maxLoad);
             this.setCyclesPerSecondLimit(cyclesPerSecondLimit);
@@ -226,18 +265,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                 module,
             });
 
-            const sdCardSize = this.getSdCardDataSize();
-            this.sdCardTracker = new DirtyPageTracker({
-                pageSize: 8192,
-                pageCount: (sdCardSize / 8192) | 0,
-                name: 'SD card snapshot',
-                crcCheck,
-                getDataPtr: module.cwrap('getSdCardData', 'number'),
-                getDirtyPagesPtr: module.cwrap('getSdCardDirtyPages', 'number'),
-                isDirty: module.cwrap('isSdCardDirty', 'number'),
-                setDirty: module.cwrap('setSdCardDirty', undefined, ['number']),
-                module,
-            });
+            this.setupSdCardTracker();
 
             const ramSize = this.getRamDataSize();
             this.ramTracker = new DirtyPageTracker({
@@ -253,7 +281,19 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             });
         }
 
-        static async create(nor, nand, sd, ram, maxLoad, cyclesPerSecondLimit, crcCheck, wasmModule, env) {
+        static async create(
+            nor,
+            nand,
+            sd,
+            cardId,
+            ram,
+            savestate,
+            maxLoad,
+            cyclesPerSecondLimit,
+            crcCheck,
+            wasmModule,
+            env
+        ) {
             const { log } = env;
             let module;
 
@@ -265,28 +305,76 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             });
 
             const malloc = module.cwrap('malloc', 'number', ['number']);
-
+            const free = module.cwrap('free', undefined, ['number']);
             const norPtr = malloc(nor.length);
             const nandPtr = malloc(nand.length);
             const sdPtr = sd ? malloc(sd.length) : 0;
+            const savestatePtr = savestate ? malloc(savestate.length) : 0;
 
             module.HEAPU8.subarray(norPtr, norPtr + nor.length).set(nor);
             module.HEAPU8.subarray(nandPtr, nandPtr + nand.length).set(nand);
             if (sd) module.HEAPU8.subarray(sdPtr, sdPtr + sd.length).set(sd);
+            if (savestate) module.HEAPU8.subarray(savestatePtr, savestatePtr + savestate.length).set(savestate);
+
+            let ramPtr = 0;
+            if (ram.length > RAM_SIZE) {
+                console.error('ignoring invalid RAM snapshot');
+            } else {
+                ramPtr = malloc(ram.length);
+                module.HEAPU8.subarray(ramPtr, ramPtr + ram.length).set(ram);
+            }
 
             module.callMain([]);
-
             module.ccall(
                 'webMain',
                 undefined,
-                ['number', 'number', 'number', 'number', 'number', 'number'],
-                [norPtr, nor.length, nandPtr, nand.length, sdPtr, sd ? sd.length : 0]
+                [
+                    'number',
+                    'number',
+                    'number',
+                    'number',
+                    'number',
+                    'number',
+                    'number',
+                    'number',
+                    'number',
+                    'number',
+                    'string',
+                ],
+                [
+                    norPtr,
+                    nor.length,
+                    nandPtr,
+                    nand.length,
+                    ramPtr,
+                    ramPtr ? ram.length : 0,
+                    sdPtr,
+                    sd?.length ?? 0,
+                    savestatePtr,
+                    savestate?.length ?? 0,
+                    cardId ?? '',
+                ]
             );
 
-            const ramPtr = module.ccall('getRamData', 'number');
-            module.HEAPU8.subarray(ramPtr, ramPtr + RAM_SIZE).set(ram);
+            if (savestatePtr) free(savestatePtr);
+            if (ramPtr) free(ramPtr);
 
-            return new Emulator(module, maxLoad, cyclesPerSecondLimit, crcCheck, env);
+            return new Emulator(module, maxLoad, cyclesPerSecondLimit, crcCheck, cardId, env);
+        }
+
+        setupSdCardTracker() {
+            const sdCardSize = this.getSdCardDataSize();
+            this.sdCardTracker = new DirtyPageTracker({
+                pageSize: 8192,
+                pageCount: (sdCardSize / 8192) | 0,
+                name: 'SD card snapshot',
+                crcCheck: this.crcCheck,
+                getDataPtr: this.module.cwrap('getSdCardData', 'number'),
+                getDirtyPagesPtr: this.module.cwrap('getSdCardDirtyPages', 'number'),
+                isDirty: this.module.cwrap('isSdCardDirty', 'number'),
+                setDirty: this.module.cwrap('setSdCardDirty', undefined, ['number']),
+                module: this.module,
+            });
         }
 
         stop() {
@@ -296,12 +384,6 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             if (this.timeoutHandle) clearTimeout(this.timeoutHandle);
 
             this.timeoutHandle = this.immediateHandle = undefined;
-
-            if (this.snapshotPending) {
-                this.stopPending = true;
-            } else {
-                this.onStop();
-            }
 
             this.log('emulator stopped');
         }
@@ -351,17 +433,36 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         triggerSnapshot() {
             if (this.snapshotPending) return;
 
+            this.save();
+            const savestatePtr = this.getSavestateData();
+            const savestateSize = this.getSavestateSize();
+
+            if (!this.savestate) this.savestate = new Uint8Array(savestateSize);
+            this.savestate.set(this.module.HEAPU8.subarray(savestatePtr, savestatePtr + savestateSize));
+
             const snapshotNand = this.nandTracker.takeSnapshot();
             const snapshotSd = this.sdCardTracker.takeSnapshot();
             const snapshotRam = this.ramTracker.takeSnapshot();
 
             if (!snapshotNand && !snapshotSd && !snapshotRam) return;
 
-            this.postSnapshot({ nand: snapshotNand, sd: snapshotSd, ram: snapshotRam }, [
-                ...this.nandTracker.getTransferables(),
-                ...this.sdCardTracker.getTransferables(),
-                ...this.ramTracker.getTransferables(),
-            ]);
+            this.snapshotPromise = new Promise((resolve) => (this.resolveSnapshot = resolve));
+
+            this.postSnapshot(
+                {
+                    nand: snapshotNand,
+                    sd: snapshotSd,
+                    ram: snapshotRam,
+                    cardId: this.cardId,
+                    savestate: this.savestate.buffer,
+                },
+                [
+                    ...this.nandTracker.getTransferables(),
+                    ...this.sdCardTracker.getTransferables(),
+                    ...this.ramTracker.getTransferables(),
+                    this.savestate.buffer,
+                ]
+            );
             this.snapshotPending = true;
         }
 
@@ -369,13 +470,11 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             this.nandTracker.onSnapshotDone(success, snapshot.nand);
             this.sdCardTracker.onSnapshotDone(success, snapshot.sd);
             this.ramTracker.onSnapshotDone(success, snapshot.ram);
+            this.savestate = new Uint8Array(snapshot.savestate);
 
             this.snapshotPending = false;
 
-            if (this.stopPending) {
-                this.stopPending = false;
-                this.onStop();
-            }
+            this.resolveSnapshot();
         }
 
         render() {
@@ -463,12 +562,39 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         }
 
         getSession() {
+            this.save();
+
             const deviceId = this.getDeviceType();
             const nor = this.module.HEAPU8.subarray(this.getRomData(), this.getRomData() + this.getRomDataSize());
             const nand = this.module.HEAPU8.subarray(this.getNandData(), this.getNandData() + this.getNandDataSize());
             const ram = this.module.HEAPU8.subarray(this.getRamData(), this.getRamData() + this.getRamDataSize());
+            const savestate = this.module.HEAPU8.subarray(
+                this.getSavestateData(),
+                this.getSavestateData() + this.getSavestateSize()
+            );
 
-            return { deviceId, nor, nand, ram };
+            return { deviceId, nor, nand, ram, savestate };
+        }
+
+        ejectCard() {
+            this.sdCardEject();
+        }
+
+        async insertCard(data, cardId) {
+            await this.snapshotPromise;
+
+            if (this.isSdInserted()) throw new Error('SD card already inserted');
+
+            const ptr = this.malloc(data.length);
+            this.module.HEAPU8.subarray(ptr, ptr + data.length).set(data);
+
+            if (!this.sdCardInsert(ptr, data.length, cardId)) {
+                this.free(ptr);
+                throw new Error('failed to insert SD card');
+            }
+
+            this.cardId = cardId;
+            this.setupSdCardTracker();
         }
     }
 
@@ -513,18 +639,6 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         postMessage({ type: 'log', message });
     }
 
-    function postError(reason) {
-        postMessage({ type: 'error', reason });
-    }
-
-    function postInitialized(deviceType) {
-        postMessage({ type: 'initialized', deviceType });
-    }
-
-    function postStopped() {
-        postMessage({ type: 'stopped' });
-    }
-
     function postSnapshot(snapshot, transferables) {
         postMessage(
             {
@@ -535,35 +649,16 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         );
     }
 
-    async function handleMessage(message) {
-        let assertEmulator = (context) => {
-            if (!emulator) {
-                throw new Error(`${context}: emulator not running`);
-            }
-        };
+    function assertEmulator(context) {
+        if (!emulator) {
+            throw new Error(`${context}: emulator not running`);
+        }
+    }
 
+    function handleMessage(message) {
         switch (message.type) {
-            case 'initialize':
-                emulator = await Emulator.create(
-                    message.nor,
-                    message.nand,
-                    message.sd,
-                    message.ram,
-                    message.maxLoad,
-                    message.cyclesPerSecondLimit,
-                    message.crcCheck,
-                    message.module,
-                    {
-                        onFrame: postFrame,
-                        onSpeedDisplay: postSpeed,
-                        postSnapshot,
-                        log: postLog,
-                        onStop: postStopped,
-                    }
-                );
-
-                postInitialized(emulator.getDeviceType());
-
+            case 'rpcCall':
+                rpcClient.dispatch(message);
                 break;
 
             case 'start':
@@ -650,45 +745,88 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                 emulator.snapshotDone(message.success, message.snapshot);
                 break;
 
-            case 'getSession':
-                assertEmulator('getSession');
-
-                try {
-                    postMessage({ type: 'session', ...emulator.getSession() });
-                } catch (e) {
-                    postLog(`snapshot failed: ${e}`);
-                    postMessage({ type: 'getSessionFailed' });
-                }
-
-                break;
-
             default:
                 console.error('unknown message from main thread', message);
         }
     }
 
-    async function dispatchMessages() {
-        if (dispatchInProgress || messageQueue.length === 0) return;
-        dispatchInProgress = true;
-
-        while (messageQueue.length > 0) {
-            try {
-                await handleMessage(messageQueue.shift());
-            } catch (e) {
-                postError(e);
+    async function initialize({
+        nor,
+        nand,
+        sd,
+        cardId,
+        ram,
+        savestate,
+        maxLoad,
+        cyclesPerSecondLimit,
+        crcCheck,
+        module,
+    }) {
+        emulator = await Emulator.create(
+            nor,
+            nand,
+            sd,
+            cardId,
+            ram,
+            savestate,
+            maxLoad,
+            cyclesPerSecondLimit,
+            crcCheck,
+            module,
+            {
+                onFrame: postFrame,
+                onSpeedDisplay: postSpeed,
+                postSnapshot,
+                log: postLog,
             }
-        }
+        );
 
-        dispatchInProgress = false;
+        return {
+            deviceType: emulator.getDeviceType(),
+            cardInserted: emulator.isSdInserted(),
+        };
+    }
+
+    function getSession() {
+        assertEmulator('getSession');
+
+        return emulator.getSession();
+    }
+
+    async function stop() {
+        assertEmulator('stop');
+        emulator.stop();
+
+        await emulator.snapshotPromise;
+    }
+
+    function ejectCard() {
+        assertEmulator('ejectSd');
+        emulator.ejectCard();
+    }
+
+    async function insertCard({ data, cardId }) {
+        assertEmulator('insertCard');
+        await emulator.insertCard(data, cardId);
+    }
+
+    function reset() {
+        assertEmulator('reset');
+        emulator.reset();
     }
 
     async function main() {
-        postReady();
+        rpcClient = new RpcClient(self)
+            .register('initialize', initialize)
+            .register('getSession', getSession)
+            .register('stop', stop)
+            .register('ejectCard', ejectCard)
+            .register('insertCard', insertCard)
+            .register('reset', reset);
 
-        onmessage = (e) => {
-            messageQueue.push(e.data);
-            dispatchMessages();
-        };
+        onmessage = (e) => handleMessage(e.data);
+
+        postReady();
     }
 
     main().catch((e) => console.error(e));

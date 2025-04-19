@@ -1,6 +1,7 @@
 import './setimmediate/setimmediate.js';
+import { Mutex } from './async-mutex/async-mutex.js';
 import { Emulator, loadModule, module } from './emulator.js';
-import { Database } from './database.js';
+import { Database, KVS_MAX_LOAD, KVS_MIPS } from './database.js';
 import { AudioDriver } from './audiodriver.js';
 import { SessionFile } from './sessionfile.js';
 
@@ -13,7 +14,6 @@ import { SessionFile } from './sessionfile.js';
         isMacOSSafari || isIOS || (!!navigator.userAgent.match(/Safari/) && !navigator.userAgent.match(/Chrome/));
 
     let binary = isWebkit ? 'uarm_web_webkit.wasm' : 'uarm_web_other.wasm';
-    let disableAutoPause = false;
     let sessionFile;
 
     const labelNor = document.getElementById('nor-image');
@@ -34,14 +34,19 @@ import { SessionFile } from './sessionfile.js';
     const downloadNandButton = document.getElementById('download-nand');
     const uploadSDButton = document.getElementById('upload-sd');
     const downloadSDButton = document.getElementById('download-sd');
+    const insertEjectSDButton = document.getElementById('insert-eject-sd');
     const exportImageButton = document.getElementById('export-image');
     const importImageButton = document.getElementById('import-image');
     const clearLogButton = document.getElementById('clear-log');
+    const resetButton = document.getElementById('reset');
+    const powerCycleButton = document.getElementById('power-cycle');
 
     const audioButton = document.getElementById('audio-button');
 
     const canvas = document.getElementsByTagName('canvas')[0];
     const canvasCtx = canvas.getContext('2d');
+
+    const mutex = new Mutex();
 
     let fileNor, fileNand, fileSd;
     let emulator;
@@ -65,19 +70,38 @@ import { SessionFile } from './sessionfile.js';
         return `${prefix}_${year}${month}${day}-${hour}${minute}${second}`;
     }
 
-    function updateMaxLoad() {
-        maxLoad = parseFloat(maxLoadSlider.value);
-        maxLoadLabel.innerText = `${Math.floor(maxLoad)}%`;
+    function updateUi() {
+        downloadNandButton.disabled = !fileNand;
+        downloadSDButton.disabled = !fileSd;
+        uploadSDButton.disabled = !!emulator?.cardInserted;
+        insertEjectSDButton.innerText = emulator?.cardInserted ? 'Eject SD' : 'Insert SD';
+        insertEjectSDButton.disabled = !(emulator && (fileSd || emulator.cardInserted));
+        exportImageButton.disabled = !emulator;
+        resetButton.disabled = !emulator;
+        powerCycleButton.disabled = !emulator;
 
-        if (emulator) emulator.setMaxLoad(maxLoad);
+        labelNor.innerText = fileNor?.name ?? '[none]';
+        labelNand.innerText = fileNand?.name ?? '[none]';
+        labelSD.innerText = fileSd?.name ?? '[none]';
     }
 
-    function updateMipsLimit() {
-        mipsLimit = parseFloat(mipsLimitSlider.value);
-        mipsLimitLabel.innerText = `${Math.floor(mipsLimit)} MIPS`;
+    const updateMaxLoad = () =>
+        mutex.runExclusive(() => {
+            maxLoad = parseFloat(maxLoadSlider.value);
+            maxLoadLabel.innerText = `${Math.floor(maxLoad)}%`;
 
-        if (emulator) emulator.setCyclesPerSecondLimit(mipsLimit * 1000000);
-    }
+            database.kvsPut(KVS_MAX_LOAD, maxLoad);
+            if (emulator) emulator.setMaxLoad(maxLoad);
+        });
+
+    const updateMipsLimit = () =>
+        mutex.runExclusive(() => {
+            mipsLimit = parseFloat(mipsLimitSlider.value);
+            mipsLimitLabel.innerText = `${Math.floor(mipsLimit)} MIPS`;
+
+            database.kvsPut(KVS_MIPS, mipsLimit);
+            if (emulator) emulator.setCyclesPerSecondLimit(mipsLimit * 1000000);
+        });
 
     function log(message) {
         const line = document.createElement('div');
@@ -86,12 +110,6 @@ import { SessionFile } from './sessionfile.js';
 
         logContainer.appendChild(line);
         logContainer.scrollTop = logContainer.scrollHeight;
-    }
-
-    function updateLabels() {
-        labelNor.innerText = fileNor?.name ?? '[none]';
-        labelNand.innerText = fileNand?.name ?? '[none]';
-        labelSD.innerText = fileSd?.name ?? '[none]';
     }
 
     async function onAudioButtonClick() {
@@ -173,22 +191,22 @@ import { SessionFile } from './sessionfile.js';
     }
 
     const uploadHandler = (assign) => async () => {
-        try {
-            const file = await openFile();
+        const file = await openFile();
 
-            disableAutoPause = true;
-            await emulator?.stop();
-
-            await assign(file);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            updateLabels();
-            restart();
-        }
+        await mutex.runExclusive(async () => {
+            try {
+                await emulator?.stop();
+                await assign(file);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                updateUi();
+                restartUnguarded();
+            }
+        });
     };
 
-    async function restart() {
+    async function restartUnguarded() {
         if (!(fileNor && fileNand)) return;
 
         emulator?.destroy();
@@ -196,11 +214,18 @@ import { SessionFile } from './sessionfile.js';
 
         const ram = await database.getRam(crcCheck);
 
+        if (fileNor.content.length === 0) fileNor = await database.getNor();
+        if (fileNand.content.length === 0) fileNand = await database.getNand(crcCheck);
+        if (fileSd?.content?.length === 0) fileSd = await database.getSd(crcCheck);
+        const savestate = await database.getSavestate();
+
         emulator = await Emulator.create(
             fileNor.content,
             fileNand.content,
-            fileSd?.content,
+            fileSd?.mounted ? fileSd?.content : undefined,
+            fileSd?.mounted ? fileSd?.id : undefined,
             ram,
+            savestate,
             maxLoad,
             mipsLimit * 1000000,
             {
@@ -213,13 +238,16 @@ import { SessionFile } from './sessionfile.js';
             }
         );
 
-        disableAutoPause = false;
         if (!document.hidden) emulator?.start();
 
         if (emulator && audioDriver) audioDriver.setEmulator(emulator);
 
         if (emulator) audioButton.disabled = false;
+
+        updateUi();
     }
+
+    const restart = () => mutex.runExclusive(restartUnguarded);
 
     function setSnapshotStatus(status) {
         switch (status) {
@@ -240,23 +268,25 @@ import { SessionFile } from './sessionfile.js';
         }
     }
 
-    async function exportImage() {
-        if (!emulator) return;
+    const exportImage = () =>
+        mutex.runExclusive(async () => {
+            if (!emulator) return;
 
-        const { deviceId, nor, nand, ram } = await emulator.getSession();
-        const metadata = {
-            norName: fileNor?.name ?? 'saved NOR',
-            nandName: fileNand?.name ?? 'saved NAND',
-        };
+            const { deviceId, nor, nand, ram, savestate } = await emulator.getSession();
+            const metadata = {
+                norName: fileNor?.name ?? 'saved NOR',
+                nandName: fileNand?.name ?? 'saved NAND',
+            };
 
-        const serializedSession = await sessionFile.serializeSession(deviceId, metadata, nor, nand, ram);
-        if (!serializedSession) return;
+            const serializedSession = await sessionFile.serializeSession(deviceId, metadata, nor, nand, ram, savestate);
+            if (!serializedSession) return;
 
-        saveFile(`${filenameFragment('uarm-session')}.bin`, serializedSession);
-    }
+            saveFile(`${filenameFragment('uarm-session')}.bin`, serializedSession);
+        });
 
     async function main() {
         setSnapshotStatus('ok');
+        updateUi();
 
         database = await Database.create();
         clearCanvas();
@@ -282,10 +312,19 @@ import { SessionFile } from './sessionfile.js';
 
         sessionFile = new SessionFile(module);
 
+        maxLoad = (await database.kvsGet(KVS_MAX_LOAD)) ?? maxLoad;
+        mipsLimit = (await database.kvsGet(KVS_MIPS)) ?? mipsLimit;
+        maxLoadSlider.value = maxLoad;
+        mipsLimitSlider.value = mipsLimit;
+        updateMaxLoad();
+        updateMipsLimit();
+
         try {
             fileNor = await database.getNor();
             fileNand = await database.getNand(crcCheck);
             fileSd = await database.getSd(crcCheck);
+
+            updateUi();
 
             if (!query.has('noload')) {
                 log('Reload with ?noload appended to the URL if the emulator hangs on load due to invalid NOR or NAND');
@@ -294,10 +333,10 @@ import { SessionFile } from './sessionfile.js';
                 await restart();
             }
         } catch (e) {
-            console.error('failed to launch!');
+            console.error('failed to launch!', e);
         }
 
-        updateLabels();
+        updateUi();
 
         exportImageButton.addEventListener('click', exportImage);
 
@@ -317,21 +356,17 @@ import { SessionFile } from './sessionfile.js';
             })
         );
 
-        clearNandButton.addEventListener('click', async () => {
-            if (fileNand && !confirm('This will clear the NAND content and wipe RAM. Do you want to continue?')) return;
+        clearNandButton.addEventListener('click', () =>
+            mutex.runExclusive(async () => {
+                if (fileNand && !confirm('This will clear the NAND content and wipe RAM. Do you want to continue?'))
+                    return;
 
-            await emulator?.stop();
+                await emulator?.stop();
+                await database.clearNand();
 
-            await database.clearNand();
+                fileNand = await database.getNand(crcCheck);
 
-            window.location.reload();
-        });
-
-        uploadSDButton.addEventListener(
-            'click',
-            uploadHandler(async (file) => {
-                await database.putSd(file);
-                fileSd = file;
+                await restartUnguarded();
             })
         );
 
@@ -339,7 +374,7 @@ import { SessionFile } from './sessionfile.js';
             'click',
             uploadHandler(async (file) => {
                 try {
-                    const { metadata, nor, nand, ram } = await sessionFile.deserializeSession(file.content);
+                    const { metadata, nor, nand, ram, savestate } = await sessionFile.deserializeSession(file.content);
 
                     fileNor = { content: nor, name: metadata?.norName ?? 'saved ROM' };
                     fileNand = { content: nand, name: metadata?.nandName ?? 'saved NAND' };
@@ -347,12 +382,30 @@ import { SessionFile } from './sessionfile.js';
                     await database.putNor(fileNor);
                     await database.putNand(fileNand);
                     await database.putRam(ram);
+                    await database.putSavestate(savestate);
                 } catch (e) {
                     alert(`Failed to load session: ${e.message}`);
                     console.error(e);
                 }
             })
         );
+
+        uploadSDButton.addEventListener('click', async () => {
+            if (emulator?.cardInserted) return;
+            let file = await openFile();
+
+            await mutex.runExclusive(async () => {
+                try {
+                    await emulator?.stop();
+
+                    fileSd = await database.putSd(file, true);
+                    await emulator?.insertCard(fileSd.content, fileSd.id);
+                } finally {
+                    emulator?.start();
+                    updateUi();
+                }
+            });
+        });
 
         downloadNandButton.addEventListener('click', () => {
             database.getNand(false).then((nand) => saveFile(`${filenameFragment('nand')}.bin`, nand.content));
@@ -362,24 +415,50 @@ import { SessionFile } from './sessionfile.js';
             database.getSd(false).then((sd) => saveFile(`${filenameFragment('sd')}.bin`, sd.content));
         });
 
-        maxLoadSlider.value = maxLoad;
-        mipsLimitSlider.value = mipsLimit;
+        insertEjectSDButton.addEventListener('click', () =>
+            mutex.runExclusive(async () => {
+                if (!emulator) return;
+
+                if (emulator.cardInserted) {
+                    await emulator.ejectCard();
+                    await database.setCardMounted(false);
+                } else {
+                    fileSd = await database.getSd(crcCheck);
+
+                    await database.setCardMounted(true);
+                    await emulator.insertCard(fileSd.content, fileSd.id);
+                }
+
+                console.log('update');
+
+                updateUi();
+            })
+        );
+
+        powerCycleButton.addEventListener('click', () =>
+            mutex.runExclusive(async () => {
+                if (!emulator) return;
+
+                await emulator.stop();
+                await database.removeSavestate();
+
+                await restartUnguarded();
+            })
+        );
 
         maxLoadSlider.addEventListener('input', updateMaxLoad);
         mipsLimitSlider.addEventListener('input', updateMipsLimit);
-
-        updateMaxLoad();
-        updateMipsLimit();
 
         audioButton.addEventListener('click', () => onAudioButtonClick());
 
         clearLogButton.addEventListener('click', () => (logContainer.innerHTML = ''));
 
-        rotateButton.addEventListener('click', () => emulator?.rotate());
+        rotateButton.addEventListener('click', () => mutex.runExclusive(() => emulator?.rotate()));
 
-        document.addEventListener(
-            'visibilitychange',
-            () => !disableAutoPause && (document.hidden ? emulator?.stop() : emulator?.start())
+        resetButton.addEventListener('click', () => mutex.runExclusive(() => emulator?.reset()));
+
+        document.addEventListener('visibilitychange', () =>
+            mutex.runExclusive(() => (document.hidden ? emulator?.stop() : emulator?.start()))
         );
     }
 
