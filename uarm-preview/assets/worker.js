@@ -32,13 +32,43 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
     const PCM_BUFFER_SIZE = (44100 / 60) * 10;
     const INITIAL_PAGE_POOL_PAGES = 256;
     const PAGE_POOL_GROWTH_FACTOR = 1.5;
-    const RAM_SIZE = 16 * 1024 * 1024 + 32 * 1024;
 
     let rpcClient;
     let emulator;
 
     let framePool = [];
     let pcmPool = [];
+
+    function installResult(result, name) {
+        switch (result) {
+            case 1:
+                return `${name} installed successfully, reset advised`;
+
+            case 0:
+                return `${name} installed successfully`;
+
+            case -2:
+                return `${name} failed to install: corrupt file`;
+
+            case -3:
+                return `${name} failed to install: out of memory`;
+
+            case -4:
+                return `${name} failed to install: db is open`;
+
+            case -5:
+                return `${name} failed to install: db cannot be overwritten`;
+
+            case -6:
+                return `${name} failed to install: installing databases not supported on ROM`;
+
+            case -7:
+                return `${name} failed to install: db is currently not possible`;
+
+            default:
+                return `${name} failed to install: unknown error`;
+        }
+    }
 
     class DirtyPageTracker {
         constructor({ pageSize, pageCount, getDataPtr, getDirtyPagesPtr, isDirty, setDirty, module, name, crcCheck }) {
@@ -239,6 +269,8 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             this.save = module.cwrap('save');
             this.getSavestateSize = module.cwrap('getSavestateSize', 'number');
             this.getSavestateData = module.cwrap('getSavestateData', 'number');
+            this.getRamSize = module.cwrap('getRamSize', 'number');
+            this.installDatabase = module.cwrap('installDatabase', 'number', ['number', 'number']);
 
             this.amIDead = false;
             this.pcmEnabled = false;
@@ -282,6 +314,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         }
 
         static async create(
+            ramSize,
             nor,
             nand,
             sd,
@@ -310,19 +343,13 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             const nandPtr = malloc(nand.length);
             const sdPtr = sd ? malloc(sd.length) : 0;
             const savestatePtr = savestate ? malloc(savestate.length) : 0;
+            const ramPtr = ram ? malloc(ram.length) : 0;
 
             module.HEAPU8.subarray(norPtr, norPtr + nor.length).set(nor);
             module.HEAPU8.subarray(nandPtr, nandPtr + nand.length).set(nand);
             if (sd) module.HEAPU8.subarray(sdPtr, sdPtr + sd.length).set(sd);
             if (savestate) module.HEAPU8.subarray(savestatePtr, savestatePtr + savestate.length).set(savestate);
-
-            let ramPtr = 0;
-            if (ram.length > RAM_SIZE) {
-                console.error('ignoring invalid RAM snapshot');
-            } else {
-                ramPtr = malloc(ram.length);
-                module.HEAPU8.subarray(ramPtr, ramPtr + ram.length).set(ram);
-            }
+            if (ram) module.HEAPU8.subarray(ramPtr, ramPtr + ram.length).set(ram);
 
             module.callMain([]);
             module.ccall(
@@ -339,9 +366,11 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                     'number',
                     'number',
                     'number',
+                    'number',
                     'string',
                 ],
                 [
+                    ramSize,
                     norPtr,
                     nor.length,
                     nandPtr,
@@ -455,6 +484,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                     ram: snapshotRam,
                     cardId: this.cardId,
                     savestate: this.savestate.buffer,
+                    ramSize: this.getRamSize(),
                 },
                 [
                     ...this.nandTracker.getTransferables(),
@@ -572,8 +602,9 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                 this.getSavestateData(),
                 this.getSavestateData() + this.getSavestateSize()
             );
+            const ramSize = this.getRamSize();
 
-            return { deviceId, nor, nand, ram, savestate };
+            return { deviceId, nor, nand, ram, savestate, ramSize };
         }
 
         ejectCard() {
@@ -595,6 +626,37 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
             this.cardId = cardId;
             this.setupSdCardTracker();
+        }
+
+        async install(files) {
+            const running = !!this.timeoutHandle;
+            if (running) this.stop();
+
+            await this.snapshotPromise;
+            this.triggerSnapshot();
+            await this.snapshotPromise;
+
+            for (const file of files) {
+                try {
+                    const filePtr = this.malloc(file.content.length);
+                    if (!filePtr) throw new Error('unable to allocate memory');
+
+                    this.module.HEAPU8.subarray(filePtr, filePtr + file.content.length).set(file.content);
+                    const result = this.installDatabase(file.content.length, filePtr);
+                    this.free(filePtr);
+
+                    this.log(installResult(result, file.name));
+                } catch (e) {
+                    this.log(`fatal error during installation: ${e}`);
+
+                    return file.name;
+                }
+            }
+
+            this.triggerSnapshot();
+            if (running) this.start();
+
+            return undefined;
         }
     }
 
@@ -751,6 +813,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
     }
 
     async function initialize({
+        ramSize,
         nor,
         nand,
         sd,
@@ -763,6 +826,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         module,
     }) {
         emulator = await Emulator.create(
+            ramSize,
             nor,
             nand,
             sd,
@@ -815,6 +879,11 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         emulator.reset();
     }
 
+    function install(files) {
+        assertEmulator('install');
+        return emulator.install(files);
+    }
+
     async function main() {
         rpcClient = new RpcClient(self)
             .register('initialize', initialize)
@@ -822,7 +891,8 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             .register('stop', stop)
             .register('ejectCard', ejectCard)
             .register('insertCard', insertCard)
-            .register('reset', reset);
+            .register('reset', reset)
+            .register('install', install);
 
         onmessage = (e) => handleMessage(e.data);
 

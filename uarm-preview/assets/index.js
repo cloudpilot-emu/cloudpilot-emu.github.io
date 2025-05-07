@@ -40,6 +40,8 @@ import { SessionFile } from './sessionfile.js';
     const clearLogButton = document.getElementById('clear-log');
     const resetButton = document.getElementById('reset');
     const powerCycleButton = document.getElementById('power-cycle');
+    const installButton = document.getElementById('install');
+    const loader = document.getElementById('loading-mask');
 
     const audioButton = document.getElementById('audio-button');
 
@@ -56,6 +58,14 @@ import { SessionFile } from './sessionfile.js';
     let mipsLimit = 100;
     let crcCheck = false;
     let sampleRate;
+
+    function showLoader() {
+        loader.style.display = 'flex';
+    }
+
+    function hideLoader() {
+        loader.style.display = 'none';
+    }
 
     function filenameFragment(prefix) {
         const now = new Date();
@@ -79,6 +89,7 @@ import { SessionFile } from './sessionfile.js';
         exportImageButton.disabled = !emulator;
         resetButton.disabled = !emulator;
         powerCycleButton.disabled = !emulator;
+        installButton.disabled = !emulator;
 
         labelNor.innerText = fileNor?.name ?? '[none]';
         labelNand.innerText = fileNand?.name ?? '[none]';
@@ -141,33 +152,37 @@ import { SessionFile } from './sessionfile.js';
     }
 
     let fileInput;
-    const openFile = () =>
+    const openFile = (multi = false) =>
         new Promise((resolve, reject) => {
             if (isWebkit && fileInput) document.body.removeChild(fileInput);
             fileInput = document.createElement('input');
 
-            fileInput.onchange = (evt) => {
-                console.log('onchange');
-
-                const target = evt.target;
-                const file = target?.files?.[0];
-
-                if (!file) reject(new Error('no files selected'));
-
+            const readFile = (file) => {
                 const reader = new FileReader();
 
-                reader.onload = () =>
-                    resolve({
-                        name: file.name,
-                        content: new Uint8Array(reader.result),
-                    });
-                reader.onerror = () => reject(reader.error);
+                return new Promise((_resolve, _reject) => {
+                    reader.onerror = () => _reject(reader.error);
+                    reader.onload = () => _resolve({ name: file.name, content: new Uint8Array(reader.result) });
 
-                reader.readAsArrayBuffer(file);
+                    reader.readAsArrayBuffer(file);
+                });
+            };
+
+            fileInput.onchange = (evt) => {
+                const target = evt.target;
+
+                if (multi) {
+                    Promise.all(Array.from(target?.files ?? []).map(readFile))
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    readFile(target?.files?.[0]).then(resolve).catch(reject);
+                }
             };
 
             fileInput.type = 'file';
             fileInput.value = '';
+            fileInput.multiple = multi;
             fileInput.style.display = 'none';
 
             if (isWebkit) document.body.appendChild(fileInput);
@@ -212,7 +227,8 @@ import { SessionFile } from './sessionfile.js';
         emulator?.destroy();
         clearCanvas();
 
-        const ram = await database.getRam(crcCheck);
+        const ramSize = await database.getRamSize();
+        const ram = await database.getRam(crcCheck, ramSize);
 
         if (fileNor.content.length === 0) fileNor = await database.getNor();
         if (fileNand.content.length === 0) fileNand = await database.getNand(crcCheck);
@@ -220,6 +236,7 @@ import { SessionFile } from './sessionfile.js';
         const savestate = await database.getSavestate();
 
         emulator = await Emulator.create(
+            ramSize,
             fileNor.content,
             fileNand.content,
             fileSd?.mounted ? fileSd?.content : undefined,
@@ -272,13 +289,21 @@ import { SessionFile } from './sessionfile.js';
         mutex.runExclusive(async () => {
             if (!emulator) return;
 
-            const { deviceId, nor, nand, ram, savestate } = await emulator.getSession();
+            const { deviceId, nor, nand, ram, savestate, ramSize } = await emulator.getSession();
             const metadata = {
                 norName: fileNor?.name ?? 'saved NOR',
                 nandName: fileNand?.name ?? 'saved NAND',
             };
 
-            const serializedSession = await sessionFile.serializeSession(deviceId, metadata, nor, nand, ram, savestate);
+            const serializedSession = await sessionFile.serializeSession(
+                ramSize,
+                deviceId,
+                metadata,
+                nor,
+                nand,
+                ram,
+                savestate
+            );
             if (!serializedSession) return;
 
             saveFile(`${filenameFragment('uarm-session')}.bin`, serializedSession);
@@ -374,15 +399,14 @@ import { SessionFile } from './sessionfile.js';
             'click',
             uploadHandler(async (file) => {
                 try {
-                    const { metadata, nor, nand, ram, savestate } = await sessionFile.deserializeSession(file.content);
+                    const { metadata, nor, nand, ram, savestate, ramSize } = await sessionFile.deserializeSession(
+                        file.content
+                    );
 
                     fileNor = { content: nor, name: metadata?.norName ?? 'saved ROM' };
                     fileNand = { content: nand, name: metadata?.nandName ?? 'saved NAND' };
 
-                    await database.putNor(fileNor);
-                    await database.putNand(fileNand);
-                    await database.putRam(ram);
-                    await database.putSavestate(savestate);
+                    await database.importSession(ramSize, fileNor, fileNand, ram, savestate);
                 } catch (e) {
                     alert(`Failed to load session: ${e.message}`);
                     console.error(e);
@@ -456,6 +480,26 @@ import { SessionFile } from './sessionfile.js';
         rotateButton.addEventListener('click', () => mutex.runExclusive(() => emulator?.rotate()));
 
         resetButton.addEventListener('click', () => mutex.runExclusive(() => emulator?.reset()));
+
+        installButton.addEventListener('click', async () => {
+            if (!emulator) return;
+
+            const files = await openFile(true);
+            showLoader();
+
+            try {
+                const failingFile = await emulator.install(files);
+                if (failingFile === undefined) return;
+
+                alert(
+                    `There was a fatal error installing ${failingFile} . There is a known PalmOS bug that may cause installation of large files with several MB to cause crashes on NVFS based (all official E2) ROMs. In this case, please copy such files to SD instead, or use a ROM without NVFS.`
+                );
+
+                window.location.reload();
+            } finally {
+                hideLoader();
+            }
+        });
 
         document.addEventListener('visibilitychange', () =>
             mutex.runExclusive(() => (document.hidden ? emulator?.stop() : emulator?.start()))

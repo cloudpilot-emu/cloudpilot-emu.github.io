@@ -133,7 +133,7 @@ export class Emulator {
         this.eventHandler = new EventHandler(this, this.displayService);
     }
 
-    static async create(nor, nand, sd, cardId, ram, savestate, maxLoad, cyclesPerSecondLimit, env) {
+    static async create(ramSize, nor, nand, sd, cardId, ram, savestate, maxLoad, cyclesPerSecondLimit, env) {
         const { crcCheck } = env;
         const worker = new Worker('assets/worker.js');
         const rpc = new RpcHost(worker);
@@ -159,6 +159,7 @@ export class Emulator {
             const { deviceType, cardInserted } = await rpc.call(
                 'initialize',
                 {
+                    ramSize,
                     nor,
                     nand,
                     sd,
@@ -283,6 +284,16 @@ export class Emulator {
 
     async reset() {
         await this.rpc.call('reset');
+    }
+
+    install(files) {
+        files = files.filter((file) => /\.(prc|pdb)$/i.test(file.name));
+
+        return this.rpc.call(
+            'install',
+            files,
+            files.map((file) => file.content.buffer)
+        );
     }
 
     async handleSnapshot(snapshot) {
