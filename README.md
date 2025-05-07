@@ -75,6 +75,12 @@ for more details.
    Grinberg's [uARM](https://github.com/uARM-Palm/uARM). You can find the source
    [here](https://github.com/cloudpilot-emu/cloudpilot-emu/tree/master/src/uarm).
 
+ * [deNVFS image for uARM](./e2_denvfs.rom)
+  
+   This is the deNVFSed E2 ROM by Dmitry Grinberg. You can find more information in
+   the original
+   [release note on Reddit](https://www.reddit.com/r/Palm/comments/j6nyyb/removing_nvfs_from_a_tungsten_e2_success/).
+
  * [320x480 screen image for uARM](/e2_dia.rom)
   
    Modified E2 ROM with a dynamic input area, 320x480 screen resolution and no NVFS,
