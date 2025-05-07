@@ -530,7 +530,7 @@ async function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  70158: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  70974: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
@@ -1483,7 +1483,6 @@ var wasmExports = await createWasm();
 var ___wasm_call_ctors = wasmExports['__wasm_call_ctors']
 var _free = Module['_free'] = wasmExports['free']
 var _malloc = Module['_malloc'] = wasmExports['malloc']
-var _mmuDump = Module['_mmuDump'] = wasmExports['mmuDump']
 var _cycle = Module['_cycle'] = wasmExports['cycle']
 var _getFrame = Module['_getFrame'] = wasmExports['getFrame']
 var _resetFrame = Module['_resetFrame'] = wasmExports['resetFrame']
@@ -1524,6 +1523,8 @@ var _save = Module['_save'] = wasmExports['save']
 var _getSavestateSize = Module['_getSavestateSize'] = wasmExports['getSavestateSize']
 var _getSavestateData = Module['_getSavestateData'] = wasmExports['getSavestateData']
 var _isSdInserted = Module['_isSdInserted'] = wasmExports['isSdInserted']
+var _getRamSize = Module['_getRamSize'] = wasmExports['getRamSize']
+var _installDatabase = Module['_installDatabase'] = wasmExports['installDatabase']
 var _main = Module['_main'] = wasmExports['main']
 var _webMain = Module['_webMain'] = wasmExports['webMain']
 var _webidl_free = Module['_webidl_free'] = wasmExports['webidl_free']
@@ -1548,6 +1549,8 @@ var _emscripten_bind_SessionFile_SetMemory_2 = Module['_emscripten_bind_SessionF
 var _emscripten_bind_SessionFile_GetSavestate_0 = Module['_emscripten_bind_SessionFile_GetSavestate_0'] = wasmExports['emscripten_bind_SessionFile_GetSavestate_0']
 var _emscripten_bind_SessionFile_GetSavestateSize_0 = Module['_emscripten_bind_SessionFile_GetSavestateSize_0'] = wasmExports['emscripten_bind_SessionFile_GetSavestateSize_0']
 var _emscripten_bind_SessionFile_SetSavestate_2 = Module['_emscripten_bind_SessionFile_SetSavestate_2'] = wasmExports['emscripten_bind_SessionFile_SetSavestate_2']
+var _emscripten_bind_SessionFile_GetRamSize_0 = Module['_emscripten_bind_SessionFile_GetRamSize_0'] = wasmExports['emscripten_bind_SessionFile_GetRamSize_0']
+var _emscripten_bind_SessionFile_SetRamSize_1 = Module['_emscripten_bind_SessionFile_SetRamSize_1'] = wasmExports['emscripten_bind_SessionFile_SetRamSize_1']
 var _emscripten_bind_SessionFile_Serialize_0 = Module['_emscripten_bind_SessionFile_Serialize_0'] = wasmExports['emscripten_bind_SessionFile_Serialize_0']
 var _emscripten_bind_SessionFile_GetSerializedSession_0 = Module['_emscripten_bind_SessionFile_GetSerializedSession_0'] = wasmExports['emscripten_bind_SessionFile_GetSerializedSession_0']
 var _emscripten_bind_SessionFile_GetSerializedSessionSize_0 = Module['_emscripten_bind_SessionFile_GetSerializedSessionSize_0'] = wasmExports['emscripten_bind_SessionFile_GetSerializedSessionSize_0']
@@ -1980,6 +1983,19 @@ SessionFile.prototype['SetSavestate'] = SessionFile.prototype.SetSavestate = fun
   if (size && typeof size === 'object') size = size.ptr;
   if (data && typeof data === 'object') data = data.ptr;
   return wrapPointer(_emscripten_bind_SessionFile_SetSavestate_2(self, size, data), SessionFile);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['GetRamSize'] = SessionFile.prototype.GetRamSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile_GetRamSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile.prototype['SetRamSize'] = SessionFile.prototype.SetRamSize = function(size) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile_SetRamSize_1(self, size), SessionFile);
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
