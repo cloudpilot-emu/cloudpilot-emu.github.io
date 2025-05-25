@@ -682,6 +682,49 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       runtimeKeepaliveCounter = 0;
     };
 
+  var isLeapYear = (year) => year%4 === 0 && (year%100 !== 0 || year%400 === 0);
+  
+  var MONTH_DAYS_LEAP_CUMULATIVE = [0,31,60,91,121,152,182,213,244,274,305,335];
+  
+  var MONTH_DAYS_REGULAR_CUMULATIVE = [0,31,59,90,120,151,181,212,243,273,304,334];
+  var ydayFromDate = (date) => {
+      var leap = isLeapYear(date.getFullYear());
+      var monthDaysCumulative = (leap ? MONTH_DAYS_LEAP_CUMULATIVE : MONTH_DAYS_REGULAR_CUMULATIVE);
+      var yday = monthDaysCumulative[date.getMonth()] + date.getDate() - 1; // -1 since it's days since Jan 1
+  
+      return yday;
+    };
+  
+  var INT53_MAX = 9007199254740992;
+  
+  var INT53_MIN = -9007199254740992;
+  var bigintToI53Checked = (num) => (num < INT53_MIN || num > INT53_MAX) ? NaN : Number(num);
+  function __localtime_js(time, tmPtr) {
+    time = bigintToI53Checked(time);
+  
+    
+      var date = new Date(time*1000);
+      HEAP32[((tmPtr)>>2)] = date.getSeconds();
+      HEAP32[(((tmPtr)+(4))>>2)] = date.getMinutes();
+      HEAP32[(((tmPtr)+(8))>>2)] = date.getHours();
+      HEAP32[(((tmPtr)+(12))>>2)] = date.getDate();
+      HEAP32[(((tmPtr)+(16))>>2)] = date.getMonth();
+      HEAP32[(((tmPtr)+(20))>>2)] = date.getFullYear()-1900;
+      HEAP32[(((tmPtr)+(24))>>2)] = date.getDay();
+  
+      var yday = ydayFromDate(date)|0;
+      HEAP32[(((tmPtr)+(28))>>2)] = yday;
+      HEAP32[(((tmPtr)+(36))>>2)] = -(date.getTimezoneOffset() * 60);
+  
+      // Attention: DST is in December in South, and some regions don't have DST at all.
+      var start = new Date(date.getFullYear(), 0, 1);
+      var summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset();
+      var winterOffset = start.getTimezoneOffset();
+      var dst = (summerOffset != winterOffset && date.getTimezoneOffset() == Math.min(winterOffset, summerOffset))|0;
+      HEAP32[(((tmPtr)+(32))>>2)] = dst;
+    ;
+  }
+
   var timers = {
   };
   
@@ -863,10 +906,6 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   
   var checkWasiClock = (clock_id) => clock_id >= 0 && clock_id <= 3;
   
-  var INT53_MAX = 9007199254740992;
-  
-  var INT53_MIN = -9007199254740992;
-  var bigintToI53Checked = (num) => (num < INT53_MIN || num > INT53_MAX) ? NaN : Number(num);
   function _clock_time_get(clk_id, ignored_precision, ptime) {
     ignored_precision = bigintToI53Checked(ignored_precision);
   
@@ -921,6 +960,7 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   var _emscripten_asm_const_int = (code, sigPtr, argbuf) => {
       return runEmAsmFunction(code, sigPtr, argbuf);
     };
+
 
   var getHeapMax = () =>
       // Stay one Wasm page short of 4GB: while e.g. Chrome is able to allocate
@@ -1455,6 +1495,8 @@ var wasmImports = {
   /** @export */
   _emscripten_runtime_keepalive_clear: __emscripten_runtime_keepalive_clear,
   /** @export */
+  _localtime_js: __localtime_js,
+  /** @export */
   _setitimer_js: __setitimer_js,
   /** @export */
   _tzset_js: __tzset_js,
@@ -1462,6 +1504,8 @@ var wasmImports = {
   clock_time_get: _clock_time_get,
   /** @export */
   emscripten_asm_const_int: _emscripten_asm_const_int,
+  /** @export */
+  emscripten_date_now: _emscripten_date_now,
   /** @export */
   emscripten_resize_heap: _emscripten_resize_heap,
   /** @export */
