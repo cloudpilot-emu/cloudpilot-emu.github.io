@@ -530,7 +530,7 @@ async function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  70974: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  70846: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
