@@ -1,6 +1,5 @@
 var createModule = (() => {
   var _scriptName = typeof document != 'undefined' ? document.currentScript?.src : undefined;
-  
   return (
 async function(moduleArg = {}) {
   var moduleRtn;
@@ -21,13 +20,6 @@ async function(moduleArg = {}) {
 // can continue to use Module afterwards as well.
 var Module = moduleArg;
 
-// Set up the promise that indicates the Module is initialized
-var readyPromiseResolve, readyPromiseReject;
-var readyPromise = new Promise((resolve, reject) => {
-  readyPromiseResolve = resolve;
-  readyPromiseReject = reject;
-});
-
 // Determine the runtime environment we are in. You can customize this by
 // setting the ENVIRONMENT setting at compile time (see settings.js).
 
@@ -36,25 +28,22 @@ var ENVIRONMENT_IS_WEB = typeof window == 'object';
 var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != 'undefined';
 // N.b. Electron.js environment is simultaneously a NODE-environment, but
 // also a web environment.
-var ENVIRONMENT_IS_NODE = typeof process == 'object' && typeof process.versions == 'object' && typeof process.versions.node == 'string' && process.type != 'renderer';
+var ENVIRONMENT_IS_NODE = typeof process == 'object' && process.versions?.node && process.type != 'renderer';
 var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
 
 
-// Sometimes an existing Module object exists with properties
-// meant to overwrite the default module functionality. Here
-// we collect those properties and reapply _after_ we configure
-// the current environment's defaults to avoid having to be so
-// defensive during initialization.
-var moduleOverrides = Object.assign({}, Module);
-
 var arguments_ = [];
 var thisProgram = './this.program';
 var quit_ = (status, toThrow) => {
   throw toThrow;
 };
+
+if (ENVIRONMENT_IS_WORKER) {
+  _scriptName = self.location.href;
+}
 
 // `/` should be present at the end if `scriptDirectory` is not empty
 var scriptDirectory = '';
@@ -72,26 +61,11 @@ var readAsync, readBinary;
 // Node.js workers are detected as a combination of ENVIRONMENT_IS_WORKER and
 // ENVIRONMENT_IS_NODE.
 if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
-  if (ENVIRONMENT_IS_WORKER) { // Check worker, not web, since window could be polyfilled
-    scriptDirectory = self.location.href;
-  } else if (typeof document != 'undefined' && document.currentScript) { // web
-    scriptDirectory = document.currentScript.src;
-  }
-  // When MODULARIZE, this JS may be executed later, after document.currentScript
-  // is gone, so we saved it, and we use it here instead of any other info.
-  if (_scriptName) {
-    scriptDirectory = _scriptName;
-  }
-  // blob urls look like blob:http://site.com/etc/etc and we cannot infer anything from them.
-  // otherwise, slice off the final part of the url to find the script directory.
-  // if scriptDirectory does not contain a slash, lastIndexOf will return -1,
-  // and scriptDirectory will correctly be replaced with an empty string.
-  // If scriptDirectory contains a query (starting with ?) or a fragment (starting with #),
-  // they are removed because they could contain a slash.
-  if (scriptDirectory.startsWith('blob:')) {
-    scriptDirectory = '';
-  } else {
-    scriptDirectory = scriptDirectory.substr(0, scriptDirectory.replace(/[?#].*/, '').lastIndexOf('/')+1);
+  try {
+    scriptDirectory = new URL('.', _scriptName).href; // includes trailing slash
+  } catch {
+    // Must be a `blob:` or `data:` URL (e.g. `blob:http://site.com/etc/etc`), we cannot
+    // infer anything from them.
   }
 
   {
@@ -119,25 +93,9 @@ if (ENVIRONMENT_IS_WORKER) {
 {
 }
 
-var out = Module['print'] || console.log.bind(console);
-var err = Module['printErr'] || console.error.bind(console);
+var out = console.log.bind(console);
+var err = console.error.bind(console);
 
-// Merge back in the overrides
-Object.assign(Module, moduleOverrides);
-// Free the object hierarchy contained in the overrides, this lets the GC
-// reclaim data used.
-moduleOverrides = null;
-
-// Emit code to handle expected values on the Module object. This applies Module.x
-// to the proper local x. This has two benefits: first, we only emit it if it is
-// expected to arrive, and second, by using a local everywhere else that can be
-// minified.
-
-if (Module['arguments']) arguments_ = Module['arguments'];
-
-if (Module['thisProgram']) thisProgram = Module['thisProgram'];
-
-// perform assertions in shell.js after we set up out() and err(), as otherwise if an assertion fails it cannot print the message
 // end include: shell.js
 
 // include: preamble.js
@@ -151,11 +109,9 @@ if (Module['thisProgram']) thisProgram = Module['thisProgram'];
 // An online HTML version (which may be of a different version of Emscripten)
 //    is up at http://kripken.github.io/emscripten-site/docs/api_reference/preamble.js.html
 
-var wasmBinary = Module['wasmBinary'];
+var wasmBinary;
 
 // Wasm globals
-
-var wasmMemory;
 
 //========================================
 // Runtime essentials
@@ -184,9 +140,26 @@ function assert(condition, text) {
   }
 }
 
+/**
+ * Indicates whether filename is delivered via file protocol (as opposed to http/https)
+ * @noinline
+ */
+var isFileURI = (filename) => filename.startsWith('file://');
+
+// include: runtime_common.js
+// include: runtime_stack_check.js
+// end include: runtime_stack_check.js
+// include: runtime_exceptions.js
+// end include: runtime_exceptions.js
+// include: runtime_debug.js
+// end include: runtime_debug.js
+var readyPromiseResolve, readyPromiseReject;
+
 // Memory management
 
-var HEAP,
+var wasmMemory;
+
+var
 /** @type {!Int8Array} */
   HEAP8,
 /** @type {!Uint8Array} */
@@ -201,65 +174,38 @@ var HEAP,
   HEAPU32,
 /** @type {!Float32Array} */
   HEAPF32,
-/* BigInt64Array type is not correctly defined in closure
-/** not-@type {!BigInt64Array} */
-  HEAP64,
-/* BigUint64Array type is not correctly defined in closure
-/** not-t@type {!BigUint64Array} */
-  HEAPU64,
 /** @type {!Float64Array} */
   HEAPF64;
 
+// BigInt64Array type is not correctly defined in closure
+var
+/** not-@type {!BigInt64Array} */
+  HEAP64,
+/* BigUint64Array type is not correctly defined in closure
+/** not-@type {!BigUint64Array} */
+  HEAPU64;
+
 var runtimeInitialized = false;
 
-// include: URIUtils.js
-// Prefix of data URIs emitted by SINGLE_FILE and related options.
-var dataURIPrefix = 'data:application/octet-stream;base64,';
-
-/**
- * Indicates whether filename is a base64 data URI.
- * @noinline
- */
-var isDataURI = (filename) => filename.startsWith(dataURIPrefix);
-
-/**
- * Indicates whether filename is delivered via file protocol (as opposed to http/https)
- * @noinline
- */
-var isFileURI = (filename) => filename.startsWith('file://');
-// end include: URIUtils.js
-// include: runtime_shared.js
-// include: runtime_stack_check.js
-// end include: runtime_stack_check.js
-// include: runtime_exceptions.js
-// end include: runtime_exceptions.js
-// include: runtime_debug.js
-// end include: runtime_debug.js
-// include: memoryprofiler.js
-// end include: memoryprofiler.js
 
 
 function updateMemoryViews() {
   var b = wasmMemory.buffer;
-  Module['HEAP8'] = HEAP8 = new Int8Array(b);
-  Module['HEAP16'] = HEAP16 = new Int16Array(b);
+  HEAP8 = new Int8Array(b);
+  HEAP16 = new Int16Array(b);
   Module['HEAPU8'] = HEAPU8 = new Uint8Array(b);
-  Module['HEAPU16'] = HEAPU16 = new Uint16Array(b);
-  Module['HEAP32'] = HEAP32 = new Int32Array(b);
+  HEAPU16 = new Uint16Array(b);
+  HEAP32 = new Int32Array(b);
   Module['HEAPU32'] = HEAPU32 = new Uint32Array(b);
-  Module['HEAPF32'] = HEAPF32 = new Float32Array(b);
-  Module['HEAPF64'] = HEAPF64 = new Float64Array(b);
-  Module['HEAP64'] = HEAP64 = new BigInt64Array(b);
-  Module['HEAPU64'] = HEAPU64 = new BigUint64Array(b);
+  HEAPF32 = new Float32Array(b);
+  HEAPF64 = new Float64Array(b);
+  HEAP64 = new BigInt64Array(b);
+  HEAPU64 = new BigUint64Array(b);
 }
 
-// end include: runtime_shared.js
-var __ATPRERUN__  = []; // functions called before the runtime is initialized
-var __ATINIT__    = []; // functions called during startup
-var __ATMAIN__    = []; // functions called when main() is to be run
-var __ATEXIT__    = []; // functions called during shutdown
-var __ATPOSTRUN__ = []; // functions called after the main() is called
-
+// include: memoryprofiler.js
+// end include: memoryprofiler.js
+// end include: runtime_common.js
 function preRun() {
   if (Module['preRun']) {
     if (typeof Module['preRun'] == 'function') Module['preRun'] = [Module['preRun']];
@@ -267,22 +213,29 @@ function preRun() {
       addOnPreRun(Module['preRun'].shift());
     }
   }
-  callRuntimeCallbacks(__ATPRERUN__);
+  // Begin ATPRERUNS hooks
+  callRuntimeCallbacks(onPreRuns);
+  // End ATPRERUNS hooks
 }
 
 function initRuntime() {
   runtimeInitialized = true;
 
-  
-  callRuntimeCallbacks(__ATINIT__);
+  // Begin ATINITS hooks
+  callRuntimeCallbacks(onInits);
+  // End ATINITS hooks
+
+  wasmExports['__wasm_call_ctors']();
+
+  // No ATPOSTCTORS hooks
 }
 
 function preMain() {
-  
-  callRuntimeCallbacks(__ATMAIN__);
+  // No ATMAINS hooks
 }
 
 function postRun() {
+   // PThreads reuse the runtime from the main thread.
 
   if (Module['postRun']) {
     if (typeof Module['postRun'] == 'function') Module['postRun'] = [Module['postRun']];
@@ -291,26 +244,9 @@ function postRun() {
     }
   }
 
-  callRuntimeCallbacks(__ATPOSTRUN__);
-}
-
-function addOnPreRun(cb) {
-  __ATPRERUN__.unshift(cb);
-}
-
-function addOnInit(cb) {
-  __ATINIT__.unshift(cb);
-}
-
-function addOnPreMain(cb) {
-  __ATMAIN__.unshift(cb);
-}
-
-function addOnExit(cb) {
-}
-
-function addOnPostRun(cb) {
-  __ATPOSTRUN__.unshift(cb);
+  // Begin ATPOSTRUNS hooks
+  callRuntimeCallbacks(onPostRuns);
+  // End ATPOSTRUNS hooks
 }
 
 // A counter of dependencies for calling run(). If we need to
@@ -322,10 +258,6 @@ function addOnPostRun(cb) {
 // the dependencies are met.
 var runDependencies = 0;
 var dependenciesFulfilled = null; // overridden to take different actions when all run dependencies are fulfilled
-
-function getUniqueRunDependency(id) {
-  return id;
-}
 
 function addRunDependency(id) {
   runDependencies++;
@@ -377,7 +309,7 @@ function abort(what) {
   /** @suppress {checkTypes} */
   var e = new WebAssembly.RuntimeError(what);
 
-  readyPromiseReject(e);
+  readyPromiseReject?.(e);
   // Throw the error whether or not MODULARIZE is set because abort is used
   // in code paths apart from instantiation where an exception is expected
   // to be thrown when abort is called.
@@ -385,12 +317,9 @@ function abort(what) {
 }
 
 var wasmBinaryFile;
+
 function findWasmBinary() {
-    var f = 'uarm_web.wasm';
-    if (!isDataURI(f)) {
-      return locateFile(f);
-    }
-    return f;
+    return locateFile('uarm_web.wasm');
 }
 
 function getBinarySync(file) {
@@ -405,8 +334,7 @@ function getBinarySync(file) {
 
 async function getWasmBinary(binaryFile) {
   // If we don't have the binary yet, load it asynchronously using readAsync.
-  if (!wasmBinary
-      ) {
+  if (!wasmBinary) {
     // Fetch the binary using readAsync
     try {
       var response = await readAsync(binaryFile);
@@ -433,9 +361,7 @@ async function instantiateArrayBuffer(binaryFile, imports) {
 }
 
 async function instantiateAsync(binary, binaryFile, imports) {
-  if (!binary &&
-      typeof WebAssembly.instantiateStreaming == 'function' &&
-      !isDataURI(binaryFile)
+  if (!binary && typeof WebAssembly.instantiateStreaming == 'function'
      ) {
     try {
       var response = fetch(binaryFile, { credentials: 'same-origin' });
@@ -479,8 +405,7 @@ async function createWasm() {
     wasmTable = wasmExports['__indirect_function_table'];
     
 
-    addOnInit(wasmExports['__wasm_call_ctors']);
-
+    assignWasmExports(wasmExports);
     removeRunDependency('wasm-instantiate');
     return wasmExports;
   }
@@ -505,36 +430,22 @@ async function createWasm() {
   // Also pthreads and wasm workers initialize the wasm instance through this
   // path.
   if (Module['instantiateWasm']) {
-    try {
-      return Module['instantiateWasm'](info, receiveInstance);
-    } catch(e) {
-      err(`Module.instantiateWasm callback failed with error: ${e}`);
-        // If instantiation fails, reject the module ready promise.
-        readyPromiseReject(e);
-    }
+    return new Promise((resolve, reject) => {
+        Module['instantiateWasm'](info, (mod, inst) => {
+          resolve(receiveInstance(mod, inst));
+        });
+    });
   }
 
   wasmBinaryFile ??= findWasmBinary();
-
-  try {
-    var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
-    var exports = receiveInstantiationResult(result);
-    return exports;
-  } catch (e) {
-    // If instantiation fails, reject the module ready promise.
-    readyPromiseReject(e);
-    return Promise.reject(e);
-  }
+  var result = await instantiateAsync(wasmBinary, wasmBinaryFile, info);
+  var exports = receiveInstantiationResult(result);
+  return exports;
 }
 
-// === Body ===
-
-var ASM_CONSTS = {
-  70894: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
-};
-function __emscripten_abort() { throw new Error("emulator terminated"); }
-
 // end include: preamble.js
+
+// Begin JS library code
 
 
   class ExitStatus {
@@ -551,6 +462,12 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
         callbacks.shift()(Module);
       }
     };
+  var onPostRuns = [];
+  var addOnPostRun = (cb) => onPostRuns.push(cb);
+
+  var onPreRuns = [];
+  var addOnPreRun = (cb) => onPreRuns.push(cb);
+
 
   
     /**
@@ -572,7 +489,7 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
     }
   }
 
-  var noExitRuntime = Module['noExitRuntime'] || true;
+  var noExitRuntime = true;
 
   
     /**
@@ -620,6 +537,7 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       // so that undefined/NaN means Infinity)
       while (heapOrArray[endPtr] && !(endPtr >= endIdx)) ++endPtr;
   
+      // When using conditional TextDecoder, skip it for short strings as the overhead of the native call is not worth it.
       if (endPtr - idx > 16 && heapOrArray.buffer && UTF8Decoder) {
         return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
       }
@@ -673,6 +591,17 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   var ___assert_fail = (condition, filename, line, func) =>
       abort(`Assertion failed: ${UTF8ToString(condition)}, at: ` + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
 
+  var INT53_MAX = 9007199254740992;
+  
+  var INT53_MIN = -9007199254740992;
+  var bigintToI53Checked = (num) => (num < INT53_MIN || num > INT53_MAX) ? NaN : Number(num);
+  function ___syscall_ftruncate64(fd, length) {
+    length = bigintToI53Checked(length);
+  
+  
+  ;
+  }
+
   var __abort_js = () =>
       abort('');
 
@@ -695,14 +624,10 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       return yday;
     };
   
-  var INT53_MAX = 9007199254740992;
-  
-  var INT53_MIN = -9007199254740992;
-  var bigintToI53Checked = (num) => (num < INT53_MIN || num > INT53_MAX) ? NaN : Number(num);
   function __localtime_js(time, tmPtr) {
     time = bigintToI53Checked(time);
   
-    
+  
       var date = new Date(time*1000);
       HEAP32[((tmPtr)>>2)] = date.getSeconds();
       HEAP32[(((tmPtr)+(4))>>2)] = date.getMinutes();
@@ -724,6 +649,58 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       HEAP32[(((tmPtr)+(32))>>2)] = dst;
     ;
   }
+
+  
+  var __mktime_js = function(tmPtr) {
+  
+  var ret = (() => { 
+      var date = new Date(HEAP32[(((tmPtr)+(20))>>2)] + 1900,
+                          HEAP32[(((tmPtr)+(16))>>2)],
+                          HEAP32[(((tmPtr)+(12))>>2)],
+                          HEAP32[(((tmPtr)+(8))>>2)],
+                          HEAP32[(((tmPtr)+(4))>>2)],
+                          HEAP32[((tmPtr)>>2)],
+                          0);
+  
+      // There's an ambiguous hour when the time goes back; the tm_isdst field is
+      // used to disambiguate it.  Date() basically guesses, so we fix it up if it
+      // guessed wrong, or fill in tm_isdst with the guess if it's -1.
+      var dst = HEAP32[(((tmPtr)+(32))>>2)];
+      var guessedOffset = date.getTimezoneOffset();
+      var start = new Date(date.getFullYear(), 0, 1);
+      var summerOffset = new Date(date.getFullYear(), 6, 1).getTimezoneOffset();
+      var winterOffset = start.getTimezoneOffset();
+      var dstOffset = Math.min(winterOffset, summerOffset); // DST is in December in South
+      if (dst < 0) {
+        // Attention: some regions don't have DST at all.
+        HEAP32[(((tmPtr)+(32))>>2)] = Number(summerOffset != winterOffset && dstOffset == guessedOffset);
+      } else if ((dst > 0) != (dstOffset == guessedOffset)) {
+        var nonDstOffset = Math.max(winterOffset, summerOffset);
+        var trueOffset = dst > 0 ? dstOffset : nonDstOffset;
+        // Don't try setMinutes(date.getMinutes() + ...) -- it's messed up.
+        date.setTime(date.getTime() + (trueOffset - guessedOffset)*60000);
+      }
+  
+      HEAP32[(((tmPtr)+(24))>>2)] = date.getDay();
+      var yday = ydayFromDate(date)|0;
+      HEAP32[(((tmPtr)+(28))>>2)] = yday;
+      // To match expected behavior, update fields from date
+      HEAP32[((tmPtr)>>2)] = date.getSeconds();
+      HEAP32[(((tmPtr)+(4))>>2)] = date.getMinutes();
+      HEAP32[(((tmPtr)+(8))>>2)] = date.getHours();
+      HEAP32[(((tmPtr)+(12))>>2)] = date.getDate();
+      HEAP32[(((tmPtr)+(16))>>2)] = date.getMonth();
+      HEAP32[(((tmPtr)+(20))>>2)] = date.getYear();
+  
+      var timeMs = date.getTime();
+      if (isNaN(timeMs)) {
+        return -1;
+      }
+      // Return time in microseconds
+      return timeMs / 1000;
+     })();
+  return BigInt(ret);
+  };
 
   var timers = {
   };
@@ -811,18 +788,10 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       var startIdx = outIdx;
       var endIdx = outIdx + maxBytesToWrite - 1; // -1 for string null terminator.
       for (var i = 0; i < str.length; ++i) {
-        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
-        // unit, not a Unicode code point of the character! So decode
-        // UTF16->UTF32->UTF8.
-        // See http://unicode.org/faq/utf_bom.html#utf16-3
         // For UTF8 byte structure, see http://en.wikipedia.org/wiki/UTF-8#Description
         // and https://www.ietf.org/rfc/rfc2279.txt
         // and https://tools.ietf.org/html/rfc3629
-        var u = str.charCodeAt(i); // possibly a lead surrogate
-        if (u >= 0xD800 && u <= 0xDFFF) {
-          var u1 = str.charCodeAt(++i);
-          u = 0x10000 + ((u & 0x3FF) << 10) | (u1 & 0x3FF);
-        }
+        var u = str.codePointAt(i);
         if (u <= 0x7F) {
           if (outIdx >= endIdx) break;
           heap[outIdx++] = u;
@@ -841,6 +810,9 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
           heap[outIdx++] = 0x80 | ((u >> 12) & 63);
           heap[outIdx++] = 0x80 | ((u >> 6) & 63);
           heap[outIdx++] = 0x80 | (u & 63);
+          // Gotcha: if codePoint is over 0xFFFF, it is represented as a surrogate pair in UTF-16.
+          // We need to manually skip over the second code unit for correct iteration.
+          i++;
         }
       }
       // Null-terminate the pointer to the buffer.
@@ -909,7 +881,7 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   function _clock_time_get(clk_id, ignored_precision, ptime) {
     ignored_precision = bigintToI53Checked(ignored_precision);
   
-    
+  
       if (!checkWasiClock(clk_id)) {
         return 28;
       }
@@ -1044,7 +1016,7 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       if (!getEnvStrings.strings) {
         // Default values.
         // Browser language detection #8751
-        var lang = ((typeof navigator == 'object' && navigator.languages && navigator.languages[0]) || 'C').replace('-', '_') + '.UTF-8';
+        var lang = ((typeof navigator == 'object' && navigator.language) || 'C').replace('-', '_') + '.UTF-8';
         var env = {
           'USER': 'web_user',
           'LOGNAME': 'web_user',
@@ -1071,29 +1043,46 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       return getEnvStrings.strings;
     };
   
-  var stringToAscii = (str, buffer) => {
-      for (var i = 0; i < str.length; ++i) {
-        HEAP8[buffer++] = str.charCodeAt(i);
-      }
-      // Null-terminate the string
-      HEAP8[buffer] = 0;
-    };
   var _environ_get = (__environ, environ_buf) => {
       var bufSize = 0;
-      getEnvStrings().forEach((string, i) => {
+      var envp = 0;
+      for (var string of getEnvStrings()) {
         var ptr = environ_buf + bufSize;
-        HEAPU32[(((__environ)+(i*4))>>2)] = ptr;
-        stringToAscii(string, ptr);
-        bufSize += string.length + 1;
-      });
+        HEAPU32[(((__environ)+(envp))>>2)] = ptr;
+        bufSize += stringToUTF8(string, ptr, Infinity) + 1;
+        envp += 4;
+      }
       return 0;
     };
 
+  
+  var lengthBytesUTF8 = (str) => {
+      var len = 0;
+      for (var i = 0; i < str.length; ++i) {
+        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
+        // unit, not a Unicode code point of the character! So decode
+        // UTF16->UTF32->UTF8.
+        // See http://unicode.org/faq/utf_bom.html#utf16-3
+        var c = str.charCodeAt(i); // possibly a lead surrogate
+        if (c <= 0x7F) {
+          len++;
+        } else if (c <= 0x7FF) {
+          len += 2;
+        } else if (c >= 0xD800 && c <= 0xDFFF) {
+          len += 4; ++i;
+        } else {
+          len += 3;
+        }
+      }
+      return len;
+    };
   var _environ_sizes_get = (penviron_count, penviron_buf_size) => {
       var strings = getEnvStrings();
       HEAPU32[((penviron_count)>>2)] = strings.length;
       var bufSize = 0;
-      strings.forEach((string) => bufSize += string.length + 1);
+      for (var string of strings) {
+        bufSize += lengthBytesUTF8(string) + 1;
+      }
       HEAPU32[((penviron_buf_size)>>2)] = bufSize;
       return 0;
     };
@@ -1109,7 +1098,7 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   function _fd_seek(fd, offset, whence, newOffset) {
     offset = bigintToI53Checked(offset);
   
-    
+  
       return 70;
     ;
   }
@@ -1159,43 +1148,25 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
 
 
 
-  var lengthBytesUTF8 = (str) => {
-      var len = 0;
-      for (var i = 0; i < str.length; ++i) {
-        // Gotcha: charCodeAt returns a 16-bit word that is a UTF-16 encoded code
-        // unit, not a Unicode code point of the character! So decode
-        // UTF16->UTF32->UTF8.
-        // See http://unicode.org/faq/utf_bom.html#utf16-3
-        var c = str.charCodeAt(i); // possibly a lead surrogate
-        if (c <= 0x7F) {
-          len++;
-        } else if (c <= 0x7FF) {
-          len += 2;
-        } else if (c >= 0xD800 && c <= 0xDFFF) {
-          len += 4; ++i;
-        } else {
-          len += 3;
-        }
-      }
-      return len;
-    };
   
   /** @type {function(string, boolean=, number=)} */
-  function intArrayFromString(stringy, dontAddNull, length) {
-    var len = length > 0 ? length : lengthBytesUTF8(stringy)+1;
-    var u8array = new Array(len);
-    var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length);
-    if (dontAddNull) u8array.length = numBytesWritten;
-    return u8array;
-  }
+  var intArrayFromString = (stringy, dontAddNull, length) => {
+      var len = length > 0 ? length : lengthBytesUTF8(stringy)+1;
+      var u8array = new Array(len);
+      var numBytesWritten = stringToUTF8Array(stringy, u8array, 0, u8array.length);
+      if (dontAddNull) u8array.length = numBytesWritten;
+      return u8array;
+    };
 
 
+
+  var onInits = [];
+  var addOnInit = (cb) => onInits.push(cb);
 
   var getCFunc = (ident) => {
       var func = Module['_' + ident]; // closure exported function
       return func;
     };
-  
   
   var writeArrayToMemory = (array, buffer) => {
       HEAP8.set(array, buffer);
@@ -1270,6 +1241,7 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       return ret;
     };
   
+  
     /**
      * @param {string=} returnType
      * @param {Array=} argTypes
@@ -1329,8 +1301,8 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       // Parameters, length + signatures
       target.push(0x60 /* form: func */);
       uleb128Encode(sigParam.length, target);
-      for (var i = 0; i < sigParam.length; ++i) {
-        target.push(typeCodes[sigParam[i]]);
+      for (var paramType of sigParam) {
+        target.push(typeCodes[paramType]);
       }
   
       // Return values, length + signatures
@@ -1393,7 +1365,6 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   var getWasmTableEntry = (funcPtr) => {
       var func = wasmTableMirror[funcPtr];
       if (!func) {
-        if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
         /** @suppress {checkTypes} */
         wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
       }
@@ -1445,7 +1416,6 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
     };
   
   
-  
   var setWasmTableEntry = (idx, func) => {
       /** @suppress {checkTypes} */
       wasmTable.set(idx, func);
@@ -1455,7 +1425,6 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
       /** @suppress {checkTypes} */
       wasmTableMirror[idx] = wasmTable.get(idx);
     };
-  
   /** @param {string=} sig */
   var addFunction = (func, sig) => {
       // Check if the function is already in the table, to ensure each function
@@ -1485,17 +1454,240 @@ function __emscripten_abort() { throw new Error("emulator terminated"); }
   
       return ret;
     };
+// End JS library code
+
+// include: postlibrary.js
+// This file is included after the automatically-generated JS library code
+// but before the wasm module is created.
+
+{
+
+  // Begin ATMODULES hooks
+  if (Module['noExitRuntime']) noExitRuntime = Module['noExitRuntime'];
+if (Module['print']) out = Module['print'];
+if (Module['printErr']) err = Module['printErr'];
+if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
+  // End ATMODULES hooks
+
+  if (Module['arguments']) arguments_ = Module['arguments'];
+  if (Module['thisProgram']) thisProgram = Module['thisProgram'];
+
+}
+
+// Begin runtime exports
+  Module['callMain'] = callMain;
+  Module['ccall'] = ccall;
+  Module['cwrap'] = cwrap;
+  Module['addFunction'] = addFunction;
+  // End runtime exports
+  // Begin JS library exports
+  // End JS library exports
+
+// end include: postlibrary.js
+
+var ASM_CONSTS = {
+  71934: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+};
+function __emscripten_abort() { throw new Error("emulator terminated"); }
+
+// Imports from the Wasm binary.
+var _free,
+  _malloc,
+  _cycle,
+  _getFrame,
+  _resetFrame,
+  _getTimesliceSizeUsec,
+  _penDown,
+  _penUp,
+  _currentIps,
+  _currentIpsMax,
+  _setMaxLoad,
+  _setCyclesPerSecondLimit,
+  _getTimestampUsec,
+  _keyDown,
+  _keyUp,
+  _pendingSamples,
+  _popQueuedSamples,
+  _setPcmOutputEnabled,
+  _setPcmSuspended,
+  _getRomDataSize,
+  _getRomData,
+  _getNandDataSize,
+  _getNandData,
+  _getNandDirtyPages,
+  _isNandDirty,
+  _setNandDirty,
+  _getSdCardDataSize,
+  _getSdCardData,
+  _getSdCardDirtyPages,
+  _isSdCardDirty,
+  _setSdCardDirty,
+  _getRamDataSize,
+  _getRamData,
+  _getRamDirtyPages,
+  _getDeviceType,
+  _sdCardInsert,
+  _sdCardEject,
+  _reset,
+  _save,
+  _getSavestateSize,
+  _getSavestateData,
+  _isSdInserted,
+  _getRamSize,
+  _installDatabase,
+  _newDbBackup,
+  _main,
+  _webMain,
+  _webidl_free,
+  _webidl_malloc,
+  _emscripten_bind_VoidPtr___destroy___0,
+  _emscripten_bind_SessionFile_SessionFile_0,
+  _emscripten_bind_SessionFile_IsSessionFile_2,
+  _emscripten_bind_SessionFile_GetDeviceId_0,
+  _emscripten_bind_SessionFile_SetDeviceId_1,
+  _emscripten_bind_SessionFile_GetMetadata_0,
+  _emscripten_bind_SessionFile_GetMetadataSize_0,
+  _emscripten_bind_SessionFile_SetMetadata_2,
+  _emscripten_bind_SessionFile_GetNor_0,
+  _emscripten_bind_SessionFile_GetNorSize_0,
+  _emscripten_bind_SessionFile_SetNor_2,
+  _emscripten_bind_SessionFile_GetNand_0,
+  _emscripten_bind_SessionFile_GetNandSize_0,
+  _emscripten_bind_SessionFile_SetNand_2,
+  _emscripten_bind_SessionFile_GetMemory_0,
+  _emscripten_bind_SessionFile_GetMemorySize_0,
+  _emscripten_bind_SessionFile_SetMemory_2,
+  _emscripten_bind_SessionFile_GetSavestate_0,
+  _emscripten_bind_SessionFile_GetSavestateSize_0,
+  _emscripten_bind_SessionFile_SetSavestate_2,
+  _emscripten_bind_SessionFile_GetRamSize_0,
+  _emscripten_bind_SessionFile_SetRamSize_1,
+  _emscripten_bind_SessionFile_Serialize_0,
+  _emscripten_bind_SessionFile_GetSerializedSession_0,
+  _emscripten_bind_SessionFile_GetSerializedSessionSize_0,
+  _emscripten_bind_SessionFile_Deserialize_2,
+  _emscripten_bind_SessionFile___destroy___0,
+  _emscripten_bind_DbBackup_Init_0,
+  _emscripten_bind_DbBackup_GetState_0,
+  _emscripten_bind_DbBackup_Continue_0,
+  _emscripten_bind_DbBackup_HasLastProcessedDb_0,
+  _emscripten_bind_DbBackup_GetLastProcessedDb_0,
+  _emscripten_bind_DbBackup_GetArchiveData_0,
+  _emscripten_bind_DbBackup_GetArchiveSize_0,
+  _emscripten_bind_DbBackup___destroy___0,
+  __emscripten_timeout,
+  __emscripten_stack_restore,
+  __emscripten_stack_alloc,
+  _emscripten_stack_get_current,
+  ___cxa_increment_exception_refcount;
+
+
+function assignWasmExports(wasmExports) {
+  Module['_free'] = _free = wasmExports['free'];
+  Module['_malloc'] = _malloc = wasmExports['malloc'];
+  Module['_cycle'] = _cycle = wasmExports['cycle'];
+  Module['_getFrame'] = _getFrame = wasmExports['getFrame'];
+  Module['_resetFrame'] = _resetFrame = wasmExports['resetFrame'];
+  Module['_getTimesliceSizeUsec'] = _getTimesliceSizeUsec = wasmExports['getTimesliceSizeUsec'];
+  Module['_penDown'] = _penDown = wasmExports['penDown'];
+  Module['_penUp'] = _penUp = wasmExports['penUp'];
+  Module['_currentIps'] = _currentIps = wasmExports['currentIps'];
+  Module['_currentIpsMax'] = _currentIpsMax = wasmExports['currentIpsMax'];
+  Module['_setMaxLoad'] = _setMaxLoad = wasmExports['setMaxLoad'];
+  Module['_setCyclesPerSecondLimit'] = _setCyclesPerSecondLimit = wasmExports['setCyclesPerSecondLimit'];
+  Module['_getTimestampUsec'] = _getTimestampUsec = wasmExports['getTimestampUsec'];
+  Module['_keyDown'] = _keyDown = wasmExports['keyDown'];
+  Module['_keyUp'] = _keyUp = wasmExports['keyUp'];
+  Module['_pendingSamples'] = _pendingSamples = wasmExports['pendingSamples'];
+  Module['_popQueuedSamples'] = _popQueuedSamples = wasmExports['popQueuedSamples'];
+  Module['_setPcmOutputEnabled'] = _setPcmOutputEnabled = wasmExports['setPcmOutputEnabled'];
+  Module['_setPcmSuspended'] = _setPcmSuspended = wasmExports['setPcmSuspended'];
+  Module['_getRomDataSize'] = _getRomDataSize = wasmExports['getRomDataSize'];
+  Module['_getRomData'] = _getRomData = wasmExports['getRomData'];
+  Module['_getNandDataSize'] = _getNandDataSize = wasmExports['getNandDataSize'];
+  Module['_getNandData'] = _getNandData = wasmExports['getNandData'];
+  Module['_getNandDirtyPages'] = _getNandDirtyPages = wasmExports['getNandDirtyPages'];
+  Module['_isNandDirty'] = _isNandDirty = wasmExports['isNandDirty'];
+  Module['_setNandDirty'] = _setNandDirty = wasmExports['setNandDirty'];
+  Module['_getSdCardDataSize'] = _getSdCardDataSize = wasmExports['getSdCardDataSize'];
+  Module['_getSdCardData'] = _getSdCardData = wasmExports['getSdCardData'];
+  Module['_getSdCardDirtyPages'] = _getSdCardDirtyPages = wasmExports['getSdCardDirtyPages'];
+  Module['_isSdCardDirty'] = _isSdCardDirty = wasmExports['isSdCardDirty'];
+  Module['_setSdCardDirty'] = _setSdCardDirty = wasmExports['setSdCardDirty'];
+  Module['_getRamDataSize'] = _getRamDataSize = wasmExports['getRamDataSize'];
+  Module['_getRamData'] = _getRamData = wasmExports['getRamData'];
+  Module['_getRamDirtyPages'] = _getRamDirtyPages = wasmExports['getRamDirtyPages'];
+  Module['_getDeviceType'] = _getDeviceType = wasmExports['getDeviceType'];
+  Module['_sdCardInsert'] = _sdCardInsert = wasmExports['sdCardInsert'];
+  Module['_sdCardEject'] = _sdCardEject = wasmExports['sdCardEject'];
+  Module['_reset'] = _reset = wasmExports['reset'];
+  Module['_save'] = _save = wasmExports['save'];
+  Module['_getSavestateSize'] = _getSavestateSize = wasmExports['getSavestateSize'];
+  Module['_getSavestateData'] = _getSavestateData = wasmExports['getSavestateData'];
+  Module['_isSdInserted'] = _isSdInserted = wasmExports['isSdInserted'];
+  Module['_getRamSize'] = _getRamSize = wasmExports['getRamSize'];
+  Module['_installDatabase'] = _installDatabase = wasmExports['installDatabase'];
+  Module['_newDbBackup'] = _newDbBackup = wasmExports['newDbBackup'];
+  Module['_main'] = _main = wasmExports['main'];
+  Module['_webMain'] = _webMain = wasmExports['webMain'];
+  Module['_webidl_free'] = _webidl_free = wasmExports['webidl_free'];
+  Module['_webidl_malloc'] = _webidl_malloc = wasmExports['webidl_malloc'];
+  Module['_emscripten_bind_VoidPtr___destroy___0'] = _emscripten_bind_VoidPtr___destroy___0 = wasmExports['emscripten_bind_VoidPtr___destroy___0'];
+  Module['_emscripten_bind_SessionFile_SessionFile_0'] = _emscripten_bind_SessionFile_SessionFile_0 = wasmExports['emscripten_bind_SessionFile_SessionFile_0'];
+  Module['_emscripten_bind_SessionFile_IsSessionFile_2'] = _emscripten_bind_SessionFile_IsSessionFile_2 = wasmExports['emscripten_bind_SessionFile_IsSessionFile_2'];
+  Module['_emscripten_bind_SessionFile_GetDeviceId_0'] = _emscripten_bind_SessionFile_GetDeviceId_0 = wasmExports['emscripten_bind_SessionFile_GetDeviceId_0'];
+  Module['_emscripten_bind_SessionFile_SetDeviceId_1'] = _emscripten_bind_SessionFile_SetDeviceId_1 = wasmExports['emscripten_bind_SessionFile_SetDeviceId_1'];
+  Module['_emscripten_bind_SessionFile_GetMetadata_0'] = _emscripten_bind_SessionFile_GetMetadata_0 = wasmExports['emscripten_bind_SessionFile_GetMetadata_0'];
+  Module['_emscripten_bind_SessionFile_GetMetadataSize_0'] = _emscripten_bind_SessionFile_GetMetadataSize_0 = wasmExports['emscripten_bind_SessionFile_GetMetadataSize_0'];
+  Module['_emscripten_bind_SessionFile_SetMetadata_2'] = _emscripten_bind_SessionFile_SetMetadata_2 = wasmExports['emscripten_bind_SessionFile_SetMetadata_2'];
+  Module['_emscripten_bind_SessionFile_GetNor_0'] = _emscripten_bind_SessionFile_GetNor_0 = wasmExports['emscripten_bind_SessionFile_GetNor_0'];
+  Module['_emscripten_bind_SessionFile_GetNorSize_0'] = _emscripten_bind_SessionFile_GetNorSize_0 = wasmExports['emscripten_bind_SessionFile_GetNorSize_0'];
+  Module['_emscripten_bind_SessionFile_SetNor_2'] = _emscripten_bind_SessionFile_SetNor_2 = wasmExports['emscripten_bind_SessionFile_SetNor_2'];
+  Module['_emscripten_bind_SessionFile_GetNand_0'] = _emscripten_bind_SessionFile_GetNand_0 = wasmExports['emscripten_bind_SessionFile_GetNand_0'];
+  Module['_emscripten_bind_SessionFile_GetNandSize_0'] = _emscripten_bind_SessionFile_GetNandSize_0 = wasmExports['emscripten_bind_SessionFile_GetNandSize_0'];
+  Module['_emscripten_bind_SessionFile_SetNand_2'] = _emscripten_bind_SessionFile_SetNand_2 = wasmExports['emscripten_bind_SessionFile_SetNand_2'];
+  Module['_emscripten_bind_SessionFile_GetMemory_0'] = _emscripten_bind_SessionFile_GetMemory_0 = wasmExports['emscripten_bind_SessionFile_GetMemory_0'];
+  Module['_emscripten_bind_SessionFile_GetMemorySize_0'] = _emscripten_bind_SessionFile_GetMemorySize_0 = wasmExports['emscripten_bind_SessionFile_GetMemorySize_0'];
+  Module['_emscripten_bind_SessionFile_SetMemory_2'] = _emscripten_bind_SessionFile_SetMemory_2 = wasmExports['emscripten_bind_SessionFile_SetMemory_2'];
+  Module['_emscripten_bind_SessionFile_GetSavestate_0'] = _emscripten_bind_SessionFile_GetSavestate_0 = wasmExports['emscripten_bind_SessionFile_GetSavestate_0'];
+  Module['_emscripten_bind_SessionFile_GetSavestateSize_0'] = _emscripten_bind_SessionFile_GetSavestateSize_0 = wasmExports['emscripten_bind_SessionFile_GetSavestateSize_0'];
+  Module['_emscripten_bind_SessionFile_SetSavestate_2'] = _emscripten_bind_SessionFile_SetSavestate_2 = wasmExports['emscripten_bind_SessionFile_SetSavestate_2'];
+  Module['_emscripten_bind_SessionFile_GetRamSize_0'] = _emscripten_bind_SessionFile_GetRamSize_0 = wasmExports['emscripten_bind_SessionFile_GetRamSize_0'];
+  Module['_emscripten_bind_SessionFile_SetRamSize_1'] = _emscripten_bind_SessionFile_SetRamSize_1 = wasmExports['emscripten_bind_SessionFile_SetRamSize_1'];
+  Module['_emscripten_bind_SessionFile_Serialize_0'] = _emscripten_bind_SessionFile_Serialize_0 = wasmExports['emscripten_bind_SessionFile_Serialize_0'];
+  Module['_emscripten_bind_SessionFile_GetSerializedSession_0'] = _emscripten_bind_SessionFile_GetSerializedSession_0 = wasmExports['emscripten_bind_SessionFile_GetSerializedSession_0'];
+  Module['_emscripten_bind_SessionFile_GetSerializedSessionSize_0'] = _emscripten_bind_SessionFile_GetSerializedSessionSize_0 = wasmExports['emscripten_bind_SessionFile_GetSerializedSessionSize_0'];
+  Module['_emscripten_bind_SessionFile_Deserialize_2'] = _emscripten_bind_SessionFile_Deserialize_2 = wasmExports['emscripten_bind_SessionFile_Deserialize_2'];
+  Module['_emscripten_bind_SessionFile___destroy___0'] = _emscripten_bind_SessionFile___destroy___0 = wasmExports['emscripten_bind_SessionFile___destroy___0'];
+  Module['_emscripten_bind_DbBackup_Init_0'] = _emscripten_bind_DbBackup_Init_0 = wasmExports['emscripten_bind_DbBackup_Init_0'];
+  Module['_emscripten_bind_DbBackup_GetState_0'] = _emscripten_bind_DbBackup_GetState_0 = wasmExports['emscripten_bind_DbBackup_GetState_0'];
+  Module['_emscripten_bind_DbBackup_Continue_0'] = _emscripten_bind_DbBackup_Continue_0 = wasmExports['emscripten_bind_DbBackup_Continue_0'];
+  Module['_emscripten_bind_DbBackup_HasLastProcessedDb_0'] = _emscripten_bind_DbBackup_HasLastProcessedDb_0 = wasmExports['emscripten_bind_DbBackup_HasLastProcessedDb_0'];
+  Module['_emscripten_bind_DbBackup_GetLastProcessedDb_0'] = _emscripten_bind_DbBackup_GetLastProcessedDb_0 = wasmExports['emscripten_bind_DbBackup_GetLastProcessedDb_0'];
+  Module['_emscripten_bind_DbBackup_GetArchiveData_0'] = _emscripten_bind_DbBackup_GetArchiveData_0 = wasmExports['emscripten_bind_DbBackup_GetArchiveData_0'];
+  Module['_emscripten_bind_DbBackup_GetArchiveSize_0'] = _emscripten_bind_DbBackup_GetArchiveSize_0 = wasmExports['emscripten_bind_DbBackup_GetArchiveSize_0'];
+  Module['_emscripten_bind_DbBackup___destroy___0'] = _emscripten_bind_DbBackup___destroy___0 = wasmExports['emscripten_bind_DbBackup___destroy___0'];
+  __emscripten_timeout = wasmExports['_emscripten_timeout'];
+  __emscripten_stack_restore = wasmExports['_emscripten_stack_restore'];
+  __emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'];
+  _emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'];
+  ___cxa_increment_exception_refcount = wasmExports['__cxa_increment_exception_refcount'];
+}
 var wasmImports = {
   /** @export */
   __assert_fail: ___assert_fail,
   /** @export */
   __emscripten_abort,
   /** @export */
+  __syscall_ftruncate64: ___syscall_ftruncate64,
+  /** @export */
   _abort_js: __abort_js,
   /** @export */
   _emscripten_runtime_keepalive_clear: __emscripten_runtime_keepalive_clear,
   /** @export */
   _localtime_js: __localtime_js,
+  /** @export */
+  _mktime_js: __mktime_js,
   /** @export */
   _setitimer_js: __setitimer_js,
   /** @export */
@@ -1524,97 +1716,10 @@ var wasmImports = {
   proc_exit: _proc_exit
 };
 var wasmExports = await createWasm();
-var ___wasm_call_ctors = wasmExports['__wasm_call_ctors']
-var _free = Module['_free'] = wasmExports['free']
-var _malloc = Module['_malloc'] = wasmExports['malloc']
-var _cycle = Module['_cycle'] = wasmExports['cycle']
-var _getFrame = Module['_getFrame'] = wasmExports['getFrame']
-var _resetFrame = Module['_resetFrame'] = wasmExports['resetFrame']
-var _getTimesliceSizeUsec = Module['_getTimesliceSizeUsec'] = wasmExports['getTimesliceSizeUsec']
-var _penDown = Module['_penDown'] = wasmExports['penDown']
-var _penUp = Module['_penUp'] = wasmExports['penUp']
-var _currentIps = Module['_currentIps'] = wasmExports['currentIps']
-var _currentIpsMax = Module['_currentIpsMax'] = wasmExports['currentIpsMax']
-var _setMaxLoad = Module['_setMaxLoad'] = wasmExports['setMaxLoad']
-var _setCyclesPerSecondLimit = Module['_setCyclesPerSecondLimit'] = wasmExports['setCyclesPerSecondLimit']
-var _getTimestampUsec = Module['_getTimestampUsec'] = wasmExports['getTimestampUsec']
-var _keyDown = Module['_keyDown'] = wasmExports['keyDown']
-var _keyUp = Module['_keyUp'] = wasmExports['keyUp']
-var _pendingSamples = Module['_pendingSamples'] = wasmExports['pendingSamples']
-var _popQueuedSamples = Module['_popQueuedSamples'] = wasmExports['popQueuedSamples']
-var _setPcmOutputEnabled = Module['_setPcmOutputEnabled'] = wasmExports['setPcmOutputEnabled']
-var _setPcmSuspended = Module['_setPcmSuspended'] = wasmExports['setPcmSuspended']
-var _getRomDataSize = Module['_getRomDataSize'] = wasmExports['getRomDataSize']
-var _getRomData = Module['_getRomData'] = wasmExports['getRomData']
-var _getNandDataSize = Module['_getNandDataSize'] = wasmExports['getNandDataSize']
-var _getNandData = Module['_getNandData'] = wasmExports['getNandData']
-var _getNandDirtyPages = Module['_getNandDirtyPages'] = wasmExports['getNandDirtyPages']
-var _isNandDirty = Module['_isNandDirty'] = wasmExports['isNandDirty']
-var _setNandDirty = Module['_setNandDirty'] = wasmExports['setNandDirty']
-var _getSdCardDataSize = Module['_getSdCardDataSize'] = wasmExports['getSdCardDataSize']
-var _getSdCardData = Module['_getSdCardData'] = wasmExports['getSdCardData']
-var _getSdCardDirtyPages = Module['_getSdCardDirtyPages'] = wasmExports['getSdCardDirtyPages']
-var _isSdCardDirty = Module['_isSdCardDirty'] = wasmExports['isSdCardDirty']
-var _setSdCardDirty = Module['_setSdCardDirty'] = wasmExports['setSdCardDirty']
-var _getRamDataSize = Module['_getRamDataSize'] = wasmExports['getRamDataSize']
-var _getRamData = Module['_getRamData'] = wasmExports['getRamData']
-var _getRamDirtyPages = Module['_getRamDirtyPages'] = wasmExports['getRamDirtyPages']
-var _getDeviceType = Module['_getDeviceType'] = wasmExports['getDeviceType']
-var _sdCardInsert = Module['_sdCardInsert'] = wasmExports['sdCardInsert']
-var _sdCardEject = Module['_sdCardEject'] = wasmExports['sdCardEject']
-var _reset = Module['_reset'] = wasmExports['reset']
-var _save = Module['_save'] = wasmExports['save']
-var _getSavestateSize = Module['_getSavestateSize'] = wasmExports['getSavestateSize']
-var _getSavestateData = Module['_getSavestateData'] = wasmExports['getSavestateData']
-var _isSdInserted = Module['_isSdInserted'] = wasmExports['isSdInserted']
-var _getRamSize = Module['_getRamSize'] = wasmExports['getRamSize']
-var _installDatabase = Module['_installDatabase'] = wasmExports['installDatabase']
-var _main = Module['_main'] = wasmExports['main']
-var _webMain = Module['_webMain'] = wasmExports['webMain']
-var _webidl_free = Module['_webidl_free'] = wasmExports['webidl_free']
-var _webidl_malloc = Module['_webidl_malloc'] = wasmExports['webidl_malloc']
-var _emscripten_bind_VoidPtr___destroy___0 = Module['_emscripten_bind_VoidPtr___destroy___0'] = wasmExports['emscripten_bind_VoidPtr___destroy___0']
-var _emscripten_bind_SessionFile_SessionFile_0 = Module['_emscripten_bind_SessionFile_SessionFile_0'] = wasmExports['emscripten_bind_SessionFile_SessionFile_0']
-var _emscripten_bind_SessionFile_IsSessionFile_2 = Module['_emscripten_bind_SessionFile_IsSessionFile_2'] = wasmExports['emscripten_bind_SessionFile_IsSessionFile_2']
-var _emscripten_bind_SessionFile_GetDeviceId_0 = Module['_emscripten_bind_SessionFile_GetDeviceId_0'] = wasmExports['emscripten_bind_SessionFile_GetDeviceId_0']
-var _emscripten_bind_SessionFile_SetDeviceId_1 = Module['_emscripten_bind_SessionFile_SetDeviceId_1'] = wasmExports['emscripten_bind_SessionFile_SetDeviceId_1']
-var _emscripten_bind_SessionFile_GetMetadata_0 = Module['_emscripten_bind_SessionFile_GetMetadata_0'] = wasmExports['emscripten_bind_SessionFile_GetMetadata_0']
-var _emscripten_bind_SessionFile_GetMetadataSize_0 = Module['_emscripten_bind_SessionFile_GetMetadataSize_0'] = wasmExports['emscripten_bind_SessionFile_GetMetadataSize_0']
-var _emscripten_bind_SessionFile_SetMetadata_2 = Module['_emscripten_bind_SessionFile_SetMetadata_2'] = wasmExports['emscripten_bind_SessionFile_SetMetadata_2']
-var _emscripten_bind_SessionFile_GetNor_0 = Module['_emscripten_bind_SessionFile_GetNor_0'] = wasmExports['emscripten_bind_SessionFile_GetNor_0']
-var _emscripten_bind_SessionFile_GetNorSize_0 = Module['_emscripten_bind_SessionFile_GetNorSize_0'] = wasmExports['emscripten_bind_SessionFile_GetNorSize_0']
-var _emscripten_bind_SessionFile_SetNor_2 = Module['_emscripten_bind_SessionFile_SetNor_2'] = wasmExports['emscripten_bind_SessionFile_SetNor_2']
-var _emscripten_bind_SessionFile_GetNand_0 = Module['_emscripten_bind_SessionFile_GetNand_0'] = wasmExports['emscripten_bind_SessionFile_GetNand_0']
-var _emscripten_bind_SessionFile_GetNandSize_0 = Module['_emscripten_bind_SessionFile_GetNandSize_0'] = wasmExports['emscripten_bind_SessionFile_GetNandSize_0']
-var _emscripten_bind_SessionFile_SetNand_2 = Module['_emscripten_bind_SessionFile_SetNand_2'] = wasmExports['emscripten_bind_SessionFile_SetNand_2']
-var _emscripten_bind_SessionFile_GetMemory_0 = Module['_emscripten_bind_SessionFile_GetMemory_0'] = wasmExports['emscripten_bind_SessionFile_GetMemory_0']
-var _emscripten_bind_SessionFile_GetMemorySize_0 = Module['_emscripten_bind_SessionFile_GetMemorySize_0'] = wasmExports['emscripten_bind_SessionFile_GetMemorySize_0']
-var _emscripten_bind_SessionFile_SetMemory_2 = Module['_emscripten_bind_SessionFile_SetMemory_2'] = wasmExports['emscripten_bind_SessionFile_SetMemory_2']
-var _emscripten_bind_SessionFile_GetSavestate_0 = Module['_emscripten_bind_SessionFile_GetSavestate_0'] = wasmExports['emscripten_bind_SessionFile_GetSavestate_0']
-var _emscripten_bind_SessionFile_GetSavestateSize_0 = Module['_emscripten_bind_SessionFile_GetSavestateSize_0'] = wasmExports['emscripten_bind_SessionFile_GetSavestateSize_0']
-var _emscripten_bind_SessionFile_SetSavestate_2 = Module['_emscripten_bind_SessionFile_SetSavestate_2'] = wasmExports['emscripten_bind_SessionFile_SetSavestate_2']
-var _emscripten_bind_SessionFile_GetRamSize_0 = Module['_emscripten_bind_SessionFile_GetRamSize_0'] = wasmExports['emscripten_bind_SessionFile_GetRamSize_0']
-var _emscripten_bind_SessionFile_SetRamSize_1 = Module['_emscripten_bind_SessionFile_SetRamSize_1'] = wasmExports['emscripten_bind_SessionFile_SetRamSize_1']
-var _emscripten_bind_SessionFile_Serialize_0 = Module['_emscripten_bind_SessionFile_Serialize_0'] = wasmExports['emscripten_bind_SessionFile_Serialize_0']
-var _emscripten_bind_SessionFile_GetSerializedSession_0 = Module['_emscripten_bind_SessionFile_GetSerializedSession_0'] = wasmExports['emscripten_bind_SessionFile_GetSerializedSession_0']
-var _emscripten_bind_SessionFile_GetSerializedSessionSize_0 = Module['_emscripten_bind_SessionFile_GetSerializedSessionSize_0'] = wasmExports['emscripten_bind_SessionFile_GetSerializedSessionSize_0']
-var _emscripten_bind_SessionFile_Deserialize_2 = Module['_emscripten_bind_SessionFile_Deserialize_2'] = wasmExports['emscripten_bind_SessionFile_Deserialize_2']
-var _emscripten_bind_SessionFile___destroy___0 = Module['_emscripten_bind_SessionFile___destroy___0'] = wasmExports['emscripten_bind_SessionFile___destroy___0']
-var __emscripten_timeout = wasmExports['_emscripten_timeout']
-var __emscripten_stack_restore = wasmExports['_emscripten_stack_restore']
-var __emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc']
-var _emscripten_stack_get_current = wasmExports['emscripten_stack_get_current']
-var ___cxa_increment_exception_refcount = wasmExports['__cxa_increment_exception_refcount']
 
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
-
-Module['callMain'] = callMain;
-Module['ccall'] = ccall;
-Module['cwrap'] = cwrap;
-Module['addFunction'] = addFunction;
-
 
 function callMain() {
 
@@ -1661,10 +1766,10 @@ function run() {
 
     preMain();
 
-    readyPromiseResolve(Module);
+    readyPromiseResolve?.(Module);
     Module['onRuntimeInitialized']?.();
 
-    var noInitialRun = Module['noInitialRun'];
+    var noInitialRun = Module['noInitialRun'] || false;
     if (!noInitialRun) callMain();
 
     postRun();
@@ -1682,18 +1787,21 @@ function run() {
   }
 }
 
-if (Module['preInit']) {
-  if (typeof Module['preInit'] == 'function') Module['preInit'] = [Module['preInit']];
-  while (Module['preInit'].length > 0) {
-    Module['preInit'].pop()();
+function preInit() {
+  if (Module['preInit']) {
+    if (typeof Module['preInit'] == 'function') Module['preInit'] = [Module['preInit']];
+    while (Module['preInit'].length > 0) {
+      Module['preInit'].shift()();
+    }
   }
 }
 
+preInit();
 run();
 
 // end include: postamble.js
 
-// include: /Users/pestix/git/cloudpilot/src/uarm/web/binding/binding.js
+// include: web/binding/binding.js
 
 // Bindings utilities
 
@@ -2074,7 +2182,65 @@ SessionFile.prototype['__destroy__'] = SessionFile.prototype.__destroy__ = funct
   var self = this.ptr;
   _emscripten_bind_SessionFile___destroy___0(self);
 };
-// end include: /Users/pestix/git/cloudpilot/src/uarm/web/binding/binding.js
+
+// Interface: DbBackup
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+function DbBackup() { throw "cannot construct a DbBackup, no constructor in IDL" }
+DbBackup.prototype = Object.create(WrapperObject.prototype);
+DbBackup.prototype.constructor = DbBackup;
+DbBackup.prototype.__class__ = DbBackup;
+DbBackup.__cache__ = {};
+Module['DbBackup'] = DbBackup;
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['Init'] = DbBackup.prototype.Init = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_DbBackup_Init_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['GetState'] = DbBackup.prototype.GetState = function() {
+  var self = this.ptr;
+  return _emscripten_bind_DbBackup_GetState_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['Continue'] = DbBackup.prototype.Continue = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_DbBackup_Continue_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['HasLastProcessedDb'] = DbBackup.prototype.HasLastProcessedDb = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_DbBackup_HasLastProcessedDb_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['GetLastProcessedDb'] = DbBackup.prototype.GetLastProcessedDb = function() {
+  var self = this.ptr;
+  return UTF8ToString(_emscripten_bind_DbBackup_GetLastProcessedDb_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['GetArchiveData'] = DbBackup.prototype.GetArchiveData = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_DbBackup_GetArchiveData_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['GetArchiveSize'] = DbBackup.prototype.GetArchiveSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_DbBackup_GetArchiveSize_0(self);
+};
+
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+DbBackup.prototype['__destroy__'] = DbBackup.prototype.__destroy__ = function() {
+  var self = this.ptr;
+  _emscripten_bind_DbBackup___destroy___0(self);
+};
+// end include: web/binding/binding.js
 
 // include: postamble_modularize.js
 // In MODULARIZE mode we wrap the generated code in a factory function
@@ -2083,7 +2249,15 @@ SessionFile.prototype['__destroy__'] = SessionFile.prototype.__destroy__ = funct
 // We assign to the `moduleRtn` global here and configure closure to see
 // this as and extern so it won't get minified.
 
-moduleRtn = readyPromise;
+if (runtimeInitialized)  {
+  moduleRtn = Module;
+} else {
+  // Set up the promise that indicates the Module is initialized
+  moduleRtn = new Promise((resolve, reject) => {
+    readyPromiseResolve = resolve;
+    readyPromiseReject = reject;
+  });
+}
 
 // end include: postamble_modularize.js
 
