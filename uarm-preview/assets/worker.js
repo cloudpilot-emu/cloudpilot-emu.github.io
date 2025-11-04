@@ -1,6 +1,25 @@
 importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
 (function () {
+    function copyIn(module, data) {
+        if (!data) return undefined;
+
+        const bridge = new module.Bridge();
+
+        try {
+            const ptr = bridge.Malloc(data.length);
+            if (ptr === 0) return undefined;
+
+            const ptrRaw = module.getPointer(ptr);
+
+            module.HEAPU8.subarray(ptrRaw, ptrRaw + data.length).set(data);
+
+            return ptr;
+        } finally {
+            module.destroy(bridge);
+        }
+    }
+
     class RpcClient {
         constructor(worker) {
             this.worker = worker;
@@ -26,6 +45,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
                 onRpcSuccess();
             } catch (e) {
+                console.error(e);
                 this.worker.postMessage({ type: 'rpcError', id, error: `${e}` });
 
                 onRpcError(e);
@@ -234,6 +254,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
     class Emulator {
         constructor(
+            uarm,
             module,
             maxLoad,
             cyclesPerSecondLimit,
@@ -241,7 +262,9 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             cardId,
             { onSpeedDisplay, onFrame, log, postSnapshot }
         ) {
+            this.uarm = uarm;
             this.module = module;
+            this.bridge = new module.Bridge();
             this.onSpeedDisplay = onSpeedDisplay;
             this.onFrame = onFrame;
             this.log = log;
@@ -249,84 +272,55 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             this.cardId = cardId;
             this.crcCheck = crcCheck;
 
-            this.malloc = module.cwrap('malloc', 'number', ['number']);
-            this.free = module.cwrap('free', undefined, ['number']);
-            this.cycle = module.cwrap('cycle', undefined, ['number']);
-            this.getFrame = module.cwrap('getFrame', 'number');
-            this.resetFrame = module.cwrap('resetFrame');
-            this.currentIps = module.cwrap('currentIps', 'number');
-            this.currentIpsMax = module.cwrap('currentIpsMax', 'number');
-            this.setMaxLoad = module.cwrap('setMaxLoad', undefined, ['number']);
-            this.setCyclesPerSecondLimit = module.cwrap('setCyclesPerSecondLimit', undefined, ['number']);
-            this.getTimesliceSizeUsec = module.cwrap('getTimesliceSizeUsec', 'number');
-            this.getTimestampUsec = module.cwrap('getTimestampUsec', 'number');
-            this.penDown = module.cwrap('penDown', undefined, ['number', 'number']);
-            this.penUp = module.cwrap('penUp');
-            this.keyDown = module.cwrap('keyDown', undefined, ['number']);
-            this.keyUp = module.cwrap('keyUp', undefined, ['number']);
-            this.pendingSamples = module.cwrap('pendingSamples', 'number');
-            this.popQueuedSamples = module.cwrap('popQueuedSamples', 'number');
-            this.setPcmOutputEnabled = module.cwrap('setPcmOutputEnabled', undefined, ['number']);
-            this.setPcmSuspended = module.cwrap('setPcmSuspended', undefined, ['number']);
-            this.getRomDataSize = module.cwrap('getRomDataSize', 'number');
-            this.getRomData = module.cwrap('getRomData', 'number');
-            this.getNandDataSize = module.cwrap('getNandDataSize', 'number');
-            this.getNandData = module.cwrap('getNandData', 'number');
-            this.getSdCardDataSize = module.cwrap('getSdCardDataSize', 'number');
-            this.getRamData = module.cwrap('getRamData', 'number');
-            this.getRamDataSize = module.cwrap('getRamDataSize', 'number');
-            this.clearRamDirtyPages = module.cwrap('clearRamDirtyPages');
-            this.getDeviceType = module.cwrap('getDeviceType');
-            this.sdCardInsert = module.cwrap('sdCardInsert', 'number', ['number', 'number', 'string']);
-            this.sdCardEject = module.cwrap('sdCardEject');
-            this.isSdInserted = module.cwrap('isSdInserted');
-            this.reset = module.cwrap('reset');
-            this.save = module.cwrap('save');
-            this.getSavestateSize = module.cwrap('getSavestateSize', 'number');
-            this.getSavestateData = module.cwrap('getSavestateData', 'number');
-            this.getRamSize = module.cwrap('getRamSize', 'number');
-            this.installDatabase = module.cwrap('installDatabase', 'number', ['number', 'number']);
-            this.newDbBackup = module.cwrap('newDbBackup', 'number', ['number']);
-
             this.amIDead = false;
             this.pcmEnabled = false;
             this.pcmPort = undefined;
             this.snapshotPending = false;
             this.snapshotPromise = Promise.resolve();
             this.resolveSnapshot = () => undefined;
-            this.deviceType = this.getDeviceType();
+            this.deviceType = uarm.GetDeviceType();
             this.savestate = undefined;
 
-            this.setMaxLoad(maxLoad);
-            this.setCyclesPerSecondLimit(cyclesPerSecondLimit);
+            this.uarm.SetMaxLoad(maxLoad);
+            this.uarm.SetCyclesPerSecondLimit(cyclesPerSecondLimit);
 
-            const nandSize = this.getNandDataSize();
+            const nandSize = uarm.GetNandDataSize();
             this.nandTracker = new DirtyPageTracker({
                 pageSize: 4224,
                 pageCount: (nandSize / 4224) | 0,
                 name: 'NAND snapshot',
                 crcCheck,
-                getDataPtr: this.getNandData,
-                getDirtyPagesPtr: module.cwrap('getNandDirtyPages', 'number'),
-                isDirty: module.cwrap('isNandDirty', 'number'),
-                setDirty: module.cwrap('setNandDirty', undefined, ['number']),
+                getDataPtr: () => module.getPointer(uarm.GetNandData()),
+                getDirtyPagesPtr: () => module.getPointer(uarm.GetNandDirtyPages()),
+                isDirty: () => uarm.IsNandDirty(),
+                setDirty: (isDirty) => uarm.SetNandDirty(isDirty),
                 module,
             });
 
             this.setupSdCardTracker();
 
-            const ramSize = this.getRamDataSize();
+            const ramSize = uarm.GetRamDataSize();
             this.ramTracker = new DirtyPageTracker({
                 pageSize: 512,
                 pageCount: (ramSize / 512) | 0,
                 name: 'RAM snapshot',
                 crcCheck,
-                getDataPtr: this.getRamData,
-                getDirtyPagesPtr: module.cwrap('getRamDirtyPages', 'number'),
+                getDataPtr: () => module.getPointer(uarm.GetRamData()),
+                getDirtyPagesPtr: () => module.getPointer(uarm.GetRamDirtyPages()),
                 isDirty: () => true,
                 setDirty: () => undefined,
                 module,
             });
+        }
+
+        free(ptr) {
+            if (!ptr) return;
+
+            this.bridge.Free(ptr);
+        }
+
+        copyIn(data) {
+            return copyIn(this.module, data);
         }
 
         static async create(
@@ -353,71 +347,38 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                 instantiateWasm: (imports, callback) => WebAssembly.instantiate(wasmModule, imports).then(callback),
             });
 
-            const malloc = module.cwrap('malloc', 'number', ['number']);
-            const free = module.cwrap('free', undefined, ['number']);
-            const norPtr = malloc(nor.length);
-            const nandPtr = malloc(nand.length);
-            const sdPtr = sd ? malloc(sd.length) : 0;
-            const savestatePtr = savestate ? malloc(savestate.length) : 0;
-            const ramPtr = ram ? malloc(ram.length) : 0;
-
-            module.HEAPU8.subarray(norPtr, norPtr + nor.length).set(nor);
-            module.HEAPU8.subarray(nandPtr, nandPtr + nand.length).set(nand);
-            if (sd) module.HEAPU8.subarray(sdPtr, sdPtr + sd.length).set(sd);
-            if (savestate) module.HEAPU8.subarray(savestatePtr, savestatePtr + savestate.length).set(savestate);
-            if (ram) module.HEAPU8.subarray(ramPtr, ramPtr + ram.length).set(ram);
+            const norPtr = copyIn(module, nor);
+            const nandPtr = copyIn(module, nand);
+            const sdPtr = copyIn(module, sd);
+            const savestatePtr = copyIn(module, savestate);
+            const ramPtr = copyIn(module, ram);
 
             module.callMain([]);
-            module.ccall(
-                'webMain',
-                undefined,
-                [
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'number',
-                    'string',
-                ],
-                [
-                    ramSize,
-                    norPtr,
-                    nor.length,
-                    nandPtr,
-                    nand.length,
-                    ramPtr,
-                    ramPtr ? ram.length : 0,
-                    sdPtr,
-                    sd?.length ?? 0,
-                    savestatePtr,
-                    savestate?.length ?? 0,
-                    cardId ?? '',
-                ]
-            );
 
-            if (savestatePtr) free(savestatePtr);
-            if (ramPtr) free(ramPtr);
+            const uarm = new module.Uarm();
 
-            return new Emulator(module, maxLoad, cyclesPerSecondLimit, crcCheck, cardId, env);
+            uarm.SetRamSize(ramSize).SetNand(nand.length, nandPtr);
+
+            if (ram) uarm.SetMemory(ram.length, ramPtr);
+            if (savestate) uarm.SetSavestate(savestate.length, savestatePtr);
+            if (sd) uarm.SetSd(sd.length, sdPtr, cardId ?? '');
+
+            uarm.Launch(nor.length, norPtr);
+
+            return new Emulator(uarm, module, maxLoad, cyclesPerSecondLimit, crcCheck, cardId, env);
         }
 
         setupSdCardTracker() {
-            const sdCardSize = this.getSdCardDataSize();
+            const sdCardSize = this.uarm.GetSdCardDataSize();
             this.sdCardTracker = new DirtyPageTracker({
                 pageSize: 8192,
                 pageCount: (sdCardSize / 8192) | 0,
                 name: 'SD card snapshot',
                 crcCheck: this.crcCheck,
-                getDataPtr: this.module.cwrap('getSdCardData', 'number'),
-                getDirtyPagesPtr: this.module.cwrap('getSdCardDirtyPages', 'number'),
-                isDirty: this.module.cwrap('isSdCardDirty', 'number'),
-                setDirty: this.module.cwrap('setSdCardDirty', undefined, ['number']),
+                getDataPtr: () => this.module.getPointer(this.uarm.GetSdCardData()),
+                getDirtyPagesPtr: () => this.module.getPointer(this.uarm.GetSdCardDirtyPages()),
+                isDirty: () => this.uarm.IsSdCardDirty(),
+                setDirty: (isDirty) => this.uarm.SetSdCardDirty(isDirty),
                 module: this.module,
             });
         }
@@ -437,14 +398,14 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             if (this.amIDead) return;
 
             if (this.timeoutHandle || this.immediateHandle) return;
-            this.lastSnapshot = Number(this.getTimestampUsec());
+            this.lastSnapshot = Number(this.uarm.GetTimestampUsec());
 
             const schedule = () => {
-                const now64 = this.getTimestampUsec();
+                const now64 = this.uarm.GetTimestampUsec();
                 const now = Number(now64);
 
                 try {
-                    this.cycle(now64);
+                    this.uarm.Cycle(now64);
                 } catch (e) {
                     this.amIDead = true;
                     console.error(e);
@@ -457,7 +418,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                 this.processAudio();
 
                 const timesliceRemainning =
-                    (this.getTimesliceSizeUsec() - Number(this.getTimestampUsec()) + now) / 1000;
+                    (this.uarm.GetTimesliceSizeUsec() - Number(this.uarm.GetTimestampUsec()) + now) / 1000;
                 this.timeoutHandle = this.immediateHandle = undefined;
 
                 if (timesliceRemainning < 5) this.immediateHandle = setImmediate(schedule);
@@ -478,9 +439,9 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         triggerSnapshot() {
             if (this.snapshotPending) return;
 
-            this.save();
-            const savestatePtr = this.getSavestateData();
-            const savestateSize = this.getSavestateSize();
+            this.uarm.Save();
+            const savestatePtr = this.module.getPointer(this.uarm.GetSavestateData());
+            const savestateSize = this.uarm.GetSavestateSize();
 
             if (!this.savestate) this.savestate = new Uint8Array(savestateSize);
             this.savestate.set(this.module.HEAPU8.subarray(savestatePtr, savestatePtr + savestateSize));
@@ -500,7 +461,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                     ram: snapshotRam,
                     cardId: this.cardId,
                     savestate: this.savestate.buffer,
-                    ramSize: this.getRamSize(),
+                    ramSize: this.uarm.GetRamSize(),
                 },
                 [
                     ...this.nandTracker.getTransferables(),
@@ -526,7 +487,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         render() {
             if (!this.module) return;
 
-            const framePtr = this.getFrame() >>> 2;
+            const framePtr = this.module.getPointer(this.uarm.GetFrame()) >>> 2;
             if (!framePtr) return;
 
             const frame = this.module.HEAPU32.subarray(framePtr, framePtr + 320 * (this.deviceType === 1 ? 480 : 320));
@@ -540,7 +501,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
                 this.onFrame(frameCopy.buffer);
             }
 
-            this.resetFrame();
+            this.uarm.ResetFrame();
         }
 
         getPcmBuffer() {
@@ -552,10 +513,10 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         processAudio() {
             if (!this.module || !this.pcmPort || !this.pcmEnabled) return;
 
-            const pendingSamples = this.pendingSamples();
+            const pendingSamples = this.uarm.PendingSamples();
             if (pendingSamples === 0) return;
 
-            const samplesPtr = this.popQueuedSamples() >>> 2;
+            const samplesPtr = this.module.getPointer(this.uarm.PopQueuedSamples()) >>> 2;
             const samples = this.getPcmBuffer();
 
             samples.set(
@@ -568,8 +529,8 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         }
 
         updateSpeedDisplay() {
-            const currentIps = this.currentIps();
-            const currentIpsMax = Number(this.currentIpsMax());
+            const currentIps = this.uarm.CurrentIps();
+            const currentIpsMax = Number(this.uarm.CurrentIpsMax());
 
             this.onSpeedDisplay(
                 `current ${(currentIps / 1e6).toFixed(2)} MIPS, limit ${(currentIpsMax / 1e6).toFixed(2)} MIPS -> ${(
@@ -581,7 +542,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
         setupPcm(port) {
             this.pcmPort = port;
-            this.setPcmOutputEnabled(true);
+            this.uarm.SetPcmOutputEnabled(true);
             this.pcmEnabled = true;
 
             this.pcmPort.onmessage = (evt) => this.handlePcmMessage(evt.data);
@@ -590,11 +551,11 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         handlePcmMessage(message) {
             switch (message.type) {
                 case 'suspend-pcm':
-                    this.setPcmSuspended(true);
+                    this.uarm.SetPcmSuspended(true);
                     break;
 
                 case 'resume-pcm':
-                    this.setPcmSuspended(false);
+                    this.uarm.SetPcmSuspended(false);
                     break;
 
                 case 'return-buffer':
@@ -608,34 +569,35 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         }
 
         getSession() {
-            this.save();
+            this.uarm.Save();
 
-            const deviceId = this.getDeviceType();
-            const nor = this.module.HEAPU8.subarray(this.getRomData(), this.getRomData() + this.getRomDataSize());
-            const nand = this.module.HEAPU8.subarray(this.getNandData(), this.getNandData() + this.getNandDataSize());
-            const ram = this.module.HEAPU8.subarray(this.getRamData(), this.getRamData() + this.getRamDataSize());
-            const savestate = this.module.HEAPU8.subarray(
-                this.getSavestateData(),
-                this.getSavestateData() + this.getSavestateSize()
-            );
-            const ramSize = this.getRamSize();
+            const romPtr = this.module.getPointer(this.uarm.GetRomData());
+            const nandPtr = this.module.getPointer(this.uarm.GetNandData());
+            const ramPtr = this.module.getPointer(this.uarm.GetRamData());
+            const savestatePtr = this.module.getPointer(this.uarm.GetSavestateData());
+
+            const deviceId = this.uarm.GetDeviceType();
+            const nor = this.module.HEAPU8.subarray(romPtr, romPtr + this.uarm.GetRomDataSize());
+            const nand = this.module.HEAPU8.subarray(nandPtr, nandPtr + this.uarm.GetNandDataSize());
+            const ram = this.module.HEAPU8.subarray(ramPtr, ramPtr + this.uarm.GetRamDataSize());
+            const savestate = this.module.HEAPU8.subarray(savestatePtr, savestatePtr + this.uarm.GetSavestateSize());
+            const ramSize = this.uarm.GetRamSize();
 
             return { deviceId, nor, nand, ram, savestate, ramSize };
         }
 
         ejectCard() {
-            this.sdCardEject();
+            this.uarm.SdCardEject();
         }
 
         async insertCard(data, cardId) {
             await this.snapshotPromise;
 
-            if (this.isSdInserted()) throw new Error('SD card already inserted');
+            if (this.uarm.IsSdInserted()) throw new Error('SD card already inserted');
 
-            const ptr = this.malloc(data.length);
-            this.module.HEAPU8.subarray(ptr, ptr + data.length).set(data);
+            const ptr = this.copyIn(data);
 
-            if (!this.sdCardInsert(ptr, data.length, cardId)) {
+            if (!this.uarm.SdCardInsert(ptr, data.length, cardId)) {
                 this.free(ptr);
                 throw new Error('failed to insert SD card');
             }
@@ -654,11 +616,10 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
             for (const file of files) {
                 try {
-                    const filePtr = this.malloc(file.content.length);
+                    const filePtr = this.copyIn(file.content);
                     if (!filePtr) throw new Error('unable to allocate memory');
 
-                    this.module.HEAPU8.subarray(filePtr, filePtr + file.content.length).set(file.content);
-                    const result = this.installDatabase(file.content.length, filePtr);
+                    const result = this.uarm.InstallDatabase(file.content.length, filePtr);
                     this.free(filePtr);
 
                     this.log(installResult(result, file.name));
@@ -685,7 +646,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             this.triggerSnapshot();
             await this.snapshotPromise;
 
-            const backup = this.module.wrapPointer(this.newDbBackup(type), this.module.DbBackup);
+            const backup = this.uarm.NewDbBackup(type);
             transactionComplete.finally(() => this.module.destroy(backup));
 
             if (!backup.Init()) throw new Error('backup failed to initialise');
@@ -787,22 +748,22 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
             case 'setMaxLoad':
                 assertEmulator('setMaxLoad');
-                emulator.setMaxLoad(message.maxLoad);
+                emulator.uarm.SetMaxLoad(message.maxLoad);
                 break;
 
             case 'setCyclesPerSecondLimit':
                 assertEmulator('cyclesPerSecondLimit');
-                emulator.setCyclesPerSecondLimit(message.cyclesPerSecondLimit);
+                emulator.uarm.SetCyclesPerSecondLimit(message.cyclesPerSecondLimit);
                 break;
 
             case 'penDown':
                 assertEmulator('penDown');
-                emulator.penDown(message.x, message.y);
+                emulator.uarm.PenDown(message.x, message.y);
                 break;
 
             case 'penUp':
                 assertEmulator('penUp');
-                emulator.penUp();
+                emulator.uarm.PenUp();
                 break;
 
             case 'buttonDown': {
@@ -814,7 +775,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
                 assertEmulator('buttonDown');
 
-                emulator.keyDown(button);
+                emulator.uarm.KeyDown(button);
                 break;
             }
 
@@ -827,7 +788,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
                 assertEmulator('buttonUp');
 
-                emulator.keyUp(button);
+                emulator.uarm.KeyUp(button);
                 break;
             }
 
@@ -844,13 +805,13 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
             case 'disablePcm':
                 assertEmulator('disablePcm');
 
-                emulator.setPcmOutputEnabled(false);
+                emulator.uarm.SetPcmOutputEnabled(false);
                 break;
 
             case 'enablePcm':
                 assertEmulator('enablePcm');
 
-                emulator.setPcmOutputEnabled(true);
+                emulator.uarm.SetPcmOutputEnabled(true);
                 break;
 
             case 'snapshotDone':
@@ -898,8 +859,8 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
         );
 
         return {
-            deviceType: emulator.getDeviceType(),
-            cardInserted: emulator.isSdInserted(),
+            deviceType: emulator.uarm.GetDeviceType(),
+            cardInserted: emulator.uarm.IsSdInserted(),
         };
     }
 
@@ -928,7 +889,7 @@ importScripts('../uarm_web.js', './setimmediate/setimmediate.js', './crc.js');
 
     function reset() {
         assertEmulator('reset');
-        emulator.reset();
+        emulator.uarm.Reset();
     }
 
     function install(files) {

@@ -403,7 +403,7 @@ async function createWasm() {
     updateMemoryViews();
 
     wasmTable = wasmExports['__indirect_function_table'];
-    
+    Module['wasmTable'] = wasmTable;
 
     assignWasmExports(wasmExports);
     removeRunDependency('wasm-instantiate');
@@ -1163,297 +1163,8 @@ async function createWasm() {
   var onInits = [];
   var addOnInit = (cb) => onInits.push(cb);
 
-  var getCFunc = (ident) => {
-      var func = Module['_' + ident]; // closure exported function
-      return func;
-    };
-  
-  var writeArrayToMemory = (array, buffer) => {
-      HEAP8.set(array, buffer);
-    };
-  
-  
-  
-  var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
-  var stringToUTF8OnStack = (str) => {
-      var size = lengthBytesUTF8(str) + 1;
-      var ret = stackAlloc(size);
-      stringToUTF8(str, ret, size);
-      return ret;
-    };
-  
-  
-  
-  
-  
-    /**
-     * @param {string|null=} returnType
-     * @param {Array=} argTypes
-     * @param {Arguments|Array=} args
-     * @param {Object=} opts
-     */
-  var ccall = (ident, returnType, argTypes, args, opts) => {
-      // For fast lookup of conversion functions
-      var toC = {
-        'string': (str) => {
-          var ret = 0;
-          if (str !== null && str !== undefined && str !== 0) { // null string
-            ret = stringToUTF8OnStack(str);
-          }
-          return ret;
-        },
-        'array': (arr) => {
-          var ret = stackAlloc(arr.length);
-          writeArrayToMemory(arr, ret);
-          return ret;
-        }
-      };
-  
-      function convertReturnValue(ret) {
-        if (returnType === 'string') {
-          return UTF8ToString(ret);
-        }
-        if (returnType === 'boolean') return Boolean(ret);
-        return ret;
-      }
-  
-      var func = getCFunc(ident);
-      var cArgs = [];
-      var stack = 0;
-      if (args) {
-        for (var i = 0; i < args.length; i++) {
-          var converter = toC[argTypes[i]];
-          if (converter) {
-            if (stack === 0) stack = stackSave();
-            cArgs[i] = converter(args[i]);
-          } else {
-            cArgs[i] = args[i];
-          }
-        }
-      }
-      var ret = func(...cArgs);
-      function onDone(ret) {
-        if (stack !== 0) stackRestore(stack);
-        return convertReturnValue(ret);
-      }
-  
-      ret = onDone(ret);
-      return ret;
-    };
-  
-  
-    /**
-     * @param {string=} returnType
-     * @param {Array=} argTypes
-     * @param {Object=} opts
-     */
-  var cwrap = (ident, returnType, argTypes, opts) => {
-      // When the function takes numbers and returns a number, we can just return
-      // the original function
-      var numericArgs = !argTypes || argTypes.every((type) => type === 'number' || type === 'boolean');
-      var numericRet = returnType !== 'string';
-      if (numericRet && numericArgs && !opts) {
-        return getCFunc(ident);
-      }
-      return (...args) => ccall(ident, returnType, argTypes, args, opts);
-    };
-
-
-  var uleb128Encode = (n, target) => {
-      if (n < 128) {
-        target.push(n);
-      } else {
-        target.push((n % 128) | 128, n >> 7);
-      }
-    };
-  
-  var sigToWasmTypes = (sig) => {
-      var typeNames = {
-        'i': 'i32',
-        'j': 'i64',
-        'f': 'f32',
-        'd': 'f64',
-        'e': 'externref',
-        'p': 'i32',
-      };
-      var type = {
-        parameters: [],
-        results: sig[0] == 'v' ? [] : [typeNames[sig[0]]]
-      };
-      for (var i = 1; i < sig.length; ++i) {
-        type.parameters.push(typeNames[sig[i]]);
-      }
-      return type;
-    };
-  
-  var generateFuncType = (sig, target) => {
-      var sigRet = sig.slice(0, 1);
-      var sigParam = sig.slice(1);
-      var typeCodes = {
-        'i': 0x7f, // i32
-        'p': 0x7f, // i32
-        'j': 0x7e, // i64
-        'f': 0x7d, // f32
-        'd': 0x7c, // f64
-        'e': 0x6f, // externref
-      };
-  
-      // Parameters, length + signatures
-      target.push(0x60 /* form: func */);
-      uleb128Encode(sigParam.length, target);
-      for (var paramType of sigParam) {
-        target.push(typeCodes[paramType]);
-      }
-  
-      // Return values, length + signatures
-      // With no multi-return in MVP, either 0 (void) or 1 (anything else)
-      if (sigRet == 'v') {
-        target.push(0x00);
-      } else {
-        target.push(0x01, typeCodes[sigRet]);
-      }
-    };
-  var convertJsFunctionToWasm = (func, sig) => {
-  
-      // If the type reflection proposal is available, use the new
-      // "WebAssembly.Function" constructor.
-      // Otherwise, construct a minimal wasm module importing the JS function and
-      // re-exporting it.
-      if (typeof WebAssembly.Function == "function") {
-        return new WebAssembly.Function(sigToWasmTypes(sig), func);
-      }
-  
-      // The module is static, with the exception of the type section, which is
-      // generated based on the signature passed in.
-      var typeSectionBody = [
-        0x01, // count: 1
-      ];
-      generateFuncType(sig, typeSectionBody);
-  
-      // Rest of the module is static
-      var bytes = [
-        0x00, 0x61, 0x73, 0x6d, // magic ("\0asm")
-        0x01, 0x00, 0x00, 0x00, // version: 1
-        0x01, // Type section code
-      ];
-      // Write the overall length of the type section followed by the body
-      uleb128Encode(typeSectionBody.length, bytes);
-      bytes.push(...typeSectionBody);
-  
-      // The rest of the module is static
-      bytes.push(
-        0x02, 0x07, // import section
-          // (import "e" "f" (func 0 (type 0)))
-          0x01, 0x01, 0x65, 0x01, 0x66, 0x00, 0x00,
-        0x07, 0x05, // export section
-          // (export "f" (func 0 (type 0)))
-          0x01, 0x01, 0x66, 0x00, 0x00,
-      );
-  
-      // We can compile this wasm module synchronously because it is very small.
-      // This accepts an import (at "e.f"), that it reroutes to an export (at "f")
-      var module = new WebAssembly.Module(new Uint8Array(bytes));
-      var instance = new WebAssembly.Instance(module, { 'e': { 'f': func } });
-      var wrappedFunc = instance.exports['f'];
-      return wrappedFunc;
-    };
-  
-  var wasmTableMirror = [];
-  
   /** @type {WebAssembly.Table} */
   var wasmTable;
-  var getWasmTableEntry = (funcPtr) => {
-      var func = wasmTableMirror[funcPtr];
-      if (!func) {
-        /** @suppress {checkTypes} */
-        wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
-      }
-      return func;
-    };
-  
-  var updateTableMap = (offset, count) => {
-      if (functionsInTableMap) {
-        for (var i = offset; i < offset + count; i++) {
-          var item = getWasmTableEntry(i);
-          // Ignore null values.
-          if (item) {
-            functionsInTableMap.set(item, i);
-          }
-        }
-      }
-    };
-  
-  var functionsInTableMap;
-  
-  var getFunctionAddress = (func) => {
-      // First, create the map if this is the first use.
-      if (!functionsInTableMap) {
-        functionsInTableMap = new WeakMap();
-        updateTableMap(0, wasmTable.length);
-      }
-      return functionsInTableMap.get(func) || 0;
-    };
-  
-  
-  var freeTableIndexes = [];
-  
-  var getEmptyTableSlot = () => {
-      // Reuse a free index if there is one, otherwise grow.
-      if (freeTableIndexes.length) {
-        return freeTableIndexes.pop();
-      }
-      // Grow the table
-      try {
-        /** @suppress {checkTypes} */
-        wasmTable.grow(1);
-      } catch (err) {
-        if (!(err instanceof RangeError)) {
-          throw err;
-        }
-        throw 'Unable to grow wasm table. Set ALLOW_TABLE_GROWTH.';
-      }
-      return wasmTable.length - 1;
-    };
-  
-  
-  var setWasmTableEntry = (idx, func) => {
-      /** @suppress {checkTypes} */
-      wasmTable.set(idx, func);
-      // With ABORT_ON_WASM_EXCEPTIONS wasmTable.get is overridden to return wrapped
-      // functions so we need to call it here to retrieve the potential wrapper correctly
-      // instead of just storing 'func' directly into wasmTableMirror
-      /** @suppress {checkTypes} */
-      wasmTableMirror[idx] = wasmTable.get(idx);
-    };
-  /** @param {string=} sig */
-  var addFunction = (func, sig) => {
-      // Check if the function is already in the table, to ensure each function
-      // gets a unique index.
-      var rtn = getFunctionAddress(func);
-      if (rtn) {
-        return rtn;
-      }
-  
-      // It's not in the table, add it now.
-  
-      var ret = getEmptyTableSlot();
-  
-      // Set the new value.
-      try {
-        // Attempting to call this with JS function will cause of table.set() to fail
-        setWasmTableEntry(ret, func);
-      } catch (err) {
-        if (!(err instanceof TypeError)) {
-          throw err;
-        }
-        var wrapped = convertJsFunctionToWasm(func, sig);
-        setWasmTableEntry(ret, wrapped);
-      }
-  
-      functionsInTableMap.set(func, ret);
-  
-      return ret;
-    };
 // End JS library code
 
 // include: postlibrary.js
@@ -1476,9 +1187,7 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 
 // Begin runtime exports
   Module['callMain'] = callMain;
-  Module['ccall'] = ccall;
-  Module['cwrap'] = cwrap;
-  Module['addFunction'] = addFunction;
+  Module['wasmTable'] = wasmTable;
   // End runtime exports
   // Begin JS library exports
   // End JS library exports
@@ -1486,61 +1195,67 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 // end include: postlibrary.js
 
 var ASM_CONSTS = {
-  71934: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  72030: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
 // Imports from the Wasm binary.
-var _free,
-  _malloc,
-  _cycle,
-  _getFrame,
-  _resetFrame,
-  _getTimesliceSizeUsec,
-  _penDown,
-  _penUp,
-  _currentIps,
-  _currentIpsMax,
-  _setMaxLoad,
-  _setCyclesPerSecondLimit,
-  _getTimestampUsec,
-  _keyDown,
-  _keyUp,
-  _pendingSamples,
-  _popQueuedSamples,
-  _setPcmOutputEnabled,
-  _setPcmSuspended,
-  _getRomDataSize,
-  _getRomData,
-  _getNandDataSize,
-  _getNandData,
-  _getNandDirtyPages,
-  _isNandDirty,
-  _setNandDirty,
-  _getSdCardDataSize,
-  _getSdCardData,
-  _getSdCardDirtyPages,
-  _isSdCardDirty,
-  _setSdCardDirty,
-  _getRamDataSize,
-  _getRamData,
-  _getRamDirtyPages,
-  _getDeviceType,
-  _sdCardInsert,
-  _sdCardEject,
-  _reset,
-  _save,
-  _getSavestateSize,
-  _getSavestateData,
-  _isSdInserted,
-  _getRamSize,
-  _installDatabase,
-  _newDbBackup,
-  _main,
-  _webMain,
+var _main,
   _webidl_free,
   _webidl_malloc,
   _emscripten_bind_VoidPtr___destroy___0,
+  _emscripten_bind_Uarm_Uarm_0,
+  _emscripten_bind_Uarm_SetRamSize_1,
+  _emscripten_bind_Uarm_SetNand_2,
+  _emscripten_bind_Uarm_SetMemory_2,
+  _emscripten_bind_Uarm_SetSavestate_2,
+  _emscripten_bind_Uarm_SetSd_3,
+  _emscripten_bind_Uarm_SetDefaultMips_1,
+  _emscripten_bind_Uarm_Launch_2,
+  _emscripten_bind_Uarm_Cycle_1,
+  _emscripten_bind_Uarm_GetFrame_0,
+  _emscripten_bind_Uarm_ResetFrame_0,
+  _emscripten_bind_Uarm_GetTimesliceSizeUsec_0,
+  _emscripten_bind_Uarm_PenDown_2,
+  _emscripten_bind_Uarm_PenUp_0,
+  _emscripten_bind_Uarm_CurrentIps_0,
+  _emscripten_bind_Uarm_CurrentIpsMax_0,
+  _emscripten_bind_Uarm_SetMaxLoad_1,
+  _emscripten_bind_Uarm_SetCyclesPerSecondLimit_1,
+  _emscripten_bind_Uarm_GetTimestampUsec_0,
+  _emscripten_bind_Uarm_KeyDown_1,
+  _emscripten_bind_Uarm_KeyUp_1,
+  _emscripten_bind_Uarm_PendingSamples_0,
+  _emscripten_bind_Uarm_PopQueuedSamples_0,
+  _emscripten_bind_Uarm_SetPcmOutputEnabled_1,
+  _emscripten_bind_Uarm_SetPcmSuspended_1,
+  _emscripten_bind_Uarm_GetRomDataSize_0,
+  _emscripten_bind_Uarm_GetRomData_0,
+  _emscripten_bind_Uarm_GetNandDataSize_0,
+  _emscripten_bind_Uarm_GetNandData_0,
+  _emscripten_bind_Uarm_GetNandDirtyPages_0,
+  _emscripten_bind_Uarm_IsNandDirty_0,
+  _emscripten_bind_Uarm_SetNandDirty_1,
+  _emscripten_bind_Uarm_GetSdCardDataSize_0,
+  _emscripten_bind_Uarm_GetSdCardData_0,
+  _emscripten_bind_Uarm_GetSdCardDirtyPages_0,
+  _emscripten_bind_Uarm_IsSdCardDirty_0,
+  _emscripten_bind_Uarm_SetSdCardDirty_1,
+  _emscripten_bind_Uarm_GetRamDataSize_0,
+  _emscripten_bind_Uarm_GetRamData_0,
+  _emscripten_bind_Uarm_GetRamDirtyPages_0,
+  _emscripten_bind_Uarm_GetDeviceType_0,
+  _emscripten_bind_Uarm_SdCardInsert_3,
+  _emscripten_bind_Uarm_SdCardEject_0,
+  _emscripten_bind_Uarm_Reset_0,
+  _emscripten_bind_Uarm_Save_0,
+  _emscripten_bind_Uarm_GetSavestateSize_0,
+  _emscripten_bind_Uarm_GetSavestateData_0,
+  _emscripten_bind_Uarm_IsSdInserted_0,
+  _emscripten_bind_Uarm_GetRamSize_0,
+  _emscripten_bind_Uarm_InstallDatabase_2,
+  _emscripten_bind_Uarm_NewDbBackup_1,
+  _emscripten_bind_Uarm___destroy___0,
   _emscripten_bind_SessionFile_SessionFile_0,
   _emscripten_bind_SessionFile_IsSessionFile_2,
   _emscripten_bind_SessionFile_GetDeviceId_0,
@@ -1575,6 +1290,10 @@ var _free,
   _emscripten_bind_DbBackup_GetArchiveData_0,
   _emscripten_bind_DbBackup_GetArchiveSize_0,
   _emscripten_bind_DbBackup___destroy___0,
+  _emscripten_bind_Bridge_Bridge_0,
+  _emscripten_bind_Bridge_Malloc_1,
+  _emscripten_bind_Bridge_Free_1,
+  _emscripten_bind_Bridge___destroy___0,
   __emscripten_timeout,
   __emscripten_stack_restore,
   __emscripten_stack_alloc,
@@ -1583,56 +1302,62 @@ var _free,
 
 
 function assignWasmExports(wasmExports) {
-  Module['_free'] = _free = wasmExports['free'];
-  Module['_malloc'] = _malloc = wasmExports['malloc'];
-  Module['_cycle'] = _cycle = wasmExports['cycle'];
-  Module['_getFrame'] = _getFrame = wasmExports['getFrame'];
-  Module['_resetFrame'] = _resetFrame = wasmExports['resetFrame'];
-  Module['_getTimesliceSizeUsec'] = _getTimesliceSizeUsec = wasmExports['getTimesliceSizeUsec'];
-  Module['_penDown'] = _penDown = wasmExports['penDown'];
-  Module['_penUp'] = _penUp = wasmExports['penUp'];
-  Module['_currentIps'] = _currentIps = wasmExports['currentIps'];
-  Module['_currentIpsMax'] = _currentIpsMax = wasmExports['currentIpsMax'];
-  Module['_setMaxLoad'] = _setMaxLoad = wasmExports['setMaxLoad'];
-  Module['_setCyclesPerSecondLimit'] = _setCyclesPerSecondLimit = wasmExports['setCyclesPerSecondLimit'];
-  Module['_getTimestampUsec'] = _getTimestampUsec = wasmExports['getTimestampUsec'];
-  Module['_keyDown'] = _keyDown = wasmExports['keyDown'];
-  Module['_keyUp'] = _keyUp = wasmExports['keyUp'];
-  Module['_pendingSamples'] = _pendingSamples = wasmExports['pendingSamples'];
-  Module['_popQueuedSamples'] = _popQueuedSamples = wasmExports['popQueuedSamples'];
-  Module['_setPcmOutputEnabled'] = _setPcmOutputEnabled = wasmExports['setPcmOutputEnabled'];
-  Module['_setPcmSuspended'] = _setPcmSuspended = wasmExports['setPcmSuspended'];
-  Module['_getRomDataSize'] = _getRomDataSize = wasmExports['getRomDataSize'];
-  Module['_getRomData'] = _getRomData = wasmExports['getRomData'];
-  Module['_getNandDataSize'] = _getNandDataSize = wasmExports['getNandDataSize'];
-  Module['_getNandData'] = _getNandData = wasmExports['getNandData'];
-  Module['_getNandDirtyPages'] = _getNandDirtyPages = wasmExports['getNandDirtyPages'];
-  Module['_isNandDirty'] = _isNandDirty = wasmExports['isNandDirty'];
-  Module['_setNandDirty'] = _setNandDirty = wasmExports['setNandDirty'];
-  Module['_getSdCardDataSize'] = _getSdCardDataSize = wasmExports['getSdCardDataSize'];
-  Module['_getSdCardData'] = _getSdCardData = wasmExports['getSdCardData'];
-  Module['_getSdCardDirtyPages'] = _getSdCardDirtyPages = wasmExports['getSdCardDirtyPages'];
-  Module['_isSdCardDirty'] = _isSdCardDirty = wasmExports['isSdCardDirty'];
-  Module['_setSdCardDirty'] = _setSdCardDirty = wasmExports['setSdCardDirty'];
-  Module['_getRamDataSize'] = _getRamDataSize = wasmExports['getRamDataSize'];
-  Module['_getRamData'] = _getRamData = wasmExports['getRamData'];
-  Module['_getRamDirtyPages'] = _getRamDirtyPages = wasmExports['getRamDirtyPages'];
-  Module['_getDeviceType'] = _getDeviceType = wasmExports['getDeviceType'];
-  Module['_sdCardInsert'] = _sdCardInsert = wasmExports['sdCardInsert'];
-  Module['_sdCardEject'] = _sdCardEject = wasmExports['sdCardEject'];
-  Module['_reset'] = _reset = wasmExports['reset'];
-  Module['_save'] = _save = wasmExports['save'];
-  Module['_getSavestateSize'] = _getSavestateSize = wasmExports['getSavestateSize'];
-  Module['_getSavestateData'] = _getSavestateData = wasmExports['getSavestateData'];
-  Module['_isSdInserted'] = _isSdInserted = wasmExports['isSdInserted'];
-  Module['_getRamSize'] = _getRamSize = wasmExports['getRamSize'];
-  Module['_installDatabase'] = _installDatabase = wasmExports['installDatabase'];
-  Module['_newDbBackup'] = _newDbBackup = wasmExports['newDbBackup'];
   Module['_main'] = _main = wasmExports['main'];
-  Module['_webMain'] = _webMain = wasmExports['webMain'];
   Module['_webidl_free'] = _webidl_free = wasmExports['webidl_free'];
   Module['_webidl_malloc'] = _webidl_malloc = wasmExports['webidl_malloc'];
   Module['_emscripten_bind_VoidPtr___destroy___0'] = _emscripten_bind_VoidPtr___destroy___0 = wasmExports['emscripten_bind_VoidPtr___destroy___0'];
+  Module['_emscripten_bind_Uarm_Uarm_0'] = _emscripten_bind_Uarm_Uarm_0 = wasmExports['emscripten_bind_Uarm_Uarm_0'];
+  Module['_emscripten_bind_Uarm_SetRamSize_1'] = _emscripten_bind_Uarm_SetRamSize_1 = wasmExports['emscripten_bind_Uarm_SetRamSize_1'];
+  Module['_emscripten_bind_Uarm_SetNand_2'] = _emscripten_bind_Uarm_SetNand_2 = wasmExports['emscripten_bind_Uarm_SetNand_2'];
+  Module['_emscripten_bind_Uarm_SetMemory_2'] = _emscripten_bind_Uarm_SetMemory_2 = wasmExports['emscripten_bind_Uarm_SetMemory_2'];
+  Module['_emscripten_bind_Uarm_SetSavestate_2'] = _emscripten_bind_Uarm_SetSavestate_2 = wasmExports['emscripten_bind_Uarm_SetSavestate_2'];
+  Module['_emscripten_bind_Uarm_SetSd_3'] = _emscripten_bind_Uarm_SetSd_3 = wasmExports['emscripten_bind_Uarm_SetSd_3'];
+  Module['_emscripten_bind_Uarm_SetDefaultMips_1'] = _emscripten_bind_Uarm_SetDefaultMips_1 = wasmExports['emscripten_bind_Uarm_SetDefaultMips_1'];
+  Module['_emscripten_bind_Uarm_Launch_2'] = _emscripten_bind_Uarm_Launch_2 = wasmExports['emscripten_bind_Uarm_Launch_2'];
+  Module['_emscripten_bind_Uarm_Cycle_1'] = _emscripten_bind_Uarm_Cycle_1 = wasmExports['emscripten_bind_Uarm_Cycle_1'];
+  Module['_emscripten_bind_Uarm_GetFrame_0'] = _emscripten_bind_Uarm_GetFrame_0 = wasmExports['emscripten_bind_Uarm_GetFrame_0'];
+  Module['_emscripten_bind_Uarm_ResetFrame_0'] = _emscripten_bind_Uarm_ResetFrame_0 = wasmExports['emscripten_bind_Uarm_ResetFrame_0'];
+  Module['_emscripten_bind_Uarm_GetTimesliceSizeUsec_0'] = _emscripten_bind_Uarm_GetTimesliceSizeUsec_0 = wasmExports['emscripten_bind_Uarm_GetTimesliceSizeUsec_0'];
+  Module['_emscripten_bind_Uarm_PenDown_2'] = _emscripten_bind_Uarm_PenDown_2 = wasmExports['emscripten_bind_Uarm_PenDown_2'];
+  Module['_emscripten_bind_Uarm_PenUp_0'] = _emscripten_bind_Uarm_PenUp_0 = wasmExports['emscripten_bind_Uarm_PenUp_0'];
+  Module['_emscripten_bind_Uarm_CurrentIps_0'] = _emscripten_bind_Uarm_CurrentIps_0 = wasmExports['emscripten_bind_Uarm_CurrentIps_0'];
+  Module['_emscripten_bind_Uarm_CurrentIpsMax_0'] = _emscripten_bind_Uarm_CurrentIpsMax_0 = wasmExports['emscripten_bind_Uarm_CurrentIpsMax_0'];
+  Module['_emscripten_bind_Uarm_SetMaxLoad_1'] = _emscripten_bind_Uarm_SetMaxLoad_1 = wasmExports['emscripten_bind_Uarm_SetMaxLoad_1'];
+  Module['_emscripten_bind_Uarm_SetCyclesPerSecondLimit_1'] = _emscripten_bind_Uarm_SetCyclesPerSecondLimit_1 = wasmExports['emscripten_bind_Uarm_SetCyclesPerSecondLimit_1'];
+  Module['_emscripten_bind_Uarm_GetTimestampUsec_0'] = _emscripten_bind_Uarm_GetTimestampUsec_0 = wasmExports['emscripten_bind_Uarm_GetTimestampUsec_0'];
+  Module['_emscripten_bind_Uarm_KeyDown_1'] = _emscripten_bind_Uarm_KeyDown_1 = wasmExports['emscripten_bind_Uarm_KeyDown_1'];
+  Module['_emscripten_bind_Uarm_KeyUp_1'] = _emscripten_bind_Uarm_KeyUp_1 = wasmExports['emscripten_bind_Uarm_KeyUp_1'];
+  Module['_emscripten_bind_Uarm_PendingSamples_0'] = _emscripten_bind_Uarm_PendingSamples_0 = wasmExports['emscripten_bind_Uarm_PendingSamples_0'];
+  Module['_emscripten_bind_Uarm_PopQueuedSamples_0'] = _emscripten_bind_Uarm_PopQueuedSamples_0 = wasmExports['emscripten_bind_Uarm_PopQueuedSamples_0'];
+  Module['_emscripten_bind_Uarm_SetPcmOutputEnabled_1'] = _emscripten_bind_Uarm_SetPcmOutputEnabled_1 = wasmExports['emscripten_bind_Uarm_SetPcmOutputEnabled_1'];
+  Module['_emscripten_bind_Uarm_SetPcmSuspended_1'] = _emscripten_bind_Uarm_SetPcmSuspended_1 = wasmExports['emscripten_bind_Uarm_SetPcmSuspended_1'];
+  Module['_emscripten_bind_Uarm_GetRomDataSize_0'] = _emscripten_bind_Uarm_GetRomDataSize_0 = wasmExports['emscripten_bind_Uarm_GetRomDataSize_0'];
+  Module['_emscripten_bind_Uarm_GetRomData_0'] = _emscripten_bind_Uarm_GetRomData_0 = wasmExports['emscripten_bind_Uarm_GetRomData_0'];
+  Module['_emscripten_bind_Uarm_GetNandDataSize_0'] = _emscripten_bind_Uarm_GetNandDataSize_0 = wasmExports['emscripten_bind_Uarm_GetNandDataSize_0'];
+  Module['_emscripten_bind_Uarm_GetNandData_0'] = _emscripten_bind_Uarm_GetNandData_0 = wasmExports['emscripten_bind_Uarm_GetNandData_0'];
+  Module['_emscripten_bind_Uarm_GetNandDirtyPages_0'] = _emscripten_bind_Uarm_GetNandDirtyPages_0 = wasmExports['emscripten_bind_Uarm_GetNandDirtyPages_0'];
+  Module['_emscripten_bind_Uarm_IsNandDirty_0'] = _emscripten_bind_Uarm_IsNandDirty_0 = wasmExports['emscripten_bind_Uarm_IsNandDirty_0'];
+  Module['_emscripten_bind_Uarm_SetNandDirty_1'] = _emscripten_bind_Uarm_SetNandDirty_1 = wasmExports['emscripten_bind_Uarm_SetNandDirty_1'];
+  Module['_emscripten_bind_Uarm_GetSdCardDataSize_0'] = _emscripten_bind_Uarm_GetSdCardDataSize_0 = wasmExports['emscripten_bind_Uarm_GetSdCardDataSize_0'];
+  Module['_emscripten_bind_Uarm_GetSdCardData_0'] = _emscripten_bind_Uarm_GetSdCardData_0 = wasmExports['emscripten_bind_Uarm_GetSdCardData_0'];
+  Module['_emscripten_bind_Uarm_GetSdCardDirtyPages_0'] = _emscripten_bind_Uarm_GetSdCardDirtyPages_0 = wasmExports['emscripten_bind_Uarm_GetSdCardDirtyPages_0'];
+  Module['_emscripten_bind_Uarm_IsSdCardDirty_0'] = _emscripten_bind_Uarm_IsSdCardDirty_0 = wasmExports['emscripten_bind_Uarm_IsSdCardDirty_0'];
+  Module['_emscripten_bind_Uarm_SetSdCardDirty_1'] = _emscripten_bind_Uarm_SetSdCardDirty_1 = wasmExports['emscripten_bind_Uarm_SetSdCardDirty_1'];
+  Module['_emscripten_bind_Uarm_GetRamDataSize_0'] = _emscripten_bind_Uarm_GetRamDataSize_0 = wasmExports['emscripten_bind_Uarm_GetRamDataSize_0'];
+  Module['_emscripten_bind_Uarm_GetRamData_0'] = _emscripten_bind_Uarm_GetRamData_0 = wasmExports['emscripten_bind_Uarm_GetRamData_0'];
+  Module['_emscripten_bind_Uarm_GetRamDirtyPages_0'] = _emscripten_bind_Uarm_GetRamDirtyPages_0 = wasmExports['emscripten_bind_Uarm_GetRamDirtyPages_0'];
+  Module['_emscripten_bind_Uarm_GetDeviceType_0'] = _emscripten_bind_Uarm_GetDeviceType_0 = wasmExports['emscripten_bind_Uarm_GetDeviceType_0'];
+  Module['_emscripten_bind_Uarm_SdCardInsert_3'] = _emscripten_bind_Uarm_SdCardInsert_3 = wasmExports['emscripten_bind_Uarm_SdCardInsert_3'];
+  Module['_emscripten_bind_Uarm_SdCardEject_0'] = _emscripten_bind_Uarm_SdCardEject_0 = wasmExports['emscripten_bind_Uarm_SdCardEject_0'];
+  Module['_emscripten_bind_Uarm_Reset_0'] = _emscripten_bind_Uarm_Reset_0 = wasmExports['emscripten_bind_Uarm_Reset_0'];
+  Module['_emscripten_bind_Uarm_Save_0'] = _emscripten_bind_Uarm_Save_0 = wasmExports['emscripten_bind_Uarm_Save_0'];
+  Module['_emscripten_bind_Uarm_GetSavestateSize_0'] = _emscripten_bind_Uarm_GetSavestateSize_0 = wasmExports['emscripten_bind_Uarm_GetSavestateSize_0'];
+  Module['_emscripten_bind_Uarm_GetSavestateData_0'] = _emscripten_bind_Uarm_GetSavestateData_0 = wasmExports['emscripten_bind_Uarm_GetSavestateData_0'];
+  Module['_emscripten_bind_Uarm_IsSdInserted_0'] = _emscripten_bind_Uarm_IsSdInserted_0 = wasmExports['emscripten_bind_Uarm_IsSdInserted_0'];
+  Module['_emscripten_bind_Uarm_GetRamSize_0'] = _emscripten_bind_Uarm_GetRamSize_0 = wasmExports['emscripten_bind_Uarm_GetRamSize_0'];
+  Module['_emscripten_bind_Uarm_InstallDatabase_2'] = _emscripten_bind_Uarm_InstallDatabase_2 = wasmExports['emscripten_bind_Uarm_InstallDatabase_2'];
+  Module['_emscripten_bind_Uarm_NewDbBackup_1'] = _emscripten_bind_Uarm_NewDbBackup_1 = wasmExports['emscripten_bind_Uarm_NewDbBackup_1'];
+  Module['_emscripten_bind_Uarm___destroy___0'] = _emscripten_bind_Uarm___destroy___0 = wasmExports['emscripten_bind_Uarm___destroy___0'];
   Module['_emscripten_bind_SessionFile_SessionFile_0'] = _emscripten_bind_SessionFile_SessionFile_0 = wasmExports['emscripten_bind_SessionFile_SessionFile_0'];
   Module['_emscripten_bind_SessionFile_IsSessionFile_2'] = _emscripten_bind_SessionFile_IsSessionFile_2 = wasmExports['emscripten_bind_SessionFile_IsSessionFile_2'];
   Module['_emscripten_bind_SessionFile_GetDeviceId_0'] = _emscripten_bind_SessionFile_GetDeviceId_0 = wasmExports['emscripten_bind_SessionFile_GetDeviceId_0'];
@@ -1667,6 +1392,10 @@ function assignWasmExports(wasmExports) {
   Module['_emscripten_bind_DbBackup_GetArchiveData_0'] = _emscripten_bind_DbBackup_GetArchiveData_0 = wasmExports['emscripten_bind_DbBackup_GetArchiveData_0'];
   Module['_emscripten_bind_DbBackup_GetArchiveSize_0'] = _emscripten_bind_DbBackup_GetArchiveSize_0 = wasmExports['emscripten_bind_DbBackup_GetArchiveSize_0'];
   Module['_emscripten_bind_DbBackup___destroy___0'] = _emscripten_bind_DbBackup___destroy___0 = wasmExports['emscripten_bind_DbBackup___destroy___0'];
+  Module['_emscripten_bind_Bridge_Bridge_0'] = _emscripten_bind_Bridge_Bridge_0 = wasmExports['emscripten_bind_Bridge_Bridge_0'];
+  Module['_emscripten_bind_Bridge_Malloc_1'] = _emscripten_bind_Bridge_Malloc_1 = wasmExports['emscripten_bind_Bridge_Malloc_1'];
+  Module['_emscripten_bind_Bridge_Free_1'] = _emscripten_bind_Bridge_Free_1 = wasmExports['emscripten_bind_Bridge_Free_1'];
+  Module['_emscripten_bind_Bridge___destroy___0'] = _emscripten_bind_Bridge___destroy___0 = wasmExports['emscripten_bind_Bridge___destroy___0'];
   __emscripten_timeout = wasmExports['_emscripten_timeout'];
   __emscripten_stack_restore = wasmExports['_emscripten_stack_restore'];
   __emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'];
@@ -2003,6 +1732,360 @@ VoidPtr.prototype['__destroy__'] = VoidPtr.prototype.__destroy__ = function() {
   _emscripten_bind_VoidPtr___destroy___0(self);
 };
 
+// Interface: Uarm
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+function Uarm() {
+  this.ptr = _emscripten_bind_Uarm_Uarm_0();
+  getCache(Uarm)[this.ptr] = this;
+};
+
+Uarm.prototype = Object.create(WrapperObject.prototype);
+Uarm.prototype.constructor = Uarm;
+Uarm.prototype.__class__ = Uarm;
+Uarm.__cache__ = {};
+Module['Uarm'] = Uarm;
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetRamSize'] = Uarm.prototype.SetRamSize = function(size) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_SetRamSize_1(self, size), Uarm);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetNand'] = Uarm.prototype.SetNand = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_SetNand_2(self, size, data), Uarm);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetMemory'] = Uarm.prototype.SetMemory = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_SetMemory_2(self, size, data), Uarm);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetSavestate'] = Uarm.prototype.SetSavestate = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_SetSavestate_2(self, size, data), Uarm);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetSd'] = Uarm.prototype.SetSd = function(size, data, id) {
+  var self = this.ptr;
+  ensureCache.prepare();
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  if (id && typeof id === 'object') id = id.ptr;
+  else id = ensureString(id);
+  return wrapPointer(_emscripten_bind_Uarm_SetSd_3(self, size, data, id), Uarm);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetDefaultMips'] = Uarm.prototype.SetDefaultMips = function(defaultMips) {
+  var self = this.ptr;
+  if (defaultMips && typeof defaultMips === 'object') defaultMips = defaultMips.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_SetDefaultMips_1(self, defaultMips), Uarm);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['Launch'] = Uarm.prototype.Launch = function(romSize, romData) {
+  var self = this.ptr;
+  if (romSize && typeof romSize === 'object') romSize = romSize.ptr;
+  if (romData && typeof romData === 'object') romData = romData.ptr;
+  return !!(_emscripten_bind_Uarm_Launch_2(self, romSize, romData));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['Cycle'] = Uarm.prototype.Cycle = function(now) {
+  var self = this.ptr;
+  if (now && typeof now === 'object') now = now.ptr;
+  _emscripten_bind_Uarm_Cycle_1(self, now);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetFrame'] = Uarm.prototype.GetFrame = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetFrame_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['ResetFrame'] = Uarm.prototype.ResetFrame = function() {
+  var self = this.ptr;
+  _emscripten_bind_Uarm_ResetFrame_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetTimesliceSizeUsec'] = Uarm.prototype.GetTimesliceSizeUsec = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetTimesliceSizeUsec_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['PenDown'] = Uarm.prototype.PenDown = function(x, y) {
+  var self = this.ptr;
+  if (x && typeof x === 'object') x = x.ptr;
+  if (y && typeof y === 'object') y = y.ptr;
+  _emscripten_bind_Uarm_PenDown_2(self, x, y);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['PenUp'] = Uarm.prototype.PenUp = function() {
+  var self = this.ptr;
+  _emscripten_bind_Uarm_PenUp_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['CurrentIps'] = Uarm.prototype.CurrentIps = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_CurrentIps_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['CurrentIpsMax'] = Uarm.prototype.CurrentIpsMax = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_CurrentIpsMax_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetMaxLoad'] = Uarm.prototype.SetMaxLoad = function(maxLoad) {
+  var self = this.ptr;
+  if (maxLoad && typeof maxLoad === 'object') maxLoad = maxLoad.ptr;
+  _emscripten_bind_Uarm_SetMaxLoad_1(self, maxLoad);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetCyclesPerSecondLimit'] = Uarm.prototype.SetCyclesPerSecondLimit = function(cyclesPerSecondLimit) {
+  var self = this.ptr;
+  if (cyclesPerSecondLimit && typeof cyclesPerSecondLimit === 'object') cyclesPerSecondLimit = cyclesPerSecondLimit.ptr;
+  _emscripten_bind_Uarm_SetCyclesPerSecondLimit_1(self, cyclesPerSecondLimit);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetTimestampUsec'] = Uarm.prototype.GetTimestampUsec = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetTimestampUsec_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['KeyDown'] = Uarm.prototype.KeyDown = function(key) {
+  var self = this.ptr;
+  if (key && typeof key === 'object') key = key.ptr;
+  _emscripten_bind_Uarm_KeyDown_1(self, key);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['KeyUp'] = Uarm.prototype.KeyUp = function(key) {
+  var self = this.ptr;
+  if (key && typeof key === 'object') key = key.ptr;
+  _emscripten_bind_Uarm_KeyUp_1(self, key);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['PendingSamples'] = Uarm.prototype.PendingSamples = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_PendingSamples_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['PopQueuedSamples'] = Uarm.prototype.PopQueuedSamples = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_PopQueuedSamples_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetPcmOutputEnabled'] = Uarm.prototype.SetPcmOutputEnabled = function(enabled) {
+  var self = this.ptr;
+  if (enabled && typeof enabled === 'object') enabled = enabled.ptr;
+  _emscripten_bind_Uarm_SetPcmOutputEnabled_1(self, enabled);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetPcmSuspended'] = Uarm.prototype.SetPcmSuspended = function(suspended) {
+  var self = this.ptr;
+  if (suspended && typeof suspended === 'object') suspended = suspended.ptr;
+  _emscripten_bind_Uarm_SetPcmSuspended_1(self, suspended);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetRomDataSize'] = Uarm.prototype.GetRomDataSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetRomDataSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetRomData'] = Uarm.prototype.GetRomData = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetRomData_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetNandDataSize'] = Uarm.prototype.GetNandDataSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetNandDataSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetNandData'] = Uarm.prototype.GetNandData = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetNandData_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetNandDirtyPages'] = Uarm.prototype.GetNandDirtyPages = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetNandDirtyPages_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['IsNandDirty'] = Uarm.prototype.IsNandDirty = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_Uarm_IsNandDirty_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetNandDirty'] = Uarm.prototype.SetNandDirty = function(isDirty) {
+  var self = this.ptr;
+  if (isDirty && typeof isDirty === 'object') isDirty = isDirty.ptr;
+  _emscripten_bind_Uarm_SetNandDirty_1(self, isDirty);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetSdCardDataSize'] = Uarm.prototype.GetSdCardDataSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetSdCardDataSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetSdCardData'] = Uarm.prototype.GetSdCardData = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetSdCardData_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetSdCardDirtyPages'] = Uarm.prototype.GetSdCardDirtyPages = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetSdCardDirtyPages_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['IsSdCardDirty'] = Uarm.prototype.IsSdCardDirty = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_Uarm_IsSdCardDirty_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SetSdCardDirty'] = Uarm.prototype.SetSdCardDirty = function(isDirty) {
+  var self = this.ptr;
+  if (isDirty && typeof isDirty === 'object') isDirty = isDirty.ptr;
+  _emscripten_bind_Uarm_SetSdCardDirty_1(self, isDirty);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetRamDataSize'] = Uarm.prototype.GetRamDataSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetRamDataSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetRamData'] = Uarm.prototype.GetRamData = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetRamData_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetRamDirtyPages'] = Uarm.prototype.GetRamDirtyPages = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetRamDirtyPages_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetDeviceType'] = Uarm.prototype.GetDeviceType = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetDeviceType_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SdCardInsert'] = Uarm.prototype.SdCardInsert = function(data, length, id) {
+  var self = this.ptr;
+  ensureCache.prepare();
+  if (data && typeof data === 'object') data = data.ptr;
+  if (length && typeof length === 'object') length = length.ptr;
+  if (id && typeof id === 'object') id = id.ptr;
+  else id = ensureString(id);
+  return !!(_emscripten_bind_Uarm_SdCardInsert_3(self, data, length, id));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SdCardEject'] = Uarm.prototype.SdCardEject = function() {
+  var self = this.ptr;
+  _emscripten_bind_Uarm_SdCardEject_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['Reset'] = Uarm.prototype.Reset = function() {
+  var self = this.ptr;
+  _emscripten_bind_Uarm_Reset_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['Save'] = Uarm.prototype.Save = function() {
+  var self = this.ptr;
+  _emscripten_bind_Uarm_Save_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetSavestateSize'] = Uarm.prototype.GetSavestateSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetSavestateSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetSavestateData'] = Uarm.prototype.GetSavestateData = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_GetSavestateData_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['IsSdInserted'] = Uarm.prototype.IsSdInserted = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_Uarm_IsSdInserted_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetRamSize'] = Uarm.prototype.GetRamSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetRamSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['InstallDatabase'] = Uarm.prototype.InstallDatabase = function(len, data) {
+  var self = this.ptr;
+  if (len && typeof len === 'object') len = len.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return _emscripten_bind_Uarm_InstallDatabase_2(self, len, data);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['NewDbBackup'] = Uarm.prototype.NewDbBackup = function(type) {
+  var self = this.ptr;
+  if (type && typeof type === 'object') type = type.ptr;
+  return wrapPointer(_emscripten_bind_Uarm_NewDbBackup_1(self, type), DbBackup);
+};
+
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['__destroy__'] = Uarm.prototype.__destroy__ = function() {
+  var self = this.ptr;
+  _emscripten_bind_Uarm___destroy___0(self);
+};
+
 // Interface: SessionFile
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
@@ -2239,6 +2322,40 @@ DbBackup.prototype['GetArchiveSize'] = DbBackup.prototype.GetArchiveSize = funct
 DbBackup.prototype['__destroy__'] = DbBackup.prototype.__destroy__ = function() {
   var self = this.ptr;
   _emscripten_bind_DbBackup___destroy___0(self);
+};
+
+// Interface: Bridge
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+function Bridge() {
+  this.ptr = _emscripten_bind_Bridge_Bridge_0();
+  getCache(Bridge)[this.ptr] = this;
+};
+
+Bridge.prototype = Object.create(WrapperObject.prototype);
+Bridge.prototype.constructor = Bridge;
+Bridge.prototype.__class__ = Bridge;
+Bridge.__cache__ = {};
+Module['Bridge'] = Bridge;
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Bridge.prototype['Malloc'] = Bridge.prototype.Malloc = function(size) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  return wrapPointer(_emscripten_bind_Bridge_Malloc_1(self, size), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Bridge.prototype['Free'] = Bridge.prototype.Free = function(ptr) {
+  var self = this.ptr;
+  if (ptr && typeof ptr === 'object') ptr = ptr.ptr;
+  _emscripten_bind_Bridge_Free_1(self, ptr);
+};
+
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Bridge.prototype['__destroy__'] = Bridge.prototype.__destroy__ = function() {
+  var self = this.ptr;
+  _emscripten_bind_Bridge___destroy___0(self);
 };
 // end include: web/binding/binding.js
 
