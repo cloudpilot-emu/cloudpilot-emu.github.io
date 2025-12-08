@@ -1195,7 +1195,7 @@ if (Module['wasmBinary']) wasmBinary = Module['wasmBinary'];
 // end include: postlibrary.js
 
 var ASM_CONSTS = {
-  72030: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
+  72350: ($0) => { wasmTable.grow(0x10000); for (let i = 0; i <= 0xffff; i++) wasmTable.set(wasmTable.length - 0xffff - 1 + i, wasmTable.get(HEAPU32[($0 >>> 2) + i])); return wasmTable.length - 0xffff - 1; }
 };
 function __emscripten_abort() { throw new Error("emulator terminated"); }
 
@@ -1227,6 +1227,7 @@ var _main,
   _emscripten_bind_Uarm_KeyUp_1,
   _emscripten_bind_Uarm_PendingSamples_0,
   _emscripten_bind_Uarm_PopQueuedSamples_0,
+  _emscripten_bind_Uarm_GetSampleQueueSize_0,
   _emscripten_bind_Uarm_SetPcmOutputEnabled_1,
   _emscripten_bind_Uarm_SetPcmSuspended_1,
   _emscripten_bind_Uarm_GetRomDataSize_0,
@@ -1241,47 +1242,28 @@ var _main,
   _emscripten_bind_Uarm_GetSdCardDirtyPages_0,
   _emscripten_bind_Uarm_IsSdCardDirty_0,
   _emscripten_bind_Uarm_SetSdCardDirty_1,
-  _emscripten_bind_Uarm_GetRamDataSize_0,
-  _emscripten_bind_Uarm_GetRamData_0,
-  _emscripten_bind_Uarm_GetRamDirtyPages_0,
+  _emscripten_bind_Uarm_GetMemoryDataSize_0,
+  _emscripten_bind_Uarm_GetMemoryData_0,
+  _emscripten_bind_Uarm_GetMemoryDirtyPages_0,
   _emscripten_bind_Uarm_GetDeviceType_0,
   _emscripten_bind_Uarm_SdCardInsert_3,
   _emscripten_bind_Uarm_SdCardEject_0,
+  _emscripten_bind_Uarm_SdCardInitialized_0,
+  _emscripten_bind_Uarm_GetSdCardId_0,
   _emscripten_bind_Uarm_Reset_0,
   _emscripten_bind_Uarm_Save_0,
   _emscripten_bind_Uarm_GetSavestateSize_0,
   _emscripten_bind_Uarm_GetSavestateData_0,
   _emscripten_bind_Uarm_IsSdInserted_0,
   _emscripten_bind_Uarm_GetRamSize_0,
+  _emscripten_bind_Uarm_JamKey_2,
+  _emscripten_bind_Uarm_IsUiInitialized_0,
+  _emscripten_bind_Uarm_IsOsVersionSet_0,
+  _emscripten_bind_Uarm_GetOsVersion_0,
+  _emscripten_bind_Uarm_IsLcdEnabled_0,
   _emscripten_bind_Uarm_InstallDatabase_2,
   _emscripten_bind_Uarm_NewDbBackup_1,
   _emscripten_bind_Uarm___destroy___0,
-  _emscripten_bind_SessionFile_SessionFile_0,
-  _emscripten_bind_SessionFile_IsSessionFile_2,
-  _emscripten_bind_SessionFile_GetDeviceId_0,
-  _emscripten_bind_SessionFile_SetDeviceId_1,
-  _emscripten_bind_SessionFile_GetMetadata_0,
-  _emscripten_bind_SessionFile_GetMetadataSize_0,
-  _emscripten_bind_SessionFile_SetMetadata_2,
-  _emscripten_bind_SessionFile_GetNor_0,
-  _emscripten_bind_SessionFile_GetNorSize_0,
-  _emscripten_bind_SessionFile_SetNor_2,
-  _emscripten_bind_SessionFile_GetNand_0,
-  _emscripten_bind_SessionFile_GetNandSize_0,
-  _emscripten_bind_SessionFile_SetNand_2,
-  _emscripten_bind_SessionFile_GetMemory_0,
-  _emscripten_bind_SessionFile_GetMemorySize_0,
-  _emscripten_bind_SessionFile_SetMemory_2,
-  _emscripten_bind_SessionFile_GetSavestate_0,
-  _emscripten_bind_SessionFile_GetSavestateSize_0,
-  _emscripten_bind_SessionFile_SetSavestate_2,
-  _emscripten_bind_SessionFile_GetRamSize_0,
-  _emscripten_bind_SessionFile_SetRamSize_1,
-  _emscripten_bind_SessionFile_Serialize_0,
-  _emscripten_bind_SessionFile_GetSerializedSession_0,
-  _emscripten_bind_SessionFile_GetSerializedSessionSize_0,
-  _emscripten_bind_SessionFile_Deserialize_2,
-  _emscripten_bind_SessionFile___destroy___0,
   _emscripten_bind_DbBackup_Init_0,
   _emscripten_bind_DbBackup_GetState_0,
   _emscripten_bind_DbBackup_Continue_0,
@@ -1294,6 +1276,33 @@ var _main,
   _emscripten_bind_Bridge_Malloc_1,
   _emscripten_bind_Bridge_Free_1,
   _emscripten_bind_Bridge___destroy___0,
+  _emscripten_bind_SessionFile5_SessionFile5_0,
+  _emscripten_bind_SessionFile5_IsSessionFile_2,
+  _emscripten_bind_SessionFile5_GetDeviceId_0,
+  _emscripten_bind_SessionFile5_SetDeviceId_1,
+  _emscripten_bind_SessionFile5_GetMetadata_0,
+  _emscripten_bind_SessionFile5_GetMetadataSize_0,
+  _emscripten_bind_SessionFile5_SetMetadata_2,
+  _emscripten_bind_SessionFile5_GetNor_0,
+  _emscripten_bind_SessionFile5_GetNorSize_0,
+  _emscripten_bind_SessionFile5_SetNor_2,
+  _emscripten_bind_SessionFile5_GetNand_0,
+  _emscripten_bind_SessionFile5_GetNandSize_0,
+  _emscripten_bind_SessionFile5_SetNand_2,
+  _emscripten_bind_SessionFile5_GetMemory_0,
+  _emscripten_bind_SessionFile5_GetMemorySize_0,
+  _emscripten_bind_SessionFile5_SetMemory_2,
+  _emscripten_bind_SessionFile5_GetSavestate_0,
+  _emscripten_bind_SessionFile5_GetSavestateSize_0,
+  _emscripten_bind_SessionFile5_SetSavestate_2,
+  _emscripten_bind_SessionFile5_GetRamSize_0,
+  _emscripten_bind_SessionFile5_SetRamSize_1,
+  _emscripten_bind_SessionFile5_Serialize_0,
+  _emscripten_bind_SessionFile5_GetSerializedSession_0,
+  _emscripten_bind_SessionFile5_GetSerializedSessionSize_0,
+  _emscripten_bind_SessionFile5_GetVersion_0,
+  _emscripten_bind_SessionFile5_Deserialize_2,
+  _emscripten_bind_SessionFile5___destroy___0,
   __emscripten_timeout,
   __emscripten_stack_restore,
   __emscripten_stack_alloc,
@@ -1329,6 +1338,7 @@ function assignWasmExports(wasmExports) {
   Module['_emscripten_bind_Uarm_KeyUp_1'] = _emscripten_bind_Uarm_KeyUp_1 = wasmExports['emscripten_bind_Uarm_KeyUp_1'];
   Module['_emscripten_bind_Uarm_PendingSamples_0'] = _emscripten_bind_Uarm_PendingSamples_0 = wasmExports['emscripten_bind_Uarm_PendingSamples_0'];
   Module['_emscripten_bind_Uarm_PopQueuedSamples_0'] = _emscripten_bind_Uarm_PopQueuedSamples_0 = wasmExports['emscripten_bind_Uarm_PopQueuedSamples_0'];
+  Module['_emscripten_bind_Uarm_GetSampleQueueSize_0'] = _emscripten_bind_Uarm_GetSampleQueueSize_0 = wasmExports['emscripten_bind_Uarm_GetSampleQueueSize_0'];
   Module['_emscripten_bind_Uarm_SetPcmOutputEnabled_1'] = _emscripten_bind_Uarm_SetPcmOutputEnabled_1 = wasmExports['emscripten_bind_Uarm_SetPcmOutputEnabled_1'];
   Module['_emscripten_bind_Uarm_SetPcmSuspended_1'] = _emscripten_bind_Uarm_SetPcmSuspended_1 = wasmExports['emscripten_bind_Uarm_SetPcmSuspended_1'];
   Module['_emscripten_bind_Uarm_GetRomDataSize_0'] = _emscripten_bind_Uarm_GetRomDataSize_0 = wasmExports['emscripten_bind_Uarm_GetRomDataSize_0'];
@@ -1343,47 +1353,28 @@ function assignWasmExports(wasmExports) {
   Module['_emscripten_bind_Uarm_GetSdCardDirtyPages_0'] = _emscripten_bind_Uarm_GetSdCardDirtyPages_0 = wasmExports['emscripten_bind_Uarm_GetSdCardDirtyPages_0'];
   Module['_emscripten_bind_Uarm_IsSdCardDirty_0'] = _emscripten_bind_Uarm_IsSdCardDirty_0 = wasmExports['emscripten_bind_Uarm_IsSdCardDirty_0'];
   Module['_emscripten_bind_Uarm_SetSdCardDirty_1'] = _emscripten_bind_Uarm_SetSdCardDirty_1 = wasmExports['emscripten_bind_Uarm_SetSdCardDirty_1'];
-  Module['_emscripten_bind_Uarm_GetRamDataSize_0'] = _emscripten_bind_Uarm_GetRamDataSize_0 = wasmExports['emscripten_bind_Uarm_GetRamDataSize_0'];
-  Module['_emscripten_bind_Uarm_GetRamData_0'] = _emscripten_bind_Uarm_GetRamData_0 = wasmExports['emscripten_bind_Uarm_GetRamData_0'];
-  Module['_emscripten_bind_Uarm_GetRamDirtyPages_0'] = _emscripten_bind_Uarm_GetRamDirtyPages_0 = wasmExports['emscripten_bind_Uarm_GetRamDirtyPages_0'];
+  Module['_emscripten_bind_Uarm_GetMemoryDataSize_0'] = _emscripten_bind_Uarm_GetMemoryDataSize_0 = wasmExports['emscripten_bind_Uarm_GetMemoryDataSize_0'];
+  Module['_emscripten_bind_Uarm_GetMemoryData_0'] = _emscripten_bind_Uarm_GetMemoryData_0 = wasmExports['emscripten_bind_Uarm_GetMemoryData_0'];
+  Module['_emscripten_bind_Uarm_GetMemoryDirtyPages_0'] = _emscripten_bind_Uarm_GetMemoryDirtyPages_0 = wasmExports['emscripten_bind_Uarm_GetMemoryDirtyPages_0'];
   Module['_emscripten_bind_Uarm_GetDeviceType_0'] = _emscripten_bind_Uarm_GetDeviceType_0 = wasmExports['emscripten_bind_Uarm_GetDeviceType_0'];
   Module['_emscripten_bind_Uarm_SdCardInsert_3'] = _emscripten_bind_Uarm_SdCardInsert_3 = wasmExports['emscripten_bind_Uarm_SdCardInsert_3'];
   Module['_emscripten_bind_Uarm_SdCardEject_0'] = _emscripten_bind_Uarm_SdCardEject_0 = wasmExports['emscripten_bind_Uarm_SdCardEject_0'];
+  Module['_emscripten_bind_Uarm_SdCardInitialized_0'] = _emscripten_bind_Uarm_SdCardInitialized_0 = wasmExports['emscripten_bind_Uarm_SdCardInitialized_0'];
+  Module['_emscripten_bind_Uarm_GetSdCardId_0'] = _emscripten_bind_Uarm_GetSdCardId_0 = wasmExports['emscripten_bind_Uarm_GetSdCardId_0'];
   Module['_emscripten_bind_Uarm_Reset_0'] = _emscripten_bind_Uarm_Reset_0 = wasmExports['emscripten_bind_Uarm_Reset_0'];
   Module['_emscripten_bind_Uarm_Save_0'] = _emscripten_bind_Uarm_Save_0 = wasmExports['emscripten_bind_Uarm_Save_0'];
   Module['_emscripten_bind_Uarm_GetSavestateSize_0'] = _emscripten_bind_Uarm_GetSavestateSize_0 = wasmExports['emscripten_bind_Uarm_GetSavestateSize_0'];
   Module['_emscripten_bind_Uarm_GetSavestateData_0'] = _emscripten_bind_Uarm_GetSavestateData_0 = wasmExports['emscripten_bind_Uarm_GetSavestateData_0'];
   Module['_emscripten_bind_Uarm_IsSdInserted_0'] = _emscripten_bind_Uarm_IsSdInserted_0 = wasmExports['emscripten_bind_Uarm_IsSdInserted_0'];
   Module['_emscripten_bind_Uarm_GetRamSize_0'] = _emscripten_bind_Uarm_GetRamSize_0 = wasmExports['emscripten_bind_Uarm_GetRamSize_0'];
+  Module['_emscripten_bind_Uarm_JamKey_2'] = _emscripten_bind_Uarm_JamKey_2 = wasmExports['emscripten_bind_Uarm_JamKey_2'];
+  Module['_emscripten_bind_Uarm_IsUiInitialized_0'] = _emscripten_bind_Uarm_IsUiInitialized_0 = wasmExports['emscripten_bind_Uarm_IsUiInitialized_0'];
+  Module['_emscripten_bind_Uarm_IsOsVersionSet_0'] = _emscripten_bind_Uarm_IsOsVersionSet_0 = wasmExports['emscripten_bind_Uarm_IsOsVersionSet_0'];
+  Module['_emscripten_bind_Uarm_GetOsVersion_0'] = _emscripten_bind_Uarm_GetOsVersion_0 = wasmExports['emscripten_bind_Uarm_GetOsVersion_0'];
+  Module['_emscripten_bind_Uarm_IsLcdEnabled_0'] = _emscripten_bind_Uarm_IsLcdEnabled_0 = wasmExports['emscripten_bind_Uarm_IsLcdEnabled_0'];
   Module['_emscripten_bind_Uarm_InstallDatabase_2'] = _emscripten_bind_Uarm_InstallDatabase_2 = wasmExports['emscripten_bind_Uarm_InstallDatabase_2'];
   Module['_emscripten_bind_Uarm_NewDbBackup_1'] = _emscripten_bind_Uarm_NewDbBackup_1 = wasmExports['emscripten_bind_Uarm_NewDbBackup_1'];
   Module['_emscripten_bind_Uarm___destroy___0'] = _emscripten_bind_Uarm___destroy___0 = wasmExports['emscripten_bind_Uarm___destroy___0'];
-  Module['_emscripten_bind_SessionFile_SessionFile_0'] = _emscripten_bind_SessionFile_SessionFile_0 = wasmExports['emscripten_bind_SessionFile_SessionFile_0'];
-  Module['_emscripten_bind_SessionFile_IsSessionFile_2'] = _emscripten_bind_SessionFile_IsSessionFile_2 = wasmExports['emscripten_bind_SessionFile_IsSessionFile_2'];
-  Module['_emscripten_bind_SessionFile_GetDeviceId_0'] = _emscripten_bind_SessionFile_GetDeviceId_0 = wasmExports['emscripten_bind_SessionFile_GetDeviceId_0'];
-  Module['_emscripten_bind_SessionFile_SetDeviceId_1'] = _emscripten_bind_SessionFile_SetDeviceId_1 = wasmExports['emscripten_bind_SessionFile_SetDeviceId_1'];
-  Module['_emscripten_bind_SessionFile_GetMetadata_0'] = _emscripten_bind_SessionFile_GetMetadata_0 = wasmExports['emscripten_bind_SessionFile_GetMetadata_0'];
-  Module['_emscripten_bind_SessionFile_GetMetadataSize_0'] = _emscripten_bind_SessionFile_GetMetadataSize_0 = wasmExports['emscripten_bind_SessionFile_GetMetadataSize_0'];
-  Module['_emscripten_bind_SessionFile_SetMetadata_2'] = _emscripten_bind_SessionFile_SetMetadata_2 = wasmExports['emscripten_bind_SessionFile_SetMetadata_2'];
-  Module['_emscripten_bind_SessionFile_GetNor_0'] = _emscripten_bind_SessionFile_GetNor_0 = wasmExports['emscripten_bind_SessionFile_GetNor_0'];
-  Module['_emscripten_bind_SessionFile_GetNorSize_0'] = _emscripten_bind_SessionFile_GetNorSize_0 = wasmExports['emscripten_bind_SessionFile_GetNorSize_0'];
-  Module['_emscripten_bind_SessionFile_SetNor_2'] = _emscripten_bind_SessionFile_SetNor_2 = wasmExports['emscripten_bind_SessionFile_SetNor_2'];
-  Module['_emscripten_bind_SessionFile_GetNand_0'] = _emscripten_bind_SessionFile_GetNand_0 = wasmExports['emscripten_bind_SessionFile_GetNand_0'];
-  Module['_emscripten_bind_SessionFile_GetNandSize_0'] = _emscripten_bind_SessionFile_GetNandSize_0 = wasmExports['emscripten_bind_SessionFile_GetNandSize_0'];
-  Module['_emscripten_bind_SessionFile_SetNand_2'] = _emscripten_bind_SessionFile_SetNand_2 = wasmExports['emscripten_bind_SessionFile_SetNand_2'];
-  Module['_emscripten_bind_SessionFile_GetMemory_0'] = _emscripten_bind_SessionFile_GetMemory_0 = wasmExports['emscripten_bind_SessionFile_GetMemory_0'];
-  Module['_emscripten_bind_SessionFile_GetMemorySize_0'] = _emscripten_bind_SessionFile_GetMemorySize_0 = wasmExports['emscripten_bind_SessionFile_GetMemorySize_0'];
-  Module['_emscripten_bind_SessionFile_SetMemory_2'] = _emscripten_bind_SessionFile_SetMemory_2 = wasmExports['emscripten_bind_SessionFile_SetMemory_2'];
-  Module['_emscripten_bind_SessionFile_GetSavestate_0'] = _emscripten_bind_SessionFile_GetSavestate_0 = wasmExports['emscripten_bind_SessionFile_GetSavestate_0'];
-  Module['_emscripten_bind_SessionFile_GetSavestateSize_0'] = _emscripten_bind_SessionFile_GetSavestateSize_0 = wasmExports['emscripten_bind_SessionFile_GetSavestateSize_0'];
-  Module['_emscripten_bind_SessionFile_SetSavestate_2'] = _emscripten_bind_SessionFile_SetSavestate_2 = wasmExports['emscripten_bind_SessionFile_SetSavestate_2'];
-  Module['_emscripten_bind_SessionFile_GetRamSize_0'] = _emscripten_bind_SessionFile_GetRamSize_0 = wasmExports['emscripten_bind_SessionFile_GetRamSize_0'];
-  Module['_emscripten_bind_SessionFile_SetRamSize_1'] = _emscripten_bind_SessionFile_SetRamSize_1 = wasmExports['emscripten_bind_SessionFile_SetRamSize_1'];
-  Module['_emscripten_bind_SessionFile_Serialize_0'] = _emscripten_bind_SessionFile_Serialize_0 = wasmExports['emscripten_bind_SessionFile_Serialize_0'];
-  Module['_emscripten_bind_SessionFile_GetSerializedSession_0'] = _emscripten_bind_SessionFile_GetSerializedSession_0 = wasmExports['emscripten_bind_SessionFile_GetSerializedSession_0'];
-  Module['_emscripten_bind_SessionFile_GetSerializedSessionSize_0'] = _emscripten_bind_SessionFile_GetSerializedSessionSize_0 = wasmExports['emscripten_bind_SessionFile_GetSerializedSessionSize_0'];
-  Module['_emscripten_bind_SessionFile_Deserialize_2'] = _emscripten_bind_SessionFile_Deserialize_2 = wasmExports['emscripten_bind_SessionFile_Deserialize_2'];
-  Module['_emscripten_bind_SessionFile___destroy___0'] = _emscripten_bind_SessionFile___destroy___0 = wasmExports['emscripten_bind_SessionFile___destroy___0'];
   Module['_emscripten_bind_DbBackup_Init_0'] = _emscripten_bind_DbBackup_Init_0 = wasmExports['emscripten_bind_DbBackup_Init_0'];
   Module['_emscripten_bind_DbBackup_GetState_0'] = _emscripten_bind_DbBackup_GetState_0 = wasmExports['emscripten_bind_DbBackup_GetState_0'];
   Module['_emscripten_bind_DbBackup_Continue_0'] = _emscripten_bind_DbBackup_Continue_0 = wasmExports['emscripten_bind_DbBackup_Continue_0'];
@@ -1396,6 +1387,33 @@ function assignWasmExports(wasmExports) {
   Module['_emscripten_bind_Bridge_Malloc_1'] = _emscripten_bind_Bridge_Malloc_1 = wasmExports['emscripten_bind_Bridge_Malloc_1'];
   Module['_emscripten_bind_Bridge_Free_1'] = _emscripten_bind_Bridge_Free_1 = wasmExports['emscripten_bind_Bridge_Free_1'];
   Module['_emscripten_bind_Bridge___destroy___0'] = _emscripten_bind_Bridge___destroy___0 = wasmExports['emscripten_bind_Bridge___destroy___0'];
+  Module['_emscripten_bind_SessionFile5_SessionFile5_0'] = _emscripten_bind_SessionFile5_SessionFile5_0 = wasmExports['emscripten_bind_SessionFile5_SessionFile5_0'];
+  Module['_emscripten_bind_SessionFile5_IsSessionFile_2'] = _emscripten_bind_SessionFile5_IsSessionFile_2 = wasmExports['emscripten_bind_SessionFile5_IsSessionFile_2'];
+  Module['_emscripten_bind_SessionFile5_GetDeviceId_0'] = _emscripten_bind_SessionFile5_GetDeviceId_0 = wasmExports['emscripten_bind_SessionFile5_GetDeviceId_0'];
+  Module['_emscripten_bind_SessionFile5_SetDeviceId_1'] = _emscripten_bind_SessionFile5_SetDeviceId_1 = wasmExports['emscripten_bind_SessionFile5_SetDeviceId_1'];
+  Module['_emscripten_bind_SessionFile5_GetMetadata_0'] = _emscripten_bind_SessionFile5_GetMetadata_0 = wasmExports['emscripten_bind_SessionFile5_GetMetadata_0'];
+  Module['_emscripten_bind_SessionFile5_GetMetadataSize_0'] = _emscripten_bind_SessionFile5_GetMetadataSize_0 = wasmExports['emscripten_bind_SessionFile5_GetMetadataSize_0'];
+  Module['_emscripten_bind_SessionFile5_SetMetadata_2'] = _emscripten_bind_SessionFile5_SetMetadata_2 = wasmExports['emscripten_bind_SessionFile5_SetMetadata_2'];
+  Module['_emscripten_bind_SessionFile5_GetNor_0'] = _emscripten_bind_SessionFile5_GetNor_0 = wasmExports['emscripten_bind_SessionFile5_GetNor_0'];
+  Module['_emscripten_bind_SessionFile5_GetNorSize_0'] = _emscripten_bind_SessionFile5_GetNorSize_0 = wasmExports['emscripten_bind_SessionFile5_GetNorSize_0'];
+  Module['_emscripten_bind_SessionFile5_SetNor_2'] = _emscripten_bind_SessionFile5_SetNor_2 = wasmExports['emscripten_bind_SessionFile5_SetNor_2'];
+  Module['_emscripten_bind_SessionFile5_GetNand_0'] = _emscripten_bind_SessionFile5_GetNand_0 = wasmExports['emscripten_bind_SessionFile5_GetNand_0'];
+  Module['_emscripten_bind_SessionFile5_GetNandSize_0'] = _emscripten_bind_SessionFile5_GetNandSize_0 = wasmExports['emscripten_bind_SessionFile5_GetNandSize_0'];
+  Module['_emscripten_bind_SessionFile5_SetNand_2'] = _emscripten_bind_SessionFile5_SetNand_2 = wasmExports['emscripten_bind_SessionFile5_SetNand_2'];
+  Module['_emscripten_bind_SessionFile5_GetMemory_0'] = _emscripten_bind_SessionFile5_GetMemory_0 = wasmExports['emscripten_bind_SessionFile5_GetMemory_0'];
+  Module['_emscripten_bind_SessionFile5_GetMemorySize_0'] = _emscripten_bind_SessionFile5_GetMemorySize_0 = wasmExports['emscripten_bind_SessionFile5_GetMemorySize_0'];
+  Module['_emscripten_bind_SessionFile5_SetMemory_2'] = _emscripten_bind_SessionFile5_SetMemory_2 = wasmExports['emscripten_bind_SessionFile5_SetMemory_2'];
+  Module['_emscripten_bind_SessionFile5_GetSavestate_0'] = _emscripten_bind_SessionFile5_GetSavestate_0 = wasmExports['emscripten_bind_SessionFile5_GetSavestate_0'];
+  Module['_emscripten_bind_SessionFile5_GetSavestateSize_0'] = _emscripten_bind_SessionFile5_GetSavestateSize_0 = wasmExports['emscripten_bind_SessionFile5_GetSavestateSize_0'];
+  Module['_emscripten_bind_SessionFile5_SetSavestate_2'] = _emscripten_bind_SessionFile5_SetSavestate_2 = wasmExports['emscripten_bind_SessionFile5_SetSavestate_2'];
+  Module['_emscripten_bind_SessionFile5_GetRamSize_0'] = _emscripten_bind_SessionFile5_GetRamSize_0 = wasmExports['emscripten_bind_SessionFile5_GetRamSize_0'];
+  Module['_emscripten_bind_SessionFile5_SetRamSize_1'] = _emscripten_bind_SessionFile5_SetRamSize_1 = wasmExports['emscripten_bind_SessionFile5_SetRamSize_1'];
+  Module['_emscripten_bind_SessionFile5_Serialize_0'] = _emscripten_bind_SessionFile5_Serialize_0 = wasmExports['emscripten_bind_SessionFile5_Serialize_0'];
+  Module['_emscripten_bind_SessionFile5_GetSerializedSession_0'] = _emscripten_bind_SessionFile5_GetSerializedSession_0 = wasmExports['emscripten_bind_SessionFile5_GetSerializedSession_0'];
+  Module['_emscripten_bind_SessionFile5_GetSerializedSessionSize_0'] = _emscripten_bind_SessionFile5_GetSerializedSessionSize_0 = wasmExports['emscripten_bind_SessionFile5_GetSerializedSessionSize_0'];
+  Module['_emscripten_bind_SessionFile5_GetVersion_0'] = _emscripten_bind_SessionFile5_GetVersion_0 = wasmExports['emscripten_bind_SessionFile5_GetVersion_0'];
+  Module['_emscripten_bind_SessionFile5_Deserialize_2'] = _emscripten_bind_SessionFile5_Deserialize_2 = wasmExports['emscripten_bind_SessionFile5_Deserialize_2'];
+  Module['_emscripten_bind_SessionFile5___destroy___0'] = _emscripten_bind_SessionFile5___destroy___0 = wasmExports['emscripten_bind_SessionFile5___destroy___0'];
   __emscripten_timeout = wasmExports['_emscripten_timeout'];
   __emscripten_stack_restore = wasmExports['_emscripten_stack_restore'];
   __emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'];
@@ -1806,7 +1824,7 @@ Uarm.prototype['Launch'] = Uarm.prototype.Launch = function(romSize, romData) {
 Uarm.prototype['Cycle'] = Uarm.prototype.Cycle = function(now) {
   var self = this.ptr;
   if (now && typeof now === 'object') now = now.ptr;
-  _emscripten_bind_Uarm_Cycle_1(self, now);
+  return _emscripten_bind_Uarm_Cycle_1(self, now);
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
@@ -1900,6 +1918,12 @@ Uarm.prototype['PopQueuedSamples'] = Uarm.prototype.PopQueuedSamples = function(
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetSampleQueueSize'] = Uarm.prototype.GetSampleQueueSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetSampleQueueSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
 Uarm.prototype['SetPcmOutputEnabled'] = Uarm.prototype.SetPcmOutputEnabled = function(enabled) {
   var self = this.ptr;
   if (enabled && typeof enabled === 'object') enabled = enabled.ptr;
@@ -1988,21 +2012,21 @@ Uarm.prototype['SetSdCardDirty'] = Uarm.prototype.SetSdCardDirty = function(isDi
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
-Uarm.prototype['GetRamDataSize'] = Uarm.prototype.GetRamDataSize = function() {
+Uarm.prototype['GetMemoryDataSize'] = Uarm.prototype.GetMemoryDataSize = function() {
   var self = this.ptr;
-  return _emscripten_bind_Uarm_GetRamDataSize_0(self);
+  return _emscripten_bind_Uarm_GetMemoryDataSize_0(self);
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
-Uarm.prototype['GetRamData'] = Uarm.prototype.GetRamData = function() {
+Uarm.prototype['GetMemoryData'] = Uarm.prototype.GetMemoryData = function() {
   var self = this.ptr;
-  return wrapPointer(_emscripten_bind_Uarm_GetRamData_0(self), VoidPtr);
+  return wrapPointer(_emscripten_bind_Uarm_GetMemoryData_0(self), VoidPtr);
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
-Uarm.prototype['GetRamDirtyPages'] = Uarm.prototype.GetRamDirtyPages = function() {
+Uarm.prototype['GetMemoryDirtyPages'] = Uarm.prototype.GetMemoryDirtyPages = function() {
   var self = this.ptr;
-  return wrapPointer(_emscripten_bind_Uarm_GetRamDirtyPages_0(self), VoidPtr);
+  return wrapPointer(_emscripten_bind_Uarm_GetMemoryDirtyPages_0(self), VoidPtr);
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
@@ -2026,6 +2050,18 @@ Uarm.prototype['SdCardInsert'] = Uarm.prototype.SdCardInsert = function(data, le
 Uarm.prototype['SdCardEject'] = Uarm.prototype.SdCardEject = function() {
   var self = this.ptr;
   _emscripten_bind_Uarm_SdCardEject_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['SdCardInitialized'] = Uarm.prototype.SdCardInitialized = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_Uarm_SdCardInitialized_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetSdCardId'] = Uarm.prototype.GetSdCardId = function() {
+  var self = this.ptr;
+  return UTF8ToString(_emscripten_bind_Uarm_GetSdCardId_0(self));
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
@@ -2065,6 +2101,38 @@ Uarm.prototype['GetRamSize'] = Uarm.prototype.GetRamSize = function() {
 };
 
 /** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['JamKey'] = Uarm.prototype.JamKey = function(key, durationMsec) {
+  var self = this.ptr;
+  if (key && typeof key === 'object') key = key.ptr;
+  if (durationMsec && typeof durationMsec === 'object') durationMsec = durationMsec.ptr;
+  _emscripten_bind_Uarm_JamKey_2(self, key, durationMsec);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['IsUiInitialized'] = Uarm.prototype.IsUiInitialized = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_Uarm_IsUiInitialized_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['IsOsVersionSet'] = Uarm.prototype.IsOsVersionSet = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_Uarm_IsOsVersionSet_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['GetOsVersion'] = Uarm.prototype.GetOsVersion = function() {
+  var self = this.ptr;
+  return _emscripten_bind_Uarm_GetOsVersion_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+Uarm.prototype['IsLcdEnabled'] = Uarm.prototype.IsLcdEnabled = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_Uarm_IsLcdEnabled_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
 Uarm.prototype['InstallDatabase'] = Uarm.prototype.InstallDatabase = function(len, data) {
   var self = this.ptr;
   if (len && typeof len === 'object') len = len.ptr;
@@ -2084,186 +2152,6 @@ Uarm.prototype['NewDbBackup'] = Uarm.prototype.NewDbBackup = function(type) {
 Uarm.prototype['__destroy__'] = Uarm.prototype.__destroy__ = function() {
   var self = this.ptr;
   _emscripten_bind_Uarm___destroy___0(self);
-};
-
-// Interface: SessionFile
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-function SessionFile() {
-  this.ptr = _emscripten_bind_SessionFile_SessionFile_0();
-  getCache(SessionFile)[this.ptr] = this;
-};
-
-SessionFile.prototype = Object.create(WrapperObject.prototype);
-SessionFile.prototype.constructor = SessionFile;
-SessionFile.prototype.__class__ = SessionFile;
-SessionFile.__cache__ = {};
-Module['SessionFile'] = SessionFile;
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['IsSessionFile'] = SessionFile.prototype.IsSessionFile = function(size, data) {
-  var self = this.ptr;
-  if (size && typeof size === 'object') size = size.ptr;
-  if (data && typeof data === 'object') data = data.ptr;
-  return !!(_emscripten_bind_SessionFile_IsSessionFile_2(self, size, data));
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetDeviceId'] = SessionFile.prototype.GetDeviceId = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetDeviceId_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['SetDeviceId'] = SessionFile.prototype.SetDeviceId = function(deviceId) {
-  var self = this.ptr;
-  if (deviceId && typeof deviceId === 'object') deviceId = deviceId.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_SetDeviceId_1(self, deviceId), SessionFile);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetMetadata'] = SessionFile.prototype.GetMetadata = function() {
-  var self = this.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_GetMetadata_0(self), VoidPtr);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetMetadataSize'] = SessionFile.prototype.GetMetadataSize = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetMetadataSize_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['SetMetadata'] = SessionFile.prototype.SetMetadata = function(size, data) {
-  var self = this.ptr;
-  if (size && typeof size === 'object') size = size.ptr;
-  if (data && typeof data === 'object') data = data.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_SetMetadata_2(self, size, data), SessionFile);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetNor'] = SessionFile.prototype.GetNor = function() {
-  var self = this.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_GetNor_0(self), VoidPtr);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetNorSize'] = SessionFile.prototype.GetNorSize = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetNorSize_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['SetNor'] = SessionFile.prototype.SetNor = function(size, data) {
-  var self = this.ptr;
-  if (size && typeof size === 'object') size = size.ptr;
-  if (data && typeof data === 'object') data = data.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_SetNor_2(self, size, data), SessionFile);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetNand'] = SessionFile.prototype.GetNand = function() {
-  var self = this.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_GetNand_0(self), VoidPtr);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetNandSize'] = SessionFile.prototype.GetNandSize = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetNandSize_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['SetNand'] = SessionFile.prototype.SetNand = function(size, data) {
-  var self = this.ptr;
-  if (size && typeof size === 'object') size = size.ptr;
-  if (data && typeof data === 'object') data = data.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_SetNand_2(self, size, data), SessionFile);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetMemory'] = SessionFile.prototype.GetMemory = function() {
-  var self = this.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_GetMemory_0(self), VoidPtr);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetMemorySize'] = SessionFile.prototype.GetMemorySize = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetMemorySize_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['SetMemory'] = SessionFile.prototype.SetMemory = function(size, data) {
-  var self = this.ptr;
-  if (size && typeof size === 'object') size = size.ptr;
-  if (data && typeof data === 'object') data = data.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_SetMemory_2(self, size, data), SessionFile);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetSavestate'] = SessionFile.prototype.GetSavestate = function() {
-  var self = this.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_GetSavestate_0(self), VoidPtr);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetSavestateSize'] = SessionFile.prototype.GetSavestateSize = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetSavestateSize_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['SetSavestate'] = SessionFile.prototype.SetSavestate = function(size, data) {
-  var self = this.ptr;
-  if (size && typeof size === 'object') size = size.ptr;
-  if (data && typeof data === 'object') data = data.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_SetSavestate_2(self, size, data), SessionFile);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetRamSize'] = SessionFile.prototype.GetRamSize = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetRamSize_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['SetRamSize'] = SessionFile.prototype.SetRamSize = function(size) {
-  var self = this.ptr;
-  if (size && typeof size === 'object') size = size.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_SetRamSize_1(self, size), SessionFile);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['Serialize'] = SessionFile.prototype.Serialize = function() {
-  var self = this.ptr;
-  return !!(_emscripten_bind_SessionFile_Serialize_0(self));
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetSerializedSession'] = SessionFile.prototype.GetSerializedSession = function() {
-  var self = this.ptr;
-  return wrapPointer(_emscripten_bind_SessionFile_GetSerializedSession_0(self), VoidPtr);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['GetSerializedSessionSize'] = SessionFile.prototype.GetSerializedSessionSize = function() {
-  var self = this.ptr;
-  return _emscripten_bind_SessionFile_GetSerializedSessionSize_0(self);
-};
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['Deserialize'] = SessionFile.prototype.Deserialize = function(Size, data) {
-  var self = this.ptr;
-  if (Size && typeof Size === 'object') Size = Size.ptr;
-  if (data && typeof data === 'object') data = data.ptr;
-  return !!(_emscripten_bind_SessionFile_Deserialize_2(self, Size, data));
-};
-
-
-/** @suppress {undefinedVars, duplicate} @this{Object} */
-SessionFile.prototype['__destroy__'] = SessionFile.prototype.__destroy__ = function() {
-  var self = this.ptr;
-  _emscripten_bind_SessionFile___destroy___0(self);
 };
 
 // Interface: DbBackup
@@ -2356,6 +2244,192 @@ Bridge.prototype['Free'] = Bridge.prototype.Free = function(ptr) {
 Bridge.prototype['__destroy__'] = Bridge.prototype.__destroy__ = function() {
   var self = this.ptr;
   _emscripten_bind_Bridge___destroy___0(self);
+};
+
+// Interface: SessionFile5
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+function SessionFile5() {
+  this.ptr = _emscripten_bind_SessionFile5_SessionFile5_0();
+  getCache(SessionFile5)[this.ptr] = this;
+};
+
+SessionFile5.prototype = Object.create(WrapperObject.prototype);
+SessionFile5.prototype.constructor = SessionFile5;
+SessionFile5.prototype.__class__ = SessionFile5;
+SessionFile5.__cache__ = {};
+Module['SessionFile5'] = SessionFile5;
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['IsSessionFile'] = SessionFile5.prototype.IsSessionFile = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return !!(_emscripten_bind_SessionFile5_IsSessionFile_2(self, size, data));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetDeviceId'] = SessionFile5.prototype.GetDeviceId = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetDeviceId_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['SetDeviceId'] = SessionFile5.prototype.SetDeviceId = function(deviceId) {
+  var self = this.ptr;
+  if (deviceId && typeof deviceId === 'object') deviceId = deviceId.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_SetDeviceId_1(self, deviceId), SessionFile5);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetMetadata'] = SessionFile5.prototype.GetMetadata = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_GetMetadata_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetMetadataSize'] = SessionFile5.prototype.GetMetadataSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetMetadataSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['SetMetadata'] = SessionFile5.prototype.SetMetadata = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_SetMetadata_2(self, size, data), SessionFile5);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetNor'] = SessionFile5.prototype.GetNor = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_GetNor_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetNorSize'] = SessionFile5.prototype.GetNorSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetNorSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['SetNor'] = SessionFile5.prototype.SetNor = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_SetNor_2(self, size, data), SessionFile5);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetNand'] = SessionFile5.prototype.GetNand = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_GetNand_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetNandSize'] = SessionFile5.prototype.GetNandSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetNandSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['SetNand'] = SessionFile5.prototype.SetNand = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_SetNand_2(self, size, data), SessionFile5);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetMemory'] = SessionFile5.prototype.GetMemory = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_GetMemory_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetMemorySize'] = SessionFile5.prototype.GetMemorySize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetMemorySize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['SetMemory'] = SessionFile5.prototype.SetMemory = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_SetMemory_2(self, size, data), SessionFile5);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetSavestate'] = SessionFile5.prototype.GetSavestate = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_GetSavestate_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetSavestateSize'] = SessionFile5.prototype.GetSavestateSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetSavestateSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['SetSavestate'] = SessionFile5.prototype.SetSavestate = function(size, data) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_SetSavestate_2(self, size, data), SessionFile5);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetRamSize'] = SessionFile5.prototype.GetRamSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetRamSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['SetRamSize'] = SessionFile5.prototype.SetRamSize = function(size) {
+  var self = this.ptr;
+  if (size && typeof size === 'object') size = size.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_SetRamSize_1(self, size), SessionFile5);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['Serialize'] = SessionFile5.prototype.Serialize = function() {
+  var self = this.ptr;
+  return !!(_emscripten_bind_SessionFile5_Serialize_0(self));
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetSerializedSession'] = SessionFile5.prototype.GetSerializedSession = function() {
+  var self = this.ptr;
+  return wrapPointer(_emscripten_bind_SessionFile5_GetSerializedSession_0(self), VoidPtr);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetSerializedSessionSize'] = SessionFile5.prototype.GetSerializedSessionSize = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetSerializedSessionSize_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['GetVersion'] = SessionFile5.prototype.GetVersion = function() {
+  var self = this.ptr;
+  return _emscripten_bind_SessionFile5_GetVersion_0(self);
+};
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['Deserialize'] = SessionFile5.prototype.Deserialize = function(Size, data) {
+  var self = this.ptr;
+  if (Size && typeof Size === 'object') Size = Size.ptr;
+  if (data && typeof data === 'object') data = data.ptr;
+  return !!(_emscripten_bind_SessionFile5_Deserialize_2(self, Size, data));
+};
+
+
+/** @suppress {undefinedVars, duplicate} @this{Object} */
+SessionFile5.prototype['__destroy__'] = SessionFile5.prototype.__destroy__ = function() {
+  var self = this.ptr;
+  _emscripten_bind_SessionFile5___destroy___0(self);
 };
 // end include: web/binding/binding.js
 
