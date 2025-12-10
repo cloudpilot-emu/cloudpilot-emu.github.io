@@ -1,8 +1,11 @@
 # About
 
-CloudpilotEmu is a web-based emulator for PalmOS. It emulates dragonball based devices
-and supports PalmOS up to version 4.x. CloudpilotEmu is based on the original POSE
-emulator. Currrently, the following devices are supported:
+CloudpilotEmu is a web-based emulator for PalmOS. It emulates both Dragonball
+based devices (OS 1-4) and the Palm Tungsten E2 (ARM-based, OS5). Emulation
+of Dragonball devices is based on the original POSE emulator, and OS5
+emulation is based on Dmitry Grinberg's [uARM](https://github.com/uARM-Palm/uARM).
+
+Currently, the following devices are emulated:
 
 -   Pilot, Palm Pilot
 -   Palm III
@@ -15,8 +18,9 @@ emulator. Currrently, the following devices are supported:
 -   Palm m100, Palm m105, Palm m125, Palm m130
 -   Palm i705
 -   Tungsten W (silkscreen version)
--   Handera 330
--   Handera 330c (the lost color version of the 330c)
+-   Tungsten E2, E3 (a widescreen version of the E2 created specifically for emulation by
+    Dmitry Grinberg)
+-   Handera 330, 330c (the lost color version of the 330c)
 -   Sony PEG-S300, PEG-S320
 -   Sony PEG-S500C series
 -   Sony PEG-T400 series
@@ -26,7 +30,7 @@ emulator. Currrently, the following devices are supported:
 -   Sony PEG-T650C series
 -   Sony PEG-NR70 series
 -   Acer S1x
--   Legend P168
+-   Legend P168 (no SD card support)
 
 CloudpilotEmu can be run as a web page or as a mobile app on phones and tables,
 and on iOS it is also available on the 
@@ -40,10 +44,10 @@ The list of features includes
  * Switching between multiple emulation sessions
  * Emulated SD cards and memory sticks
  * File browser for managing memory cards
- * Audio emulation
+ * Audio emulation, incuding PCM audio on OS5
  * Keyboard input
- * Clipboard integration
- * Network support (including network hotsync) using a websocket proxy
+ * Clipboard integration on OS4 and earlier
+ * Network support (including network hotsync) on OS4 and earlier using a websocket proxy
   ([documentation](https://github.com/cloudpilot-emu/cloudpilot-emu/blob/master/doc/networking.md))
 
 You can download supported ROMs on [PalmDB](https://palmdb.net/app/palm-roms-complete).
@@ -68,12 +72,6 @@ for more details.
  * [CloudpilotEmu embedded preview](/embedded-preview)
 
    This is the preview of the next release of CloudpilotEmu embedded.
-
- * [uARM preview](/uarm-preview)
-
-   This is a rough preview of what will eventually become OS5 support using Dmitry
-   Grinberg's [uARM](https://github.com/uARM-Palm/uARM). You can find the source
-   [here](https://github.com/cloudpilot-emu/cloudpilot-emu/tree/master/src/uarm).
 
  * [deNVFS image for uARM](./e2_denvfs.rom)
   
