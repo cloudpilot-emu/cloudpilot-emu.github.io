@@ -38,7 +38,9 @@ export declare enum DeviceId {
 	pegT650c = "YSX1230",
 	pegNR70 = "NR70",
 	acerS11 = "Acer-S11",
-	lp168 = "Legend-P168"
+	lp168 = "Legend-P168",
+	te2 = "Tungsten-E2",
+	frankene2 = "Franken-E2"
 }
 /**
  * The four different orientation settings.
@@ -50,9 +52,10 @@ export declare enum DeviceOrientation {
 	portrait180 = "portrait180"
 }
 /**
- * This set of performance statistics can be queries at runtime from the emulator.
+ * Runtime statistics for Cloudpilot.
  */
-export interface EmulationStatistics {
+export interface EmulationStatisticsCloudpilot {
+	type: "cloudpilot";
 	/**
 	 * The ratio between the duration of an emulated timeslice and the time that
 	 * is required by the host to emulate it. If this drops below one the host
@@ -73,20 +76,39 @@ export interface EmulationStatistics {
 	averageFps: number;
 }
 /**
+ * Runtime statistics for uARM.
+ */
+export interface EmulationStatisticsUarm {
+	type: "uarm";
+	/**
+	 * Current emulation speed in MIPS (million instructions per second).
+	 */
+	currentSpeedMips: number;
+	/**
+	 * Current maximum emulation speed without throttling in MIPS (million
+	 * instructions per second).
+	 */
+	currentMaxSpeedMips: number;
+}
+/**
+ * This set of performance statistics can be queried at runtime from the emulator.
+ */
+export type EmulationStatistics = EmulationStatisticsCloudpilot | EmulationStatisticsUarm;
+/**
  * DOM event handler callback.
  */
 export type EventHandler<K extends keyof HTMLElementEventMap> = (ev: HTMLElementEventMap[K]) => void;
 /**
  * A DOM event target.
  */
-interface EventTarget$1 {
+interface EmulatorEventTarget {
 	addEventListener<K extends keyof HTMLElementEventMap>(type: K, handler: EventHandler<K>, options?: boolean | AddEventListenerOptions): void;
 	removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: EventHandler<K>, options?: boolean | EventListenerOptions): void;
 }
 /**
  * A CloudpilotEmu event.
  */
-interface Event$1<Payload> {
+interface CloudpilotEvent<Payload> {
 	/**
 	 * Bind an handler callback to the event.
 	 *
@@ -95,7 +117,7 @@ interface Event$1<Payload> {
 	 * @param handler Handler callback.
 	 * @param context Optional context that is passed to the callback.
 	 */
-	addHandler<Context>(handler: Handler<Payload, Context>, context?: Context): Event$1<Payload>;
+	addHandler<Context>(handler: Handler<Payload, Context>, context?: Context): CloudpilotEvent<Payload>;
 	/**
 	 * Remove a previously bound handler. Both callback and context must be identical for
 	 * the handler to be removed.
@@ -106,7 +128,7 @@ interface Event$1<Payload> {
 	 * @param handler Handler callback.
 	 * @param context Optional callback context.
 	 */
-	removeHandler<Context>(handler: Handler<Payload, Context>, context?: Context): Event$1<Payload>;
+	removeHandler<Context>(handler: Handler<Payload, Context>, context?: Context): CloudpilotEvent<Payload>;
 }
 /**
  * Handler callback type.
@@ -154,150 +176,155 @@ export interface SerialPort {
 	 * This is fired by the emulator for data or synchronization events. In 'sync' mode,
 	 * **every** such event needs to be sent to the remote instance.
 	 */
-	receiveEvent: Event$1<ReceivePayload>;
+	receiveEvent: CloudpilotEvent<ReceivePayload>;
 }
+/**
+ * The main emulator interface. Most methods that interact with the emulator are async and
+ * should be awaited.
+ */
 export interface Emulator {
 	/**
 	 * Load a ROM and put the emulator in paused state.
 	 *
 	 * @param rom Device ROM
+	 * @param nand Device NAND. OS5 devices only.
 	 * @param deviceId Optional: device ID, autodetected if not specified
 	 */
-	loadRom(rom: Uint8Array, deviceId?: DeviceId): this;
+	loadRom(rom: Uint8Array, nand?: Uint8Array, deviceId?: DeviceId): Promise<void>;
 	/**
 	 * Load a Cloudpilot session and put the emulator in paused state.
 	 *
 	 * @param session Session image
 	 */
-	loadSession(session: Uint8Array): this;
+	loadSession(session: Uint8Array): Promise<void>;
 	/**
 	 * Attach and mount a gzip compressed card image.
 	 *
 	 * @param cardImage Gzip compressed image data
 	 */
-	insertCompressedCardImage(cardImage: Uint8Array): this;
+	insertCompressedCardImage(cardImage: Uint8Array): Promise<void>;
 	/**
 	 * Attach and mount a plain card image.
 	 *
 	 * @param cardImage Image data
 	 */
-	insertCardImage(cardImage: Uint8Array): this;
+	insertCardImage(cardImage: Uint8Array): Promise<void>;
 	/**
 	 * Eject a previously inserted card image:
 	 */
-	ejectCard(): this;
+	ejectCard(): Promise<void>;
 	/**
 	 * Check whether a card is currently mounted.
 	 */
-	isCardMounted(): boolean;
+	isCardMounted(): Promise<boolean>;
 	/**
 	 * Configure the canvas element used for displaying the emulator.
 	 *
 	 * @param canvas Canvas for displaying the emulator
 	 */
-	setCanvas(canvas: HTMLCanvasElement): this;
+	setCanvas(canvas: HTMLCanvasElement): void;
 	/**
 	 * Receive input events from the specified sources. If this method is called
 	 * multiple times the previous sources will be unbound.
 	 *
 	 * @param keyboardTarget Optional: target for keyboard events, default: `window`
 	 */
-	bindInput(keyboardTarget?: EventTarget$1): this;
+	bindInput(keyboardTarget?: EmulatorEventTarget): void;
 	/**
 	 * Unbind the handlers previous bound with `bindInput`.
 	 */
-	releaseInput(): this;
+	releaseInput(): void;
 	/**
 	 * Install a prc or pdb database to the device.
 	 *
 	 * @param file The database data.
 	 */
-	installDatabase(file: Uint8Array): this;
+	installDatabase(file: Uint8Array): Promise<void>;
 	/**
 	 * Install a prc database to the device and attempt to launch it.
 	 *
 	 * @param file The database data.
 	 */
-	installAndLaunchDatabase(file: Uint8Array): this;
+	installAndLaunchDatabase(file: Uint8Array): Promise<void>;
 	/**
 	 * Extract all databases from a zip archive and install them.
 	 *
 	 * @param file The zip archive data.
 	 */
-	installFromZipfile(file: Uint8Array): this;
+	installFromZipfile(file: Uint8Array): Promise<void>;
 	/**
-	 * Extract all databases from a zip archive and install them, then attampt to
+	 * Extract all databases from a zip archive and install them, then attempt to
 	 * launch the specified file.
 	 *
 	 * @param file The zip archive data.
 	 * @param launchFile The file name of the database that Cloudpilot will try to launch.
 	 */
-	installFromZipfileAndLaunch(file: Uint8Array, launchFile: string): this;
+	installFromZipfileAndLaunch(file: Uint8Array, launchFile: string): Promise<void>;
 	/**
-	 * Attemot to launch the database with the specified name.
+	 * Attempt to launch the database with the specified name.
 	 *
 	 * @param name Database name
 	 */
-	launchByName(name: string): this;
+	launchByName(name: string): Promise<void>;
 	/**
 	 * Attempt to extract the name from a database and launch it.
 	 *
 	 * @param database Database data (only the first 32 bytes are required)
 	 */
-	launchDatabase(database: Uint8Array): this;
+	launchDatabase(database: Uint8Array): Promise<void>;
 	/**
 	 * Perform a soft reset (equivalent of pushing the reset button).
 	 */
-	reset(): this;
+	reset(): Promise<void>;
 	/**
 	 * Reset w/o system extensions (equivalent to holding "down" while pushing the
 	 * reset button).
 	 */
-	resetNoExtensions(): this;
+	resetNoExtensions(): Promise<void>;
 	/**
 	 * Hard reset (equivalent to holding "power" while pushing the
 	 * reset button).
 	 */
-	resetHard(): this;
+	resetHard(): Promise<void>;
 	/**
 	 * Is the emulator running?
 	 */
-	isRunning(): boolean;
+	isRunning(): Promise<boolean>;
 	/**
 	 * Is the device powered off?
 	 */
-	isPowerOff(): boolean;
+	isPowerOff(): Promise<boolean>;
 	/**
 	 * Has the emulated device passed UI initialization (during boot)? This
 	 * is required before software can be installed.
 	 */
-	isUiInitialized(): boolean;
+	isUiInitialized(): Promise<boolean>;
 	/**
 	 * Resume a paused device.
 	 */
-	resume(): this;
+	resume(): Promise<void>;
 	/**
 	 * Pause a running device.
 	 */
-	pause(): this;
+	pause(): Promise<void>;
 	/**
 	 * Push a hardware button.
 	 *
 	 * @param button The desired button
 	 */
-	buttonDown(button: Button): this;
+	buttonDown(button: Button): void;
 	/**
 	 * Release a hardware button.
 	 *
 	 * @param button The desired button
 	 */
-	buttonUp(button: Button): this;
+	buttonUp(button: Button): void;
 	/**
 	 * Adjust speed of the emulated device.
 	 *
 	 * @param speed Speed factor
 	 */
-	setSpeed(speed: number): this;
+	setSpeed(speed: number): void;
 	/**
 	 * Query configured speed factor.
 	 */
@@ -307,11 +334,43 @@ export interface Emulator {
 	 *
 	 * @param volume Volume (1 = 100%, 0 = silent)
 	 */
-	setVolume(volume: number): this;
+	setVolume(volume: number): void;
 	/**
 	 * Query audio volume
 	 */
 	getVolume(): number;
+	/**
+	 * Disable PCM audio on OS5. This will improve emulation speed (by freeing cycles
+	 * that would be used to generate audio) but may lead to * compatibility issues with
+	 * some apps.
+	 *
+	 * @param disablePcmAudio Disable / enable PCM audio
+	 */
+	setDisablePcmAudio(disablePcmAudio: boolean): void;
+	/**
+	 * Query whether PCM audio is disabled.
+	 */
+	getDisablePcmAudio(): boolean;
+	/**
+	 * Set the maximum host load. This applies to OS5 emulation only.
+	 *
+	 * @param maxHostLoad Maximum host load (1 = full core)
+	 */
+	setMaxHostLoad(maxHostLoad: number): void;
+	/**
+	 * Get the maximum host load.
+	 */
+	getMaxHostLoad(): number;
+	/**
+	 * Disable the full d-pad on devices that support it.
+	 *
+	 * @param disableDpad  Disable / enable d-pad
+	 */
+	setDisableDpad(disableDpad: boolean): void;
+	/**
+	 * Query whether the d-pad has been disabled.
+	 */
+	getDisableDpad(): boolean;
 	/**
 	 * Initialize audio. This must be called from an event handler that was triggered
 	 * by a user interaction, i.e. a click or a key press.
@@ -326,7 +385,7 @@ export interface Emulator {
 	 *
 	 * @param gameModeActive Desired state
 	 */
-	setGameMode(gameModeActive: boolean): this;
+	setGameMode(gameModeActive: boolean): void;
 	/**
 	 * Is game mode enabled?
 	 */
@@ -336,7 +395,7 @@ export interface Emulator {
 	 *
 	 * @param enableGamemodeHotkey Desired state
 	 */
-	setGameModeHotkeyEnabled(enableGamemodeHotkey: boolean): this;
+	setGameModeHotkeyEnabled(enableGamemodeHotkey: boolean): void;
 	/**
 	 * Can game mode be toggled via shift-ctrl?
 	 */
@@ -347,7 +406,7 @@ export interface Emulator {
 	 *
 	 * @param gameModeIndicatorEnabled Desired state
 	 */
-	setGameModeIndicatorEnabled(gameModeIndicatorEnabled: boolean): this;
+	setGameModeIndicatorEnabled(gameModeIndicatorEnabled: boolean): void;
 	/**
 	 * Is game mode overlay enabled?
 	 */
@@ -357,7 +416,7 @@ export interface Emulator {
 	 *
 	 * @param orientation Desired orientation
 	 */
-	setOrientation(orientation: DeviceOrientation): this;
+	setOrientation(orientation: DeviceOrientation): void;
 	/**
 	 * Query device orientation
 	 */
@@ -367,17 +426,17 @@ export interface Emulator {
 	 *
 	 * @param hotsyncName Desired hotsync name
 	 */
-	setHotsyncName(hotsyncName: string | undefined): this;
+	setHotsyncName(hotsyncName: string | undefined): Promise<void>;
 	/**
 	 * Get hotsync name.
 	 */
-	getHotsyncName(): string | undefined;
+	getHotsyncName(): Promise<string | undefined>;
 	/**
 	 * Keep running if the emulator tab is not visible?
 	 *
 	 * @param toggle Desired state
 	 */
-	setRunHidden(toggle: boolean): this;
+	setRunHidden(toggle: boolean): void;
 	/**
 	 * Keep running if the emulator tab is not visible?
 	 */
@@ -385,40 +444,40 @@ export interface Emulator {
 	/**
 	 * Get performance statistics
 	 */
-	getStatistics(): EmulationStatistics;
+	getStatistics(): EmulationStatistics | undefined;
 	/**
 	 * Get serial transport for IR transceiver.
 	 */
-	getSerialPortIR(): SerialPort;
+	getSerialPortIR(): SerialPort | undefined;
 	/**
 	 * Get serial transport for serial port.
 	 */
-	getSerialPortSerial(): SerialPort;
+	getSerialPortSerial(): SerialPort | undefined;
 	/**
 	 * Fires when the device turns on or off.
 	 */
-	readonly powerOffChangeEvent: Event$1<boolean>;
+	readonly powerOffChangeEvent: CloudpilotEvent<boolean>;
 	/**
 	 * Fires when PalmOS resets or passed UI initialization during boot.
 	 */
-	readonly isUiInitializedChangeEvent: Event$1<boolean>;
+	readonly isUiInitializedChangeEvent: CloudpilotEvent<boolean>;
 	/**
 	 * Fires when audio is initializd successfully.
 	 */
-	readonly audioInitializedEvent: Event$1<void>;
+	readonly audioInitializedEvent: CloudpilotEvent<void>;
 	/**
-	 * Fires after each emulated timeslice (typicall 60 times per second)
+	 * Fires after each emulated timeslice (typically 60 times per second)
 	 */
-	readonly timesliceEvent: Event$1<void>;
+	readonly timesliceEvent: CloudpilotEvent<void>;
 	/**
 	 * Fires when the hotsync name changes. This does not happen immediatelly when
 	 * `setHotsyncName` is called, but only when the OS is notified of the new name.
 	 */
-	readonly hotsyncNameChangeEvent: Event$1<string>;
+	readonly hotsyncNameChangeEvent: CloudpilotEvent<string>;
 	/**
 	 * Fires if game mode is enabled or disabled.
 	 */
-	readonly gameModeChangeEvent: Event$1<boolean>;
+	readonly gameModeChangeEvent: CloudpilotEvent<boolean>;
 }
 /**
  * The various supported hard buttons.
@@ -435,25 +494,43 @@ export declare enum Button {
 }
 export declare const VERSION: string | undefined;
 /**
+ * Options for loading the emulator.
+ */
+export interface LoadOptions {
+	/**
+	 * URL for loading the cloudpilot WASM binary.
+	 */
+	cloudpilotModuleUrl?: string;
+	/**
+	 * URL for loading the uARM WASM binary (for OS5 emulator).
+	 */
+	uarmModuleUrl?: string;
+	/**
+	 * By default, the uARM WASM binary is loaded on demand when an OS5 session is
+	 * launched. This option causes the binary to be preloaded on initialization.
+	 */
+	preloadUarm?: boolean;
+}
+/**
  * Create a new instance of the emulator.
  *
- * @param wasmModuleUrl Optional: URL for loading the web assembly module
+ * @param options Optional: options for loading the emulator
  *
  * @returns Emulator instance
  */
-export declare function createEmulator(wasmModuleUrl?: string): Promise<Emulator>;
+export declare function createEmulator(options?: LoadOptions): Promise<Emulator>;
 /**
  * Create a factory function that creates new Emulator instances without redownloading
  * and recompiling the WASM module.
  *
- * @param wasmModuleUrl Optional: URL for loading the web assembly module
+ * @param options Optional: options for loading the emulator
  * @returns
  */
-export declare function createEmulatorFactory(wasmModuleUrl?: string): () => Promise<Emulator>;
+export declare function createEmulatorFactory(options?: LoadOptions): () => Promise<Emulator>;
 
 export {
-	Event$1 as Event,
-	EventTarget$1 as EventTarget,
+	CloudpilotEvent as Event,
+	EmulatorEventTarget as EventTarget,
 };
 
 export as namespace cloudpilot;

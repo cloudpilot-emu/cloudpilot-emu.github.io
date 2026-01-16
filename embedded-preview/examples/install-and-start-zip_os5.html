@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <script src="cloudpilot-emu.js"></script>
+        <link rel="stylesheet" href="sample.css" />
+    </head>
+
+    <body>
+        <h1>Install and start from zip archive</h1>
+        <canvas tabindex="1"></canvas>
+        <a href="index.html">...back to index</a>
+        |
+        <a
+            href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/master/web/embedded/public/install-and-start-zip_os5.html"
+        >
+            source on github
+        </a>
+
+        <script>
+            function launchAudioOnStart(emulator) {
+                const events = ['touchstart', 'click', 'keydown'];
+                const handler = () => {
+                    events.forEach(event => document.removeEventListener(event, handler));
+                    void emulator.initializeAudio();
+                }
+
+                events.forEach(event => document.addEventListener(event, handler));
+            }
+
+            (async function () {
+                const emulator = await cloudpilot.createEmulator({preloadUarm: true});
+
+                const sessionResponse = await fetch('session_os5.img');
+                if (!sessionResponse.ok) {
+                    throw new Error('could not download session file');
+                }
+
+                const session = await sessionResponse.arrayBuffer();
+
+                const zipResponse = await fetch('psytexx.zip');
+                if (!zipResponse.ok) {
+                    throw new Error('could not download zip file');
+                }
+
+                const zip = await zipResponse.arrayBuffer();
+
+                const canvas = document.getElementsByTagName('canvas')[0];
+
+                await emulator.loadSession(new Uint8Array(session));
+                await emulator.installFromZipfileAndLaunch(new Uint8Array(zip), 'psytexx.prc');
+
+                emulator.setCanvas(canvas);
+                emulator.bindInput(canvas);
+
+                launchAudioOnStart(emulator);
+
+                await emulator.resume();
+            })().catch((e) => console.error(e));
+        </script>
+    </body>
+</html>
