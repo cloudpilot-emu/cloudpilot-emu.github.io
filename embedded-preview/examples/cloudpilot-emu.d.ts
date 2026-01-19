@@ -224,6 +224,10 @@ export interface Emulator {
 	 */
 	setCanvas(canvas: HTMLCanvasElement): void;
 	/**
+	 * Release the canvas element.
+	 */
+	releaseCanvas(): void;
+	/**
 	 * Receive input events from the specified sources. If this method is called
 	 * multiple times the previous sources will be unbound.
 	 *
@@ -502,9 +506,17 @@ export interface LoadOptions {
 	 */
 	cloudpilotModuleUrl?: string;
 	/**
-	 * URL for loading the uARM WASM binary (for OS5 emulator).
+	 * URL for loading the uARM WASM binary (for OS5 emulation).
 	 */
 	uarmModuleUrl?: string;
+	/**
+	 * URL for loading the uARM worker (for OS5 emulator).
+	 */
+	uarmWorkerUrl?: string;
+	/**
+	 * URL for loading the PCM worklet (for OS5 PCM audio).
+	 */
+	pcmWorkletUrl?: string;
 	/**
 	 * By default, the uARM WASM binary is loaded on demand when an OS5 session is
 	 * launched. This option causes the binary to be preloaded on initialization.
