@@ -1,0 +1,51 @@
+<html>
+    <head>
+        <script src="cloudpilot-emu.js"></script>
+        <link rel="stylesheet" href="sample.css" />
+    </head>
+
+    <body>
+        <h1>Load ROM</h1>
+        <canvas tabindex="1"></canvas>
+        <a href="index.html">back to index</a>
+        <span id="enable-audio">
+            |
+            <a href="javascript://" id="enable-audio-link">enable audio</a>
+        </span>
+        |
+        <a href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/master/web/embedded/public/rom_os5.html">
+            source on github
+        </a>
+        <script>
+            (async function () {
+                const emulator = await cloudpilot.createEmulator({preloadUarm: true});
+
+                const [norResponse, nandResponse] = await Promise.all([fetch('e2-nor.bin'), fetch('e2-nand.bin')]);
+                if (!(norResponse.ok && nandResponse)) {
+                    throw new Error('could not download rom');
+                }
+
+                const nor = await norResponse.arrayBuffer();
+                const nand = await nandResponse.arrayBuffer();
+                const canvas = document.getElementsByTagName('canvas')[0];
+
+                await emulator.loadRom(new Uint8Array(nor), new Uint8Array(nand));
+
+                emulator.setCanvas(canvas);
+                emulator.bindInput(canvas);
+
+                const enableAudio = document.getElementById('enable-audio');
+                const enableAudioLink = document.getElementById('enable-audio');
+
+                const handler = () => emulator.initializeAudio().then(() => {
+                    enableAudioLink.removeEventListener('click', handler);
+                    enableAudio.style.display = 'none';
+                })
+
+                enableAudioLink.addEventListener('click', handler);
+
+                await emulator.resume();
+            })().catch((e) => console.error(e));
+        </script>
+    </body>
+</html>

@@ -1,0 +1,62 @@
+<html>
+    <head>
+        <script src="cloudpilot-emu.js"></script>
+        <link rel="stylesheet" href="sample.css" />
+    </head>
+
+    <body>
+        <h1>Install and start from zip archive</h1>
+        <canvas tabindex="1"></canvas>
+        <a href="index.html">...back to index</a>
+        <span id="enable-audio">
+            |
+            <a href="javascript://" id="enable-audio-link">enable audio</a>
+        </span>
+        |
+        <a
+            href="https://github.com/cloudpilot-emu/cloudpilot-emu/blob/master/web/embedded/public/install-and-start-zip_os5.html"
+        >
+            source on github
+        </a>
+
+        <script>
+            (async function () {
+                const emulator = await cloudpilot.createEmulator({preloadUarm: true});
+
+                const sessionResponse = await fetch('session_os5.img');
+                if (!sessionResponse.ok) {
+                    throw new Error('could not download session file');
+                }
+
+                const session = await sessionResponse.arrayBuffer();
+
+                const zipResponse = await fetch('psytexx.zip');
+                if (!zipResponse.ok) {
+                    throw new Error('could not download zip file');
+                }
+
+                const zip = await zipResponse.arrayBuffer();
+
+                const canvas = document.getElementsByTagName('canvas')[0];
+
+                await emulator.loadSession(new Uint8Array(session));
+                await emulator.installFromZipfileAndLaunch(new Uint8Array(zip), 'psytexx.prc');
+
+                emulator.setCanvas(canvas);
+                emulator.bindInput(canvas);
+
+                const enableAudio = document.getElementById('enable-audio');
+                const enableAudioLink = document.getElementById('enable-audio-link');
+
+                const handler = () => emulator.initializeAudio().then(() => {
+                    enableAudioLink.removeEventListener('click', handler);
+                    enableAudio.style.display = 'none';
+                })
+
+                enableAudioLink.addEventListener('click', handler);
+
+                await emulator.resume();
+            })().catch((e) => console.error(e));
+        </script>
+    </body>
+</html>
