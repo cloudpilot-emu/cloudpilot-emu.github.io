@@ -73,13 +73,13 @@ for more details.
 
    This is the preview of the next release of CloudpilotEmu embedded.
 
- * [deNVFS image for uARM](./e2_denvfs.rom)
+ * [deNVFS image for uARM](https://palmdb.net/content/files/archive-rom/palm-roms-complete/CloudPilot-E2-denvfs.rom)
   
    This is the deNVFSed E2 ROM by Dmitry Grinberg. You can find more information in
    the original
    [release note on Reddit](https://www.reddit.com/r/Palm/comments/j6nyyb/removing_nvfs_from_a_tungsten_e2_success/).
 
- * [320x480 screen image for uARM](/e2_dia.rom)
+ * [320x480 screen image for uARM](https://palmdb.net/content/files/archive-rom/palm-roms-complete/CloudPilot-Tungsten-E3v2.rom)
   
    Modified E2 ROM with a dynamic input area, 320x480 screen resolution and no NVFS,
    courtesy of Dmitry Grinberg.
