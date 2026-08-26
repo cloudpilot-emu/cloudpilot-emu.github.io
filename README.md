@@ -79,6 +79,15 @@ for more details.
    the original
    [release note on Reddit](https://www.reddit.com/r/Palm/comments/j6nyyb/removing_nvfs_from_a_tungsten_e2_success/).
 
+ * [paravirtualized rePalm image for uARM](./pv/uarm-pv-08242027.bin.gz)
+  
+    This is a rePalm build for the paravirtualized hardware platform supported by uARM. It
+    runs considerably faster as an original ROM and supports different RAM sizes and
+    resolutions.
+
+    **WARNING:** This is a work in progress. The paravirtualized platform is currently only
+    supported in the CLI, and there may be bugs. You have been warned.
+
  * [320x480 screen image for uARM](https://palmdb.net/content/files/archive-rom/palm-roms-complete/CloudPilot-Tungsten-E3v2.rom)
   
    Modified E2 ROM with a dynamic input area, 320x480 screen resolution and no NVFS,
