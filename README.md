@@ -81,7 +81,7 @@ for more details.
 
  * [paravirtualized rePalm image for uARM](./pv/uarm-pv-08242027.bin.gz)
   
-    This is a rePalm build for the paravirtualized hardware platform supported by uARM. It
+    This is a rePalm build for the paravirtualized hardware platform supported by uARM by Dmitry Grinberg. It
     runs considerably faster as an original ROM and supports different RAM sizes and
     resolutions.
 
