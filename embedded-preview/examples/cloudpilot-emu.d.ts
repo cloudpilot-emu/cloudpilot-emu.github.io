@@ -40,7 +40,8 @@ export declare enum DeviceId {
 	acerS11 = "Acer-S11",
 	lp168 = "Legend-P168",
 	te2 = "Tungsten-E2",
-	frankene2 = "Franken-E2"
+	frankene2 = "Franken-E2",
+	repalmPV = "rePalm paravirtualized"
 }
 /**
  * The four different orientation settings.
