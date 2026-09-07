@@ -79,7 +79,7 @@ for more details.
    the original
    [release note on Reddit](https://www.reddit.com/r/Palm/comments/j6nyyb/removing_nvfs_from_a_tungsten_e2_success/).
 
- * [paravirtualized rePalm image for uARM](./pv/uarm-pv-09032026.bin.gz)
+ * [paravirtualized rePalm image for uARM](./pv/uarm-pv-09082026.bin.gz)
   
     This is a rePalm build for the paravirtualized hardware platform supported by uARM by Dmitry Grinberg. It
     runs considerably faster as an original ROM and supports different RAM sizes and
