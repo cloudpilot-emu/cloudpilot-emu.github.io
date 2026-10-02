@@ -85,8 +85,6 @@ for more details.
     runs considerably faster as an original ROM and supports different RAM sizes and
     resolutions.
 
-    **WARNING:** This is a work in progress, and there may be bugs. You have been warned.
-
  * [320x480 screen image for uARM](https://palmdb.net/content/files/archive-rom/palm-roms-complete/CloudPilot-Tungsten-E3v2.rom)
   
    Modified E2 ROM with a dynamic input area, 320x480 screen resolution and no NVFS,
