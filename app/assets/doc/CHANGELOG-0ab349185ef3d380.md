@@ -1,3 +1,21 @@
+# Version 2.3.0
+
+- Support for a paravirtualized rePalm PalmOS 5 build created by Dmitry
+  Grinberg. ROMs for this platform run about 40% faster than ROMs for real
+  hardware and support multiple screen and memory sizes. You can download a
+  suitable ROM from the [CloudpilotEmu
+  website](https://cloudpilot-emu.github.io) and from
+  [PalmDB](https://palmdb.net/app/palm-roms-complete).
+- Support MinGW for building Windows versions of the CloudpilotEmu native
+  binaries.
+- Remove device orientation from session settings. Rotation still works from the
+  emulation menu.
+- Fix a fatal error when deleting a running session with an attached SD card.
+- Somewhat work around Webkit bug that may cause audio delay after resuming from
+  background.
+- Transparently handle gzipped files (suffix .gz) everywhere.
+- uARM now sets the 'cldp' and 'uarm' features on boot.
+
 # Version 2.2.3
 
 - Fix export of SD cards attached to a running uARM instance.

@@ -178,6 +178,19 @@ vary.
 Note that mobiles may throttle under high load. You can try to counter this by limiting
 speed and host utilization in the session settings.
 
+## Paravirtualization
+
+CloudpilotEmu supports a paravirtualized version of rePalm created by Dmitry
+Grinberg. Instead of real hardware, this platform implements a minimal interface
+between host and guest and runs about 40% fastern than an emulated E2.
+
+In addition, rePalm paravirtualized supports a range of resolutions and
+RAM sizes that you can choose from when creating a session.
+
+You can download a suitable ROM from the
+[CloudpilotEmu website](https://cloudpilot-emu.github.io)
+and from [PalmDB](https://palmdb.net/app/palm-roms-complete).
+
 # Known issues and limitations
 
 :::div{.feature-ios-or-safari}
@@ -192,6 +205,9 @@ speed and host utilization in the session settings.
     install CloudpilotEmu from the
     [App Store](https://apps.apple.com/de/app/cloudpilotemu/id6478502699)
     or as a homescreen app (on iOS) or to add it to the dock (Safari on MacOS).
+-   Audio may be silent for serveral seconds after resuming from the background.
+    On rare ocassions, audio may pick up a large latency that only goes away
+    after a closing and reopening the tab. This is a Webkit bug.
 -   Safari: On rare occasions there have been issues with Safari handling 
     CloudpilotEmu's service worker. Symptoms of this are either repeated
     (bogus) update notifications without the "New version..." dialog on reload, or
@@ -212,6 +228,9 @@ speed and host utilization in the session settings.
 -   A browser bug may cause the web app and the homescreen app to stop registering touches
     for a few seconds. Usually this is extremely rare, but there are a few conditions
     that can increase the likelihood. This issue is not present in the native app.
+-   Audio may be silent for serveral seconds after resuming from the background.
+    On rare ocassions, audio may pick up a large latency that only goes away
+    after a closing and reopening the app. This is a Webkit bug.
 -   On old versions of iOS, the file picker may gray out some file types. You can work around this
     by selecting "Don't restrict file picker" in the settings.
 :::

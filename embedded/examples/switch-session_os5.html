@@ -63,8 +63,9 @@
             <div id="canvas-wrapper"><canvas tabindex="1"></canvas></div>
             <div id="control-container" class="hidden">
                 <div>
-                    <button type="button" id="launch-rom-button" disabled>Load ROM</button>
-                    <div><button type="button" id="load-session-button" disabled>Load session</button></div>
+                    <div><button type="button" id="launch-rom-button" disabled>Load ROM</button></div>
+                    <div><button type="button" id="load-session-button-1" disabled>Load session 1</button></div>
+                    <div><button type="button" id="load-session-button-2" disabled>Load session 2</button></div>
                 </div>
             </div>
         </div>
@@ -83,8 +84,13 @@
             (async function () {
                 const emulator = await cloudpilot.createEmulator({preloadUarm: true});
 
-                const imageResponse = await fetch('session_os5.img');
-                if (!imageResponse.ok) {
+                const image1Response = await fetch('session_os5.img');
+                if (!image1Response.ok) {
+                    throw new Error('could not download session image');
+                }
+
+                const image2Response = await fetch('session_repalm_pv.img');
+                if (!image1Response.ok) {
                     throw new Error('could not download session image');
                 }
 
@@ -95,18 +101,21 @@
 
                 const nor = await norResponse.arrayBuffer();
                 const nand = await nandResponse.arrayBuffer();
-                const image = await imageResponse.arrayBuffer();
+                const image1 = await image1Response.arrayBuffer();
+                const image2 = await image2Response.arrayBuffer();
 
                 const canvas = document.getElementsByTagName('canvas')[0];
 
                 const launchRomButton = document.getElementById('launch-rom-button');
-                const loadSessionButton = document.getElementById('load-session-button');
+                const loadSession1Button = document.getElementById('load-session-button-1');
+                const loadSession2Button = document.getElementById('load-session-button-2');
 
                 emulator.setCanvas(canvas);
                 emulator.bindInput(canvas);
 
                 launchRomButton.disabled = false;
-                loadSessionButton.disabled = false;
+                loadSession1Button.disabled = false;
+                loadSession2Button.disabled = false;
 
                 const enableAudio = document.getElementById('enable-audio');
                 const enableAudioLink = document.getElementById('enable-audio-link');
@@ -126,9 +135,17 @@
                         .catch(e => console.error(e))
                 );
 
-                loadSessionButton.addEventListener('click', () =>
+                loadSession1Button.addEventListener('click', () =>
                     emulator
-                        .loadSession(new Uint8Array(image))
+                        .loadSession(new Uint8Array(image1))
+                        .then(() => emulator.resume())
+                        .then(() => canvas.style.visibility = 'visible')
+                        .catch(e => console.error(e))
+                );
+
+                loadSession2Button.addEventListener('click', () =>
+                    emulator
+                        .loadSession(new Uint8Array(image2))
                         .then(() => emulator.resume())
                         .then(() => canvas.style.visibility = 'visible')
                         .catch(e => console.error(e))
