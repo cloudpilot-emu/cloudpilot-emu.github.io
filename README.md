@@ -20,7 +20,7 @@ Currently, the following devices are emulated:
 -   Tungsten W (silkscreen version)
 -   Tungsten E2, E3 (a widescreen version of the E2 created specifically for emulation by
     Dmitry Grinberg)
--   Handera 330, 330c (the lost color version of the 330c)
+-   Handera 330, 330c (the lost color version of the 330)
 -   Sony PEG-S300, PEG-S320
 -   Sony PEG-S500C series
 -   Sony PEG-T400 series
